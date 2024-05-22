@@ -1,0 +1,6 @@
+*.out
+*.html
+*.env
+server/file
+assets/doctor_certificates/*
+assets/profile_pictures/*
