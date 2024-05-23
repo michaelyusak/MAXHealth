@@ -36,6 +36,8 @@ order_pharmacies,
 order_status,
 stock_changes,
 stock_mutation_requests,
+prescriptions,
+prescription_drugs,
 stock_request_status;
 
 CREATE EXTENSION postgis;
