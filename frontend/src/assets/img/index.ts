@@ -1,0 +1,18 @@
+export { default as logoSvg } from './max_health-high-resolution-logo-black-transparent.svg';
+export { default as backgroundHero } from './background-hero.svg';
+export { default as heroImage } from './Image_hero.png';
+export { default as logoCircle } from './max-health-icon.png';
+export { default as logoV2 } from './max-health.png'
+export { default as logoV2White } from './max-health-white.png'
+export { default as doctors } from './docters.svg';
+export { default as location } from './location.svg';
+export { default as request } from './request.svg';
+export { default as logoWhite } from './max_health-high-resolution-logo-white-transparent.svg';
+export { default as categoryDetail } from './Image [w-100].png';
+export { default as doctor1 } from './Image (1).png';
+export { default as doctor2 } from './Image (2).png';
+export { default as doctor3 } from './Image (3).png';
+export { default as doctor4 } from './Image (4).png';
+export { default as doctor5 } from './Image (7).png';
+export { default as addPharmacy } from './andrew-neel-9moikpaufvg-unsplash.jpg';
+export { default as telemedicineIcon } from './telemedicine.png'
