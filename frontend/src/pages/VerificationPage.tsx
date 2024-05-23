@@ -74,7 +74,7 @@ const VerificationPage = (): React.ReactElement => {
   return (
     <div
       className={`relative ${
-        isVerified ? "w-[80%] lg:w-[30%] h-[35%]" : "w-[80%] lg:w-[25%] h-[62%]"
+        isVerified ? "w-[80%] lg:w-[30%] h-fit" : "w-[80%] lg:w-[25%] h-fit"
       } bg-white shadow-[0_5px_60px_-8px_rgba(0,0,0,0.3)] rounded-[10px] p-[30px] flex flex-col gap-[25px]`}
     >
       <div className={"h-[100%] flex items-center justify-center"}>

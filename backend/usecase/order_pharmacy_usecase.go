@@ -235,7 +235,7 @@ func (u *orderPharmacyUsecaseImpl) UpdateStatusToCancelled(ctx context.Context, 
 	if err != nil {
 		return apperror.InternalServerError(err)
 	}
-	if manager == nil {
+	if orderManager == nil {
 		return apperror.PartnerNotFoundError()
 	}
 

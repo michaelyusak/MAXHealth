@@ -225,7 +225,7 @@ func (u *authenticationUsecaseImpl) SendVerificationEmail(ctx context.Context, s
 	if err != nil {
 		return apperror.InternalServerError(err)
 	}
-	verificationUrl := fmt.Sprintf("https://%s/auth/verification/%s", os.Getenv("EMAILHOST"), *verificationToken)
+	verificationUrl := fmt.Sprintf("http://%s/auth/verification/%s", os.Getenv("EMAILHOST"), *verificationToken)
 
 	verificationCode := util.GenerateCode(6)
 

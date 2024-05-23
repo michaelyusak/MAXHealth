@@ -16,8 +16,8 @@ import { IconContext } from "react-icons";
 const Footer = (): React.ReactElement => {
   return (
     <>
-      <div className="md:min-w-[1440px] w-[100vw] bg-[#000D44] text-white">
-        <div className="w-[100%] md:w-[1440px] m-[auto] justify-between flex flex-col md:flex-row md:py-7 p-2 md:px-0">
+      <div className="w-[100%] px-[10px] bg-[#000D44] text-white">
+        <div className="w-[100%] m-[auto] justify-between flex flex-col md:flex-row md:py-7 p-2 md:px-0">
           <div className="flex flex-col gap-3 text-sm md:text-[16px]">
             <img
               src={image.logoV2White}
@@ -102,10 +102,10 @@ const Footer = (): React.ReactElement => {
           </div>
         </div>
       </div>
-      <div className="md:min-w-[1440px] w-[100vw] bg-[#0D1A27]">
-        <div className="w-[100%] md:w-[1440px] flex justify-between items-center m-[auto] md:py-4 p-2 md:px-0">
+      <div className="w-[100%] px-[10px] bg-[#0D1A27]">
+        <div className="w-[100%] flex justify-between items-center m-auto md:py-4 p-2 md:px-0">
           <p className="text-white text-sm md:text-[16px]">
-            Copyright 2024 Mediax. All Rights Reserved.
+            Copyright 2024 MAXHealth. All Rights Reserved.
           </p>
           <div className="flex gap-[10px]">
             <Button
