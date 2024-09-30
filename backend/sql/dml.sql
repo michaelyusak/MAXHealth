@@ -1,4 +1,4 @@
-\c max_health
+\c max_health_db
 
 INSERT INTO accounts(email, password, role_id, account_name, verified_at)
 VALUES

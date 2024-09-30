@@ -1,4 +1,4 @@
-\c max_health
+\c max_health_db
 
 INSERT INTO pharmacies (pharmacy_manager_id, pharmacy_name, pharmacist_name, pharmacist_license_number, pharmacist_phone_number, city, address, latitude, longitude) VALUES
 	('4573', 'Pharmacy 4573-67', 'Pharmacist 1', 'PHM00000001', '0871779431', 'Aceh Barat', 'Jl. SM.Raja No.17', '4.1580358', '96.1271105'),

@@ -1,4 +1,4 @@
-\c max_health
+\c max_health_db
 
 UPDATE pharmacies SET geom = ST_SetSRID(ST_MakePoint(CAST(longitude AS float), CAST(latitude AS float)), 4326);
 

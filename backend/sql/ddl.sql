@@ -1,6 +1,6 @@
--- CREATE DATABASE max_health;
+CREATE DATABASE max_health_db;
 
-\c max_health 
+\c max_health_db
 
 DROP TABLE IF EXISTS 
 roles,

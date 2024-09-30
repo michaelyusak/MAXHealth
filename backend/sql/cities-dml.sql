@@ -1,4 +1,4 @@
-\c max_health
+\c max_health_db
 
 UPDATE cities SET raja_ongkir_id = 1 WHERE city_name ILIKE '%Aceh Barat';
 UPDATE cities SET raja_ongkir_id = 2 WHERE city_name ILIKE '%Aceh Barat Daya';
