@@ -83,7 +83,7 @@ const PrescriptionModal = ({
                 <button
                   onClick={() =>
                     navigate(
-                      `/telemedicine/prescriptions/checkout/${prescriptionId}`
+                      `/prescriptions/checkout/${prescriptionId}`
                     )
                   }
                   className="px-[20px] py-[5px] text-[18px] font-[600] bg-[#1F5FFF] rounded-[8px] text-white"
