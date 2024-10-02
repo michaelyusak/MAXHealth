@@ -1,5 +1,3 @@
-CREATE DATABASE max_health_db;
-
 \c max_health_db
 
 DROP TABLE IF EXISTS 
@@ -39,9 +37,6 @@ stock_mutation_requests,
 prescriptions,
 prescription_drugs,
 stock_request_status;
-
-CREATE EXTENSION postgis;
-CREATE EXTENSION postgis_topology;
 
 CREATE TABLE roles(
     role_id BIGSERIAL PRIMARY KEY,

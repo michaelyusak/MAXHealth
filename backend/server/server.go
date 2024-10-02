@@ -66,9 +66,9 @@ func newRouter(h routerOpts, u utilOpts, config *config.Config, log *logrus.Logg
 	corsRouting(router, corsConfig)
 	router.NoRoute(handler.NotFoundHandler)
 	authenticationRouting(router, h.Authentication)
-	addressRouting(router, h.Address, authMiddleware)
+	addressRouting(router, h.Address)
 	doctorRouting(router, h.Doctor, authMiddleware, doctorAuthorizationMiddleware)
-	userRouting(router, h.User, h.Cart, authMiddleware, userAuthorizationMiddleware)
+	userRouting(router, h.User, authMiddleware, userAuthorizationMiddleware)
 	userAddressRouting(router, h.UserAddress, authMiddleware, userAuthorizationMiddleware)
 	partnerRouting(router, h.Partner, authMiddleware, adminAuthorizationMiddleware)
 	drugRouting(router, h.Drug, authMiddleware, adminAuthorizationMiddleware, pharmacyManagerAuthorizationMiddleware)
@@ -78,7 +78,7 @@ func newRouter(h routerOpts, u utilOpts, config *config.Config, log *logrus.Logg
 	categoryRouting(router, h.Category, authMiddleware, adminAuthorizationMiddleware)
 	cartRouting(router, h.Cart, authMiddleware, userAuthorizationMiddleware)
 	telemedicineRouting(router, h.Telemedicine, authMiddleware, userAuthorizationMiddleware, doctorAuthorizationMiddleware)
-	orderRouting(router, h.Order, authMiddleware, userAuthorizationMiddleware, adminAuthorizationMiddleware, pharmacyManagerAuthorizationMiddleware)
+	orderRouting(router, h.Order, authMiddleware, userAuthorizationMiddleware, adminAuthorizationMiddleware)
 	orderPharmacyRouting(router, h.OrderPharmacy, authMiddleware, pharmacyManagerAuthorizationMiddleware, userAuthorizationMiddleware, adminAuthorizationMiddleware)
 	reportRouting(router, h.Report, authMiddleware, pharmacyManagerAuthorizationMiddleware, adminAuthorizationMiddleware)
 	stockRouting(router, h.Stock, authMiddleware, pharmacyManagerAuthorizationMiddleware)
@@ -122,7 +122,7 @@ func drugClassificationRouting(router *gin.Engine, handler *handler.DrugClassifi
 	router.GET("/drugs/classifications", handler.GetAllDrugClassification)
 }
 
-func userRouting(router *gin.Engine, handler *handler.UserHandler, cartHandler *handler.CartHandler, authMiddleware gin.HandlerFunc, userAuthorizationMiddleware gin.HandlerFunc) {
+func userRouting(router *gin.Engine, handler *handler.UserHandler, authMiddleware gin.HandlerFunc, userAuthorizationMiddleware gin.HandlerFunc) {
 	userRouter := router.Group("/users")
 	userRouter.PATCH("/profile", authMiddleware, userAuthorizationMiddleware, handler.UpdateData)
 	userRouter.GET("/profile", authMiddleware, userAuthorizationMiddleware, handler.GetProfile)
@@ -161,7 +161,7 @@ func stockRouting(router *gin.Engine, handler *handler.StockHandler, authMiddlew
 	router.GET("/managers/stock-change", authMiddleware, pharmacyManagerAuthorizationMiddleware, handler.GetAllStockChanges)
 }
 
-func addressRouting(router *gin.Engine, handler *handler.AddressHandler, authMiddleware gin.HandlerFunc) {
+func addressRouting(router *gin.Engine, handler *handler.AddressHandler) {
 	router.GET("/provinces", handler.GetAllProvinces)
 	router.GET("/cities", handler.GetAllCitiesByProvinceCode)
 	router.GET("/districts", handler.GetAllDistrictsByCityCode)
@@ -222,7 +222,7 @@ func cartRouting(router *gin.Engine, handler *handler.CartHandler, authMiddlewar
 	cartRouter.GET("/", authMiddleware, userAuthorizationMiddleware, handler.GetAllCart)
 }
 
-func orderRouting(router *gin.Engine, handler *handler.OrderHandler, authMiddleware gin.HandlerFunc, userAuthorizationMiddleware gin.HandlerFunc, adminAuthorizationMiddleware gin.HandlerFunc, pharmacyManagerAuthorizationMiddleware gin.HandlerFunc) {
+func orderRouting(router *gin.Engine, handler *handler.OrderHandler, authMiddleware gin.HandlerFunc, userAuthorizationMiddleware gin.HandlerFunc, adminAuthorizationMiddleware gin.HandlerFunc) {
 	router.POST("/orders", authMiddleware, userAuthorizationMiddleware, handler.CheckoutOrder)
 	router.PATCH("/orders/:order_id/payment-proof", authMiddleware, userAuthorizationMiddleware, handler.UploadPaymentProofOrder)
 	router.PATCH("/orders/:order_id/confirm-payment", authMiddleware, adminAuthorizationMiddleware, handler.ConfirmPayment)
