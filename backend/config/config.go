@@ -27,11 +27,17 @@ type Config struct {
 	GracefulPeriod      int
 }
 
+var (
+	EmailHost string
+)
+
 func Init(log *logrus.Logger) *Config {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("error loading .env file")
 	}
+
+	EmailHost = os.Getenv("EMAIL_HOST")
 
 	hashCost, err := strconv.Atoi(os.Getenv("HASH_COST"))
 	if err != nil {

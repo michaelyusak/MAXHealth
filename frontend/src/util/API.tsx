@@ -501,7 +501,7 @@ export async function HandleAddRaw<T>(
 }
 
 export async function HandleGeocodeSearch(query: string) {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?${query}&key=AIzaSyCeQJUbCDF4wDK4ukYlAiOJy7o--KW_-c4`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?${query}&key=`;
   const options: RequestInit = {
     method: "GET",
   };
@@ -517,7 +517,7 @@ export async function HandleGeocodeSearch(query: string) {
 }
 
 export async function HandleGeocodeReverse(lat: number, long: number) {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${long}&location_type=ROOFTOP&language=id&key=AIzaSyCeQJUbCDF4wDK4ukYlAiOJy7o--KW_-c4`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${long}&location_type=ROOFTOP&language=id&key=`;
   const options: RequestInit = {
     method: "GET",
   };

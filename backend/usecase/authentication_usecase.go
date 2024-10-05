@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
 	"max-health/appconstant"
 	"max-health/apperror"
+	"max-health/config"
 	"max-health/dto"
 	"max-health/entity"
 	"max-health/repository"
@@ -225,7 +225,7 @@ func (u *authenticationUsecaseImpl) SendVerificationEmail(ctx context.Context, s
 	if err != nil {
 		return apperror.InternalServerError(err)
 	}
-	verificationUrl := fmt.Sprintf("http://%s/auth/verification/%s", os.Getenv("EMAILHOST"), *verificationToken)
+	verificationUrl := fmt.Sprintf("http://%s/auth/verification/%s", config.EmailHost, *verificationToken)
 
 	verificationCode := util.GenerateCode(6)
 
