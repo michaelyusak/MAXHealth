@@ -501,8 +501,8 @@ export async function HandleAddRaw<T>(
   return responseData.data;
 }
 
-export async function HandleGeocodeSearch(query: string) {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?${query}&key=`;
+export async function HandleGeocodeSearch(query: string): Promise<INominatimOpenStreetMapResponse[]> {
+  const url = `https://nominatim.openstreetmap.org/search?q=${query}&addressdetails=1&&format=json`;
   const options: RequestInit = {
     method: "GET",
   };

@@ -11,7 +11,7 @@ import { HandleShowToast } from "../util/ShowToast";
 import {
   GeocodeReverseResponseToAddressRequest,
   IAddressRequest,
-  IGoogleMapApiResponse,
+  INominatimOpenStreetMapResponse,
 } from "../interfaces/Address";
 import pinIcon from "../assets/img/pin-icon.png";
 
@@ -65,19 +65,12 @@ const AddAddressCard = ({
   const [disableSubmit, setDisableSubmit] = useState<boolean>(true);
 
   function handleSearchAddress(
-    callback: (data: IGoogleMapApiResponse[]) => void
+    callback: (data: INominatimOpenStreetMapResponse[]) => void
   ) {
     if (inputValues["address"].value) {
-      const query = `address=${
-        inputValues["address"].value as string
-      }&language=ID&components=country:ID|route:${
-        inputValues["address"].value as string
-      }|locality:${
-        inputValues["address"].value as string
-      }|administrative_area:${inputValues["address"].value as string}`;
-      HandleGeocodeSearch(query)
-        .then((responseData) => {
-          callback(responseData["results"]);
+      HandleGeocodeSearch(inputValues["address"].value as string)
+        .then((data) => {
+          callback(data);
         })
         .catch((error: Error) => {
           HandleShowToast(setToast, false, error.message, 5);

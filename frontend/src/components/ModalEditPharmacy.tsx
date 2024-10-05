@@ -7,9 +7,9 @@ import { HandleGeocodeSearch, HandlePutRaw } from "../util/API";
 import { HandleShowToast } from "../util/ShowToast";
 import { ToastContext } from "../contexts/ToastData";
 import {
-  GoogleMapApiResponseToAddressRequest,
+  GeocodeReverseResponseToAddressRequest,
   IAddressRequest,
-  IGoogleMapApiResponse,
+  INominatimOpenStreetMapResponse,
 } from "../interfaces/Address";
 import { FaSearch } from "react-icons/fa";
 
@@ -224,15 +224,12 @@ const ModalEditPharmacy = ({
   };
 
   function handleSearchAddress(
-    callback: (data: IGoogleMapApiResponse[]) => void
+    callback: (data: INominatimOpenStreetMapResponse[]) => void
   ) {
     if (input.address && input.city) {
-      const query = `address=${
-        input.address as string
-      }&language=ID&components=country:ID`;
-      HandleGeocodeSearch(query)
-        .then((responseData) => {
-          callback(responseData["results"]);
+      HandleGeocodeSearch(input.address)
+        .then((data) => {
+          callback(data);
         })
         .catch((error: Error) => {
           HandleShowToast(setToast, false, error.message, 5);
@@ -345,7 +342,7 @@ const ModalEditPharmacy = ({
                     const res: IAddressRequest[] = [];
                     for (let index = 0; index < data.length; index++) {
                       const item = data[index];
-                      res.push(GoogleMapApiResponseToAddressRequest(item));
+                      res.push(GeocodeReverseResponseToAddressRequest(item));
                     }
                     setAddressOptions(res);
                     setShowAddressOptions(true);

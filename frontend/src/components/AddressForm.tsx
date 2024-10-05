@@ -24,7 +24,7 @@ import {
 import {
   IAddress,
   IArea,
-  IGoogleMapApiResponse,
+  INominatimOpenStreetMapResponse,
   emptyAddressRequest,
 } from "../interfaces/Address";
 import { MsgRefreshTokenNotFound } from "../appconstants/appconstants";
@@ -321,21 +321,16 @@ const AddressForm = ({
   }, [initialAddress, isFilled, setToast]);
 
   function handleSearchAddress(
-    callback: (data: IGoogleMapApiResponse[]) => void
+    callback: (data: INominatimOpenStreetMapResponse[]) => void
   ) {
     if (
       inputValues["address"].value &&
       inputValues["city"].value &&
       inputValues["province"].value
     ) {
-      const query = `address=${
-        inputValues["address"].value as string
-      }&language=ID&components=country:ID|administrative_area=${
-        inputValues["subdistrict"].value as string
-      }`;
-      HandleGeocodeSearch(query)
-        .then((responseData) => {
-          callback(responseData["results"]);
+      HandleGeocodeSearch(inputValues["address"].value as string)
+        .then((data) => {
+          callback(data);
         })
         .catch((error: Error) => {
           HandleShowToast(setToast, false, error.message, 5);

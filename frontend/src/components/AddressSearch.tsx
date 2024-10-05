@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import Input from "./Input";
 import { IInputField } from "../interfaces/InputField";
 import {
-  GoogleMapApiResponseToAddressRequest,
+  GeocodeReverseResponseToAddressRequest,
   IAddressRequest,
-  IGoogleMapApiResponse,
+  INominatimOpenStreetMapResponse,
 } from "../interfaces/Address";
 
 interface AddressSearchProps {
@@ -18,7 +18,7 @@ interface AddressSearchProps {
     value: string | number | boolean,
     error: string
   ) => void;
-  onSearch: (callback: (data: IGoogleMapApiResponse[]) => void) => void;
+  onSearch: (callback: (data: INominatimOpenStreetMapResponse[]) => void) => void;
   onSelectOption: (opt: IAddressRequest) => void;
 }
 
@@ -55,7 +55,7 @@ const AddressSearch = ({
               const res: IAddressRequest[] = [];
               for (let index = 0; index < data.length; index++) {
                 const item = data[index];
-                res.push(GoogleMapApiResponseToAddressRequest(item));
+                res.push(GeocodeReverseResponseToAddressRequest(item));
               }
               setAddressOptions(res);
               setShowAddressOptions(true);

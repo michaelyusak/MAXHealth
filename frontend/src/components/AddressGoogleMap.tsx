@@ -23,7 +23,7 @@ const AddressGoogleMap = ({
 
   const DEFAULT_ZOOM = 20;
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyAEQ18BgELzIU34xtENErSA_1QakHwMeV0",
+    googleMapsApiKey: "",
   });
 
   const position =
