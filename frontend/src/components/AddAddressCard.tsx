@@ -9,7 +9,7 @@ import { HandleGeocodeReverse, HandleGeocodeSearch } from "../util/API";
 import { ToastContext } from "../contexts/ToastData";
 import { HandleShowToast } from "../util/ShowToast";
 import {
-  GoogleMapApiResponseToAddressRequest,
+  GeocodeReverseResponseToAddressRequest,
   IAddressRequest,
   IGoogleMapApiResponse,
 } from "../interfaces/Address";
@@ -93,10 +93,9 @@ const AddAddressCard = ({
             position.coords.latitude,
             position.coords.longitude
           )
-            .then((responseData) => {
-              const res: IGoogleMapApiResponse = responseData["results"][0];
+            .then((data) => {
               const address: IAddressRequest =
-                GoogleMapApiResponseToAddressRequest(res);
+                GeocodeReverseResponseToAddressRequest(data);
 
               dispatch(addAddress(address));
               onNextStep();

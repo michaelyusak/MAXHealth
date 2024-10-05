@@ -5,6 +5,7 @@ import {
   MsgRefreshTokenNotFound,
   MsgTokenExpired,
 } from "../appconstants/appconstants";
+import { INominatimOpenStreetMapResponse } from "../interfaces/Address";
 
 export async function HandleSendVerificationEmail(email: string) {
   const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/verification";
@@ -516,8 +517,8 @@ export async function HandleGeocodeSearch(query: string) {
   return responseData;
 }
 
-export async function HandleGeocodeReverse(lat: number, long: number) {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${long}&location_type=ROOFTOP&language=id&key=`;
+export async function HandleGeocodeReverse(lat: number, long: number): Promise<INominatimOpenStreetMapResponse> {
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${long}&format=json`;
   const options: RequestInit = {
     method: "GET",
   };

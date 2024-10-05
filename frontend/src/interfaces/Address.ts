@@ -64,34 +64,51 @@ export interface IGoogleMapApiResponse {
   };
 }
 
-export const GoogleMapApiResponseToAddressRequest = (
-  response: IGoogleMapApiResponse
+export const GeocodeReverseResponseToAddressRequest = (
+  data: INominatimOpenStreetMapResponse
 ): IAddressRequest => {
   const addressRequest: IAddressRequest = emptyAddressRequest();
 
-  for (let i = response.address_components.length - 1; i >= 0; i--) {
-    const component = response.address_components[i];
-    switch (component.types[0]) {
-      case "administrative_area_level_4":
-        addressRequest.subdistrict = component.long_name;
-        break;
-      case "administrative_area_level_3":
-        addressRequest.district = component.long_name;
-        break;
-      case "administrative_area_level_2":
-        addressRequest.city = component.long_name;
-        break;
-      case "administrative_area_level_1":
-        addressRequest.province = component.long_name;
-        break;
-      default:
-        break;
-    }
-  }
+  addressRequest.province = data.address.city
+  addressRequest.city = data.address.city_district
+  addressRequest.district = data.address.suburb
+  addressRequest.subdistrict = data.address.neighbourhood
 
-  addressRequest.address = response.formatted_address;
-  addressRequest.latitude = response.geometry.location.lat;
-  addressRequest.longitude = response.geometry.location.lng;
+  addressRequest.address = data.display_name;
+  addressRequest.latitude = data.lat;
+  addressRequest.longitude = data.lon;
 
   return addressRequest;
 };
+
+export interface INominatimOpenStreetMapResponse {
+  place_id: number;
+  licence: string;
+  osm_type: string;
+  osm_id: number;
+  lat: string;
+  lon: string;
+  class: string;
+  type: string;
+  place_rank: number;
+  importance: number;
+  addresstype: string;
+  name: string;
+  display_name: string;
+  address: INominatimOpenStreetMapAddressResponse;
+  boundingbox: string[];
+}
+
+export interface INominatimOpenStreetMapAddressResponse {
+  city_block: string;
+  neighbourhood: string;
+  suburb: string;
+  city_district: string;
+  city: string;
+  "ISO3166-2-lvl4": string;
+  region: string;
+  "ISO3166-2-lvl3": string;
+  postcode: string;
+  country: string;
+  country_code: string;
+}
