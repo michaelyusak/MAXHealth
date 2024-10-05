@@ -9,7 +9,7 @@ import { HandleShowToast } from "../util/ShowToast";
 import { ToastContext } from "../contexts/ToastData";
 import AddressForm from "../components/AddressForm";
 import AddAddressCard from "../components/AddAddressCard";
-import AddressGoogleMap from "../components/AddressGoogleMap";
+import AddressMap from "../components/AddressMap";
 import { Noop } from "../constants/Noop";
 import { MsgRefreshTokenNotFound } from "../appconstants/appconstants";
 import { useNavigate } from "react-router-dom";
@@ -154,7 +154,7 @@ const AddressProfilePage = (): React.ReactElement => {
       {showMapDialog && (
         <Dialog
           content={
-            <AddressGoogleMap
+            <AddressMap
               onNextStep={() => {
                 setShowMapDialog(false);
                 setShowSearchedAddAddressDialog(true);

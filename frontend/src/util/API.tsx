@@ -502,7 +502,7 @@ export async function HandleAddRaw<T>(
 }
 
 export async function HandleGeocodeSearch(query: string): Promise<INominatimOpenStreetMapResponse[]> {
-  const url = `https://nominatim.openstreetmap.org/search?q=${query}&addressdetails=1&&format=json`;
+  const url = `https://nominatim.openstreetmap.org/search?q=${query}&addressdetails=1&&format=json&accept-language=id`;
   const options: RequestInit = {
     method: "GET",
   };
@@ -518,7 +518,7 @@ export async function HandleGeocodeSearch(query: string): Promise<INominatimOpen
 }
 
 export async function HandleGeocodeReverse(lat: number, long: number): Promise<INominatimOpenStreetMapResponse> {
-  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${long}&format=json`;
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${long}&format=json&accept-language=id`;
   const options: RequestInit = {
     method: "GET",
   };

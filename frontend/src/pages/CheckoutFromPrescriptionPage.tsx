@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { HandleAddRaw, HandleGet } from "../util/API";
 import AddressForm from "../components/AddressForm";
 import Dialog from "../components/Dialog";
-import AddressGoogleMap from "../components/AddressGoogleMap";
+import AddressMap from "../components/AddressMap";
 import AddAddressCard from "../components/AddAddressCard";
 import Button from "../components/Button";
 import chevronLeftIcon from "../assets/img/chevron-left-icon.png";
@@ -356,7 +356,7 @@ const CheckoutFromPrescriptionPage = (): React.ReactElement => {
       {showMapDialog && (
         <Dialog
           content={
-            <AddressGoogleMap
+            <AddressMap
               onNextStep={() => {
                 setShowMapDialog(false);
                 setShowSearchedAddAddressDialog(true);

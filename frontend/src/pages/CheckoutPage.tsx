@@ -14,7 +14,7 @@ import { HandleAddRaw, HandleGet } from "../util/API";
 import AddAddressCard from "../components/AddAddressCard";
 import { HandleShowToast } from "../util/ShowToast";
 import { CurrencyFormatter } from "../util/CurrencyFormatter";
-import AddressGoogleMap from "../components/AddressGoogleMap";
+import AddressMap from "../components/AddressMap";
 import AddressForm from "../components/AddressForm";
 import { Noop } from "../constants/Noop";
 import { Link, useNavigate } from "react-router-dom";
@@ -428,7 +428,7 @@ const CheckoutPage = (): React.ReactElement => {
           {showMapDialog && (
             <Dialog
               content={
-                <AddressGoogleMap
+                <AddressMap
                   onNextStep={() => {
                     setShowMapDialog(false);
                     setShowSearchedAddAddressDialog(true);
