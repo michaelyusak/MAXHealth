@@ -245,14 +245,13 @@ const TelemedicineLandingUserPage = (): React.ReactElement => {
           </button>
         </div>
         <div className="min-h-[83.5vh] w-full flex flex-col gap-[20px]">
-          <div className="flex lg:flex-row gap-[10px] lg:gap-0 flex-col w-full justify-between">
-            <div className="flex items-center">
-              <p>
-                Displaying {doctorList?.doctors.length} out of{" "}
-                {doctorList?.page_info.item_count}
-              </p>
-            </div>
-            <div className="flex gap-[10px] lg:flex-row flex-col pr-[20px] lg:pr-0">
+          <div className="flex items-center xl:flex-row gap-[10px] flex-col w-full justify-between px-[10px]">
+            <p className="w-full xl:w-fit">
+              Displaying {doctorList?.doctors.length} out of{" "}
+              {doctorList?.page_info.item_count}
+            </p>
+
+            <div className="flex gap-[10px] xl:flex-row flex-col w-full xl:w-fit">
               <button
                 onClick={() => {
                   setSelectedSortOption("");
@@ -264,7 +263,10 @@ const TelemedicineLandingUserPage = (): React.ReactElement => {
               </button>
               <ItemSelector
                 value={selectedSpecialization}
-                setValue={(value) => setSelectedSpecialization(value)}
+                setValue={(value) => {
+                  setSelectedSpecialization(value);
+                  setPage(1);
+                }}
                 items={specializationNameList}
                 placeholder="Doctor specialization"
                 buttonAdditionalClassname="lg:w-[400px] w-full"
@@ -274,7 +276,10 @@ const TelemedicineLandingUserPage = (): React.ReactElement => {
               ></ItemSelector>
               <ItemSelector
                 value={selectedSortOption}
-                setValue={(value) => setSelectedSortOption(value)}
+                setValue={(value) => {
+                  setSelectedSortOption(value);
+                  setPage(1);
+                }}
                 items={sortOptions}
                 placeholder="Sort by"
                 buttonAdditionalClassname="lg:w-[400px] w-full"
@@ -284,21 +289,23 @@ const TelemedicineLandingUserPage = (): React.ReactElement => {
               ></ItemSelector>
             </div>
           </div>
-          <div className="grid min-h-[700px] lg:grid-cols-[repeat(auto-fill,_minmax(350px,_1fr))] gap-y-[10px] gap-x-[5px] grid-cols-[repeat(auto-fill,_minmax(220px,_1fr))] lg:place-content-start place-content-center lg:justify-items-start justify-items-center">
+          <div className="grid min-h-[700px] gap-y-[10px] gap-x-[5px] grid-cols-[repeat(auto-fit,_minmax(180px,_1fr))] md:grid-cols-[repeat(auto-fit,_minmax(300px,_1fr))] xl:grid-cols-[repeat(auto-fill,_minmax(350px,_1fr))] items-start justify-center place-content-start justify-items-center">
             {doctorList && doctorList.doctors ? (
               doctorList.doctors.map((doctor) => (
-                <div className="w-[220px] lg:w-[350px] h-[400px] rounded-xl flex shadow-[0px_0px_15px_0px_rgba(0,0,0,0.3)] flex-col items-center justify-between px-[20px] py-[10px]">
+                <div className="w-[180px] md:w-[300px] xl:w-[350px] h-[320px] xl:h-[400px] rounded-xl flex shadow-[0px_0px_15px_0px_rgba(0,0,0,0.3)] flex-col items-center justify-between px-[20px] py-[10px]">
                   <img
-                    className="w-[175px] h-[175px] object-cover rounded-[100%]"
+                    className="w-[150px] xl:w-[175px] aspect-square object-cover rounded-[100%]"
                     alt=""
                     src={doctor.profile_picture}
                   ></img>
                   <div className="text-center">
-                    <p className="text-[24px] font-[600]">{doctor.name}</p>
-                    <p className="font-[600] text-gray-600">
+                    <p className="capitalize text-[18px] md:text-[20px] xl:text-[24px] font-[600]">
+                      {doctor.name}
+                    </p>
+                    <p className="text-[16px] md:text-[18px] xl:text-[20px] font-[500] text-gray-600">
                       {doctor.specialization}
                     </p>
-                    <p className="flex gap-[3px] items-center justify-center">
+                    <p className="flex gap-[3px] text-[16px] md:text-[18px] xl:text-[20px] items-center justify-center">
                       {CurrencyFormatter.format(+doctor.fee_per_patient)}{" "}
                       <p className="font-[800]">/</p> per Session
                     </p>
@@ -308,9 +315,9 @@ const TelemedicineLandingUserPage = (): React.ReactElement => {
                       handleOpenChatConfirmationModal(doctor.account_id)
                     }
                     disabled={!isValid}
-                    className="flex disabled:opacity-50 disabled:cursor-not-allowed items-center px-[20px] py-[10px] rounded-xl border-[1px] border-gray-400 justify-center gap-[15px]"
+                    className="flex disabled:opacity-50 disabled:cursor-not-allowed items-center px-[10px] py-[5px] xl:px-[20px] xl:py-[10px] rounded-xl border-[1px] border-gray-400 justify-center gap-[10px] xl:gap-[15px]"
                   >
-                    <IoChatboxEllipsesOutline className="text-[25px]" />
+                    <IoChatboxEllipsesOutline className="text-[18px] md:text-[20px] xl:text-[24px]" />
                     <p>Start Chat</p>
                   </button>
                 </div>

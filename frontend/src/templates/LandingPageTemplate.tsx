@@ -24,9 +24,11 @@ const LandingPageTemplate = (): React.ReactElement => {
   return (
     <>
       <Header />
-      <div className="w-[100%] my-[10px] m-auto md:my-[30px]">
+
+      <div className="w-[100%] m-auto pb-[50px] pt-[110px]">
         <Outlet />
       </div>
+
       <Footer />
     </>
   );

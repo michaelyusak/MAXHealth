@@ -47,8 +47,8 @@ const Header = (): React.ReactElement => {
     setShowMenu(!showMenu);
   };
   return (
-    <div className="w-[100%] h-[100px] bg-[#dff1fd] flex items-center">
-      <div className="w-[1440px] m-[auto] px-3 md:px-0 justify-between md:py-3 flex flex-row items-center">
+    <div className="fixed z-[300] w-[100%] h-[100px] bg-[#dff1fd] flex items-center">
+      <div className="w-full m-[auto] px-3 md:px-0 justify-between flex flex-row items-center">
         <NavLink to="/" className={"z-[100]"}>
           <img src={image.logoV2} className="w-[150px] " />
         </NavLink>

@@ -161,7 +161,6 @@ const PaginationInfo = ({
                 maxItemPerPage
               )}
               placeholder=""
-              height="20px"
               value={itemPerPage.toString()}
               setValue={(value) => {
                 setPage(1);
