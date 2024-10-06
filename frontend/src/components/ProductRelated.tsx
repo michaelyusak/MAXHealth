@@ -53,7 +53,7 @@ const ProductRelated = ({
   }, [setToast, categoryId, page]);
 
   return (
-    <div className="flex flex-col gap-3 my-5 p-2 md:p-0">
+    <div className="flex flex-col gap-3 my-5 p-2 md:p-0 xl:px-[50px]">
       <div className="flex justify-between">
         <h1 className="text-[#000D44] font-bold text-3xl">Related Product</h1>
         <div className="flex text-3xl gap-6">

@@ -29,6 +29,8 @@ import pinIcon from "../assets/img/pin-icon.png";
 import { updateAddress } from "../slices/OrderSlice";
 
 const ProductDetail = (): React.ReactElement => {
+  const data = Cookies.get("data");
+
   const { setToast } = useContext(ToastContext);
   const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cart);
@@ -45,8 +47,6 @@ const ProductDetail = (): React.ReactElement => {
   );
 
   useEffect(() => {
-    const data = Cookies.get("data");
-
     if (!data) {
       setIsTokenValid(false);
       return;
@@ -196,12 +196,7 @@ const ProductDetail = (): React.ReactElement => {
         getLocation(data);
       }
 
-      navigator.geolocation.getCurrentPosition((location) => {
-        fetchProductDetail(
-          location.coords.latitude.toString(),
-          location.coords.longitude.toString()
-        );
-      });
+      fetchProductDetail("-6.1934332", "106.8217253");
     }
   }, [fetchProductDetail, selectedAddress, id, getLocation]);
 
@@ -365,7 +360,7 @@ const ProductDetail = (): React.ReactElement => {
           }}
         />
       )}
-      <div className="flex flex-col md:flex-row justify-between">
+      <div className="flex flex-col md:flex-row justify-between px-[50px]">
         <div className="flex flex-col md:w-[60%] w-[100%] gap-4 p-3 md:p-0">
           <div className="flex md:flex-row flex-col justify-between">
             <img
@@ -544,11 +539,19 @@ const ProductDetail = (): React.ReactElement => {
                         {CurrencyFormatter.format(+pharmacyDrug.price)}
                       </h2>
                       <p>{pharmacyDrug.pharmacy.pharmacy_name}</p>
-                      <p className="flex gap-1 items-center text-[#788094]">
-                        <RiPinDistanceFill></RiPinDistanceFill>
-                        {(pharmacyDrug.pharmacy.distance / 1000).toFixed(2)} km
-                        from you
-                      </p>
+                      {data ? (
+                        <p className="flex h-[20px] gap-1 items-center text-[#788094]">
+                          <RiPinDistanceFill></RiPinDistanceFill>
+                          {(pharmacyDrug.pharmacy.distance / 1000).toFixed(
+                            2
+                          )}{" "}
+                          km from you
+                        </p>
+                      ) : (
+                        <>
+                          <div className="h-[20px]"></div>
+                        </>
+                      )}
                     </div>
 
                     {findQuantity(pharmacyDrug.id) > 0 && (

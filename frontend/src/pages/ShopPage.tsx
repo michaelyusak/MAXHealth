@@ -186,13 +186,6 @@ const ShopPage = (): React.ReactElement => {
     }
 
     fetchDrugList("-6.1934332", "106.8217253")
-
-    // navigator.geolocation.getCurrentPosition((location) => {
-    //   fetchDrugList(
-    //     location.coords.latitude.toString(),
-    //     location.coords.longitude.toString()
-    //   );
-    // });
   }, [fetchDrugList, selectedAddress, getLocation]);
 
   const token = Cookies.get("accessToken");
