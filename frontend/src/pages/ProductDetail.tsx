@@ -360,7 +360,7 @@ const ProductDetail = (): React.ReactElement => {
           }}
         />
       )}
-      <div className="flex flex-col md:flex-row justify-between px-[50px]">
+      <div className="flex flex-col md:flex-row justify-between px-[10px] md:px-[30px] xl:px-[50px]">
         <div className="flex flex-col md:w-[60%] w-[100%] gap-4 p-3 md:p-0">
           <div className="flex md:flex-row flex-col justify-between">
             <img
@@ -370,17 +370,17 @@ const ProductDetail = (): React.ReactElement => {
             />
             <div className="flex flex-col gap-1 md:w-[450px] w-[100%] justify-between">
               <div className="flex flex-col gap-[15px]">
-                <p className="text-[30px] font-[700] capitalize">
+                <p className="text-[20px] md:text-[28px] xl:text-[30px] font-[700] capitalize">
                   {drugDetail?.name}
                 </p>
                 {drugDetail?.pharmacy_drugs ? (
                   <div>
-                    <p className="text-black font-[600] text-[24px]">
+                    <p className="text-black font-[600] text-[18px] md:text-[20px] xl:text-[24px]">
                       {CurrencyFormatter.format(
                         +drugDetail?.pharmacy_drugs[0].price
                       )}
                     </p>
-                    <p className="text-black font-[600] text-[18px]">
+                    <p className="text-black font-[600] text-[16px] md:text-[16px] xl:text-[18px]">
                       {drugDetail?.selling_unit}
                     </p>
                   </div>
@@ -414,7 +414,9 @@ const ProductDetail = (): React.ReactElement => {
               </div>
               <div className="flex flex-col md:w-[450px] w-[100%]">
                 <div className="flex justify-between">
-                  <p className="text-[18px] font-[600]">Category : </p>
+                  <p className="text-[16px] md:text-[16px] xl:text-[18px] font-[600]">
+                    Category :{" "}
+                  </p>
                   <Link
                     to="/product"
                     onClick={
@@ -422,17 +424,21 @@ const ProductDetail = (): React.ReactElement => {
                       (() => dispatch(store(drugDetail.category.id.toString())))
                     }
                   >
-                    <p className="underline text-[#000D44] text-[16px] font-[600]">
+                    <p className="underline text-[#000D44] text-[16px] md:text-[16px] xl:text-[18px] font-[600]">
                       {drugDetail?.category.name}
                     </p>
                   </Link>
                 </div>
                 <div className="flex justify-between">
-                  <p className="text-[18px] font-[600]">Weight : </p>
-                  <p className="text-[16px]">{drugDetail?.weight} g</p>
+                  <p className="text-[16px] md:text-[16px] xl:text-[18px] font-[600]">
+                    Weight :{" "}
+                  </p>
+                  <p className="text-[16px] md:text-[16px] xl:text-[18px]">
+                    {drugDetail?.weight} g
+                  </p>
                 </div>
                 <div className="flex justify-between">
-                  <p className="text-[18px] font-[600] flex items-center">
+                  <p className="text-[16px] md:text-[16px] xl:text-[18px] font-[600] flex items-center">
                     Dimension:
                   </p>
                   <p className="flex items-center text-[16px]">
@@ -444,49 +450,60 @@ const ProductDetail = (): React.ReactElement => {
               </div>
             </div>
           </div>
+
           <div className="flex flex-col gap-[15px]">
             <div className="flex flex-col gap-[5px]">
-              <h3 className="text-xl font-semibold text-[#5d5d5d]">
+              <h3 className="text-[16px] md:text-[16px] xl:text-[18px] font-semibold text-[#5d5d5d]">
                 Description
               </h3>
-              <p className="text-[#74787c]">{drugDetail?.description}</p>
+              <p className="text-[#74787c] text-justify text-[14px] md:text-[16px] xl:text-[18px]">
+                {drugDetail?.description}
+              </p>
             </div>
 
             <div className="flex flex-col gap-[5px]">
-              <h3 className="text-xl font-semibold text-[#5d5d5d]">
+              <h3 className="text-[16px] md:text-[16px] xl:text-[18px] font-semibold text-[#5d5d5d]">
                 Classification
               </h3>
-              <p className="text-[#74787c]">
+              <p className="text-[#74787c] text-[14px] md:text-[16px] xl:text-[18px]">
                 {drugDetail?.classification.name}
               </p>
             </div>
 
             <div className="flex flex-col gap-[5px]">
-              <h3 className="text-xl capitalize font-semibold text-[#5d5d5d]">
+              <h3 className="text-[16px] md:text-[16px] xl:text-[18px] capitalize font-semibold text-[#5d5d5d]">
                 Form
               </h3>
-              <p className="text-[#74787c]">{drugDetail?.form.name}</p>
+              <p className="text-[#74787c] text-[14px] md:text-[16px] xl:text-[18px]">
+                {drugDetail?.form.name}
+              </p>
             </div>
 
             <div className="flex flex-col gap-[5px]">
-              <h3 className="text-xl capitalize font-semibold text-[#5d5d5d]">
+              <h3 className="text-[16px] md:text-[16px] xl:text-[18px] capitalize font-semibold text-[#5d5d5d]">
                 Content
               </h3>
-              <p className="text-[#74787c]">{drugDetail?.content}</p>
+              <p className="text-[#74787c] text-[14px] md:text-[16px] xl:text-[18px]">
+                {drugDetail?.content}
+              </p>
             </div>
 
             <div className="flex flex-col gap-[5px]">
-              <h3 className="text-xl capitalize font-semibold text-[#5d5d5d]">
+              <h3 className="text-[16px] md:text-[16px] xl:text-[18px] capitalize font-semibold text-[#5d5d5d]">
                 Packaging
               </h3>
-              <p className="text-[#74787c]">{drugDetail?.unit_in_pack}</p>
+              <p className="text-[#74787c] text-[14px] md:text-[16px] xl:text-[18px]">
+                {drugDetail?.unit_in_pack}
+              </p>
             </div>
 
             <div className="flex flex-col gap-[5px]">
-              <h3 className="text-xl capitalize font-semibold text-[#5d5d5d]">
+              <h3 className="text-[16px] md:text-[16px] xl:text-[18px] capitalize font-semibold text-[#5d5d5d]">
                 Manufacture
               </h3>
-              <p className="text-[#74787c]">{drugDetail?.manufacture}</p>
+              <p className="text-[#74787c] text-[14px] md:text-[16px] xl:text-[18px]">
+                {drugDetail?.manufacture}
+              </p>
             </div>
           </div>
         </div>
@@ -503,12 +520,14 @@ const ProductDetail = (): React.ReactElement => {
               <div className="flex flex-col gap-[0.75rem]">
                 <div className="flex flex-row items-center gap-[0.5rem]">
                   <img className="w-[20px]" alt="Pin Icon" src={pinIcon} />
-                  <p className="text-navy text-[17px] font-bold">
+                  <p className="text-navy text-[14px] md:text-[16px] xl:text-[17px] font-bold">
                     Shipping address
                   </p>
                 </div>
                 {selectedAddress ? (
-                  <p className="line-clamp-2">{selectedAddress.address}</p>
+                  <p className="line-clamp-2 text-[14px] md:text-[16px] xl:text-[17px]">
+                    {selectedAddress.address}
+                  </p>
                 ) : (
                   <p>Choose address</p>
                 )}
@@ -522,7 +541,9 @@ const ProductDetail = (): React.ReactElement => {
             </div>
           )}
           <div className="flex flex-col gap-1">
-            <h2 className="text-xl font-bold pl-2">Choose from a store</h2>
+            <h2 className="text-[18px] md:text-[22px] xl:text-[24px] font-bold pl-2">
+              Choose from a store
+            </h2>
             <div
               className="border-2 border-zinc-200 p-2 rounded-xl flex flex-col gap-[10px] h-[auto] md:h-[70vh] overflow-y-auto"
               style={{ scrollbarWidth: "thin" }}
@@ -535,12 +556,14 @@ const ProductDetail = (): React.ReactElement => {
                     key={i}
                   >
                     <div className="flex flex-col gap-[3px]">
-                      <h2 className="font-bold text-xl">
+                      <h2 className="font-bold text-[16px] md:text-[18px] xl:text-[20px]">
                         {CurrencyFormatter.format(+pharmacyDrug.price)}
                       </h2>
-                      <p>{pharmacyDrug.pharmacy.pharmacy_name}</p>
+                      <p className="text-[14px] md:text-[16px] xl:text-[17px]">
+                        {pharmacyDrug.pharmacy.pharmacy_name}
+                      </p>
                       {data ? (
-                        <p className="flex h-[20px] gap-1 items-center text-[#788094]">
+                        <p className="flex h-[20px] gap-1 items-center text-[#788094] text-[14px] md:text-[16px] xl:text-[17px]">
                           <RiPinDistanceFill></RiPinDistanceFill>
                           {(pharmacyDrug.pharmacy.distance / 1000).toFixed(
                             2
@@ -564,7 +587,7 @@ const ProductDetail = (): React.ReactElement => {
                         >
                           <FaMinus />
                         </button>
-                        <p className="text-xl">
+                        <p className="text-[14px] md:text-[16px] xl:text-[18px]">
                           {findQuantity(pharmacyDrug.id)}
                         </p>
                         <button
@@ -580,7 +603,7 @@ const ProductDetail = (): React.ReactElement => {
 
                     {pharmacyDrug.stock < 1 ? (
                       <div className="flex items-center px-[15px]">
-                        <p className="text-[#E01A52] text-[18px] font-[600] h-fit">
+                        <p className="text-[#E01A52] text-[14px] md:text-[16px] xl:text-[18px] font-[600] h-fit">
                           Sold Out
                         </p>
                       </div>
@@ -600,7 +623,7 @@ const ProductDetail = (): React.ReactElement => {
 
                           addToCartHandler(pharmacyDrug.id, pharmacyDrug.price);
                         }}
-                        className="flex gap-2 items-center bg-[#39da96] rounded-xl hover:scale-105 text-white font-bold px-[1rem] py-[0.5rem] w-fit"
+                        className="flex gap-2 items-center bg-[#39da96] text-[14px] md:text-[16px] xl:text-[17px] rounded-xl hover:scale-105 text-white font-bold px-[1rem] py-[0.5rem] w-fit"
                       >
                         <FaPlus /> Add to cart
                       </button>

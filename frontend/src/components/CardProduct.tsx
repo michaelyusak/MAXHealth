@@ -76,7 +76,7 @@ const CardProduct = ({
         price: parseInt(String(price)),
       })
     );
-  }  
+  }
 
   const findQuantity = (pharmacyDrugId: number): number => {
     for (let i = 0; i < cart.pharmacyItems.length; i++) {
@@ -148,12 +148,12 @@ const CardProduct = ({
             </>
           )}
         </div>
-        <div className="flex justify-between items-center">
-          <div className="flex flex-col">
+        <div className="flex justify-between items-center w-full">
+          <div className="flex flex-col w-full">
             <h3 className="text-base md:text-lg xl:text-xl text-left font-bold line-clamp-2 h-[50px] xl:h-[60px] w-full">
               {pharmacyDrug?.drug_name}
             </h3>
-            <p className="text-sm md:text-base xl:text-lg text-[#162a5c] font-bold h-[40px]">
+            <p className="text-sm md:text-base xl:text-lg text-[#162a5c] font-bold h-[40px] w-full">
               {CurrencyFormatter.format(+pharmacyDrug?.min_price)} -{" "}
               {CurrencyFormatter.format(+pharmacyDrug?.max_price)}
             </p>

@@ -73,7 +73,7 @@ const ProductRelated = ({
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-[repeat(auto-fit,_minmax(180px,_1fr))] md:grid-cols-[repeat(auto-fill,_minmax(250px,_1fr))] gap-[20px] w-[100%] min-h-[350px] place-content-start justify-items-center">
+      <div className="grid grid-cols-[repeat(auto-fit,_minmax(170px,_1fr))] md:grid-cols-[repeat(auto-fit,_minmax(200px,_1fr))] xl:grid-cols-[repeat(auto-fill,_minmax(240px,_1fr))] gap-[20px] w-[100%] min-h-[350px] place-content-start justify-items-center">
         {relatedDrugList ? (
           relatedDrugList?.drug_list.map((pharmacyDrug) => (
             <Link
