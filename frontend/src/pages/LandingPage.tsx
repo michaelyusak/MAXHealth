@@ -8,7 +8,7 @@ const LandingPage = (): React.ReactElement => {
   return (
     <>
       <div
-        className={` flex-col h-[80vh] bg-center bg-contain flex md:flex-row className="my-5"`}
+        className={`h-[80vh] w-[100%] flex items-center md:flex-row object-cover px-[20px]`}
         style={{ backgroundImage: `url(${image.backgroundHero}` }}
       >
         <div className="p-4 flex flex-col justify-center md:p-10 items-start md:items-start">
@@ -34,6 +34,7 @@ const LandingPage = (): React.ReactElement => {
             </Button>
           </div>
         </div>
+
         <div className="m-auto w-[270px] md:m-0 md:w-full">
           <img src={image.heroImage} />
         </div>

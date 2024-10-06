@@ -73,7 +73,7 @@ const Category = (): React.ReactElement => {
         >
           <FaArrowLeft />
         </button>
-        <div className=" md:w-[85%] md:h-[400px] m-[auto] grid grid-cols-[repeat(auto-fit,_minmax(240px,_1fr))] gap-2 justify-items-center">
+        <div className=" md:w-[85%] xl:h-[400px] md:h-[800px] m-[auto] grid grid-cols-[repeat(auto-fit,_minmax(240px,_1fr))] gap-2 justify-items-center py-[15px] items-start place-content-start">
           {currentCategoryData.map((data) => (
             <Link
               key={data.category_id}
