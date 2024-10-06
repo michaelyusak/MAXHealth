@@ -75,26 +75,24 @@ const AddressProfilePage = (): React.ReactElement => {
     <>
       <div className="w-full lg:w-[70%] flex flex-col gap-[2rem]">
         <div className="flex flex-row justify-between items-center">
-          <p className="text-3xl font-bold">My Address</p>
-          <Button
-            type="button"
-            buttonStyle="green"
+          <p className="text-[18px] md:text-[20px] xl:text-[24px] font-bold">My Address</p>
+          <button
             onClick={() => setShowAddAddressDialog(true)}
-            additionalClassName="py-2 px-3 rounded-lg"
+            className="py-[7px] xl:py-[5px] bg-green-500 text-white text-[14px] xl:text-[18px] rounded-[8px] w-[50px]"
           >
             Add
-          </Button>
+          </button>
         </div>
         {address &&
           address.length > 0 &&
           address.map((addr) => (
             <div
               key={addr.id}
-              className="flex flex-row justify-between p-2 md:p-[3rem] rounded-[10px] h-fit bg-white shadow-[0_5px_20px_-8px_rgba(0,0,0,0.3)]"
+              className="flex flex-col gap-[10px] justify-between p-2 md:p-[3rem] rounded-[10px] h-fit bg-white shadow-[0_5px_20px_-8px_rgba(0,0,0,0.3)]"
             >
               <div className="flex flex-col gap-[0.5rem]">
                 {addr.is_main && (
-                  <div className="w-fit px-[0.25rem] py-[0.15rem] text-[#1F5FFF] text-[16px] border-[1px] border-[#1F5FFF]">
+                  <div className="w-fit px-[0.25rem] py-[2px] text-[#1F5FFF] text-[16px] border-[1px] border-[#1F5FFF]">
                     Main
                   </div>
                 )}
@@ -105,29 +103,25 @@ const AddressProfilePage = (): React.ReactElement => {
                   {addr.city?.name}, {addr.province?.name}
                 </p>
               </div>
-              <div className="flex justify-center flex-col md:flex-row md:justify-end items-end gap-[1rem]">
-                <Button
-                  type="button"
-                  buttonStyle="blue"
+              <div className="flex justify-start gap-[1rem]">
+                <button
                   onClick={() => {
                     setSelectedAddress(addr);
                     setShowEditAddressDialog(true);
                   }}
-                  additionalClassName="px-3 py-2 rounded-lg"
+                  className="py-[5px] bg-blue-500 text-white text-[18px] rounded-[8px] w-[80px]"
                 >
                   Edit
-                </Button>
-                <Button
-                  type="button"
-                  buttonStyle="red"
+                </button>
+                <button
                   onClick={() => {
                     setShowDeleteConfirmationDialog(true);
                     setSelectedAddress(addr);
                   }}
-                  additionalClassName="rounded-lg"
+                  className="py-[5px] bg-red-500 text-white text-[18px] rounded-[8px] w-[80px]"
                 >
                   Delete
-                </Button>
+                </button>
               </div>
             </div>
           ))}

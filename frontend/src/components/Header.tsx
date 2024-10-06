@@ -77,7 +77,7 @@ const Header = (): React.ReactElement => {
                 role="button"
               ></div>
               <div className="bg-gray-50 w-[100vw] md:w-[20vw] h-[100vh] fixed opacity-[80] z-[80] bottom-0 right-0 ">
-                <ul className="flex flex-col h-[100%] w-[100%] justify-center text-[20px]">
+                <ul className="flex flex-col h-[100%] w-[100%] justify-center text-[16px] md:text-[18px] xl:text-[20px]">
                   <li>
                     <NavLink
                       to="/product"
@@ -225,8 +225,8 @@ const Header = (): React.ReactElement => {
                     </NavLink>
                   </li>
                   <li className="pt-5 px-2 md:px-0">
-                    <Button
-                      additionalClassName="ml-[10px] py-2 px-3 rounded-xl"
+                    <button
+                      className={`ml-[10px] py-2 px-3 rounded-[8px] text-white xl:text-[24px] md:text-[20px] text-[18px] ${isValid ? "bg-red-500" : "bg-blue-500"}`}
                       onClick={() => {
                         if (isValid) {
                           Cookies.remove("data");
@@ -247,11 +247,9 @@ const Header = (): React.ReactElement => {
                         }
                         navigate("/auth/login");
                       }}
-                      type="button"
-                      buttonStyle={isValid ? "red" : "blue"}
                     >
                       {isValid ? "Logout" : "Login"}
-                    </Button>
+                    </button>
                   </li>
                 </ul>
               </div>

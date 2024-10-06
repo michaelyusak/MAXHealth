@@ -1,6 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-
-import Button from "../components/Button";
 import Dialog from "../components/Dialog";
 import EditProfileForm from "../components/EditProfileForm";
 import { ToastContext } from "../contexts/ToastData";
@@ -23,7 +21,7 @@ const ProfilePage = (): React.ReactElement => {
   function handleEditProfile() {
     setShowEditProfileDialog(false);
 
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/users/profile";
+    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/users/profile";
 
     HandleGet<IProfile>(url, true)
       .then((responseData) => {
@@ -39,7 +37,7 @@ const ProfilePage = (): React.ReactElement => {
   }
 
   useEffect(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/users/profile";
+    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/users/profile";
 
     HandleGet<IProfile>(url, true)
       .then((responseData) => {
@@ -58,14 +56,13 @@ const ProfilePage = (): React.ReactElement => {
     <>
       <div className="w-full flex flex-col gap-[2rem] lg:w-[70%] lg:p-0">
         <div className="flex flex-row justify-between items-center">
-          <p className="text-3xl font-bold">My Profile</p>
-          <Button
-            type="button"
-            buttonStyle="blue"
+          <p className="text-[18px] md:text-[20px] xl:text-[24px] font-bold">My Profile</p>
+          <button
             onClick={() => setShowEditProfileDialog(true)}
+            className="py-[7px] xl:py-[5px] bg-blue-500 text-white text-[14px] xl:text-[18px] rounded-[8px] w-[50px]"
           >
             Edit
-          </Button>
+          </button>
         </div>
         <div className="flex flex-col gap-[2rem] md:p-[3rem] p-1 rounded-[10px] h-fit md:bg-white md:shadow-[0_5px_20px_-8px_rgba(0,0,0,0.3)]">
           <div className="flex justify-center items-center h-[100px] w-[100px] rounded-full">
@@ -96,6 +93,7 @@ const ProfilePage = (): React.ReactElement => {
       </div>
       {showEditProfileDialog && (
         <Dialog
+          cardWidth="xl:w-[500px] w-[300px]"
           content={
             <EditProfileForm profile={profile} onSubmit={handleEditProfile} />
           }

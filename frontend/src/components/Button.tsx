@@ -2,12 +2,12 @@ import React from "react";
 import { ButtonStyle } from "../interfaces/Button";
 
 const STYLES = [
-  "py-3 px-4 bg-green-500 md:rounded-3xl text-white font-bold shadow-[0_5px_8px_-8px_rgba(0,0,0,0.3)]",
-  "py-3 px-4 bg-blue-500 md:rounded-3xl text-white font-bold shadow-[0_5px_8px_-8px_rgba(0,0,0,0.3)]",
+  "py-3 px-4 bg-green-500 rounded-xl md:rounded-3xl text-white font-bold shadow-[0_5px_8px_-8px_rgba(0,0,0,0.3)]",
+  "py-3 px-4 bg-blue-500 rounded-xl md:rounded-3xl text-white font-bold shadow-[0_5px_8px_-8px_rgba(0,0,0,0.3)]",
   "h-fit flex justify-center py-3 px-4 items-center text-xl cursor-pointer",
   "rounded-[100%] border-[none] bg-white md:w-[50px] md:h-[50px] flex justify-center items-center text-xl cursor-pointer text-[#000D44]",
   "bg-gradient-to-b py-3 px-4 from-[#C2D4FF] from-[60%] to-white-200 md:rounded-3xl font-bold shadow-[0_5px_8px_-8px_rgba(0,0,0,0.3)]",
-  "bg-gradient-to-b py-3 px-4 from-[#F60707] from-[60%] to-white-200  md:rounded-3xl text-white font-bold h-fit shadow-[0_5px_8px_-8px_rgba(0,0,0,0.3)]",
+  "py-3 px-4 bg-red-500 rounded-xl md:rounded-3xl text-white font-bold shadow-[0_5px_8px_-8px_rgba(0,0,0,0.3)]",
   "text-[20px] border-4 rounded-[100%] w-[55px] h-[55px] flex justify-center items-center mr-4 border-[#14C57B]",
   "bg-gradient-to-b from-lightGreen from-[60%] to-white-200 rounded-3xl font-bold shadow-[0_5px_8px_-8px_rgba(0,0,0,0.3)] ",
   "bg-red-400 rounded-lg font-bold text-white text-[16px] py-2 px-3",
