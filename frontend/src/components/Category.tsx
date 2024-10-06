@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import * as image from "../assets/img";
 import CardCategory from "./CardCategory";
-import CardDetail from "./CardDetail";
 import { CategoryData } from "../interfaces/Category";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -60,15 +58,9 @@ const Category = (): React.ReactElement => {
 
   return (
     <div className="items-start p-3 md:px-0 flex flex-col md:items-center gap-[30px] bg-[#f6f7fb] md:py-10">
-      <div className="rounded-[20px] gap-2 p-2 flex items-center justify-center md:gap-4 md:px-[10px] md:h-[70px] md:w-[320px] bg-[#14c57b] md:rounded-[40px]">
-        <img src={image.logoCircle} className="md:w-[50px] w-[30px]" />
-        <p className="text-sm md:text-[18px] font-[600] w-full text-center text-white">
-          Explore our service offerings
-        </p>
-      </div>
-      <h2 className="uppercase md:none text-[28px] md:text-[50px] font-bold md:font-semibold md:text-center text-start">
-        Explore Our Product and services
-      </h2>
+      <h1 className="font-extrabold md:text-[50px] text-[#000D44] capitalize text-[30px]">
+        Explore Our Product and Services
+      </h1>
       <div className="flex items-center py-[10px] justify-between md:px-[50px] w-[100%]">
         <button
           className={`text-[20px] border-4 rounded-[50%] p-2 ${
@@ -104,7 +96,6 @@ const Category = (): React.ReactElement => {
           <FaArrowRight />
         </button>
       </div>
-      <CardDetail />
     </div>
   );
 };

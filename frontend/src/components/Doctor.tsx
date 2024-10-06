@@ -61,15 +61,9 @@ const Doctor = (): React.ReactElement => {
           <img src={image.doctor5} className="h-[400px] w-[450px] object-fit" />
         </div>
       </div>
-      <div className="gap-2 rounded-[30px] p-2 flex items-center justify-center md:gap-4 md:px-[10px] md:h-[70px] md:w-[320px] bg-[#14c57b] md:rounded-[40px]">
-        <img src={image.logoCircle} className="md:w-[50px] w-[30px]" />
-        <p className="md:text-[18px] text-sm font-[600] text-white w-full text-center">
-          Meet Our Doctors
-        </p>
-      </div>
-      <h2 className="md:text-center text-[26px] text-start md:text-[45px] font-bold text-[#000D44]">
+      <h1 className="font-extrabold md:text-[50px] text-[#000D44] capitalize text-[30px]">
         Discover our doctors
-      </h2>
+      </h1>
       {dataDoctor && dataDoctor.doctors.length > 0 && (
         <CarouselComp
           doctorData={dataDoctor}
