@@ -93,7 +93,7 @@ const CardProduct = ({
 
   return (
     <>
-      <div className="md:w-[240px] md:h-[350px] flex flex-col p-[10px] gap-[10px] shadow-[0px_0px_15px_0px_rgba(0,0,0,0.3)] rounded-xl">
+      <div className="md:w-[200px] w-[180px] xl:w-[240px] h-[270px] md:h-[350px] xl:h-[350px] flex flex-col justify-center px-[10px] gap-[10px] shadow-[0px_0px_15px_0px_rgba(0,0,0,0.3)] rounded-xl">
         <div className="relative cursor-pointer">
           <img
             className="rounded-xl aspect-square m-auto object-cover w-[220px]"
@@ -150,10 +150,10 @@ const CardProduct = ({
         </div>
         <div className="flex justify-between items-center">
           <div className="flex flex-col">
-            <h3 className="text-xl text-left font-bold line-clamp-2 h-[60px] w-[170px]">
+            <h3 className="text-base md:text-lg xl:text-xl text-left font-bold line-clamp-2 h-[50px] xl:h-[60px] w-full">
               {pharmacyDrug?.drug_name}
             </h3>
-            <p className="text-[#162a5c] font-bold">
+            <p className="text-sm md:text-base xl:text-lg text-[#162a5c] font-bold h-[40px]">
               {CurrencyFormatter.format(+pharmacyDrug?.min_price)} -{" "}
               {CurrencyFormatter.format(+pharmacyDrug?.max_price)}
             </p>

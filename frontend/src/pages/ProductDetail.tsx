@@ -65,7 +65,7 @@ const ProductDetail = (): React.ReactElement => {
       setIsTokenValid(true);
       setAccountId(+dataParsed["user_id"]);
     }
-  }, []);
+  }, [data]);
 
   const addToCartHandler = (Id: number, price: string) => {
     dispatch(
