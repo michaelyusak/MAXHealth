@@ -26,6 +26,8 @@ const ShopPage = (): React.ReactElement => {
   const dispatch = useAppDispatch();
   const orderStateData = useAppSelector((state) => state.order);
 
+  const data = Cookies.get("data");
+
   const { setToast } = useContext(ToastContext);
 
   const sortBys: string[] = [
@@ -87,12 +89,12 @@ const ShopPage = (): React.ReactElement => {
           maxPrice > minPrice ? `max-price=${maxPrice}&` : ""
         }limit=${itemPerPage}&page=${page}`;
 
+      console.log(url);
+
       window.scrollTo({
         top: 0,
         behavior: "smooth",
       });
-
-      setDrugList(undefined);
 
       setIsLoading(true);
       HandleGet<IDrugListResponse>(url)
@@ -179,14 +181,13 @@ const ShopPage = (): React.ReactElement => {
   );
 
   useEffect(() => {
-    const data = Cookies.get("data");
-
     if (data) {
       getLocation(data);
+      return;
     }
 
     fetchDrugList("-6.1934332", "106.8217253")
-  }, [fetchDrugList, selectedAddress, getLocation]);
+  }, [fetchDrugList, selectedAddress, getLocation, data]);
 
   const token = Cookies.get("accessToken");
 

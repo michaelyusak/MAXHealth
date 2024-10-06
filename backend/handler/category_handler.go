@@ -43,6 +43,7 @@ func (h *CategoryHandler) DeleteCategory(ctx *gin.Context) {
 
 	paramCategoryId := ctx.Param(appconstant.CategoryIdString)
 	categoryId, _ := strconv.Atoi(paramCategoryId)
+
 	err := h.categoryUsecase.DeleteOneCategoryById(ctx, int64(categoryId))
 	if err != nil {
 		ctx.Error(err)
