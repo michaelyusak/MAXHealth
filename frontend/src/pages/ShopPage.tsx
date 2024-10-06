@@ -247,7 +247,7 @@ const ShopPage = (): React.ReactElement => {
           <div className="flex flex-col md:flex-row h-[auto] md:h-[120px] justify-between bg-slate-100 rounded-md p-4 items-center">
             {token && (
               <div
-                className="flex flex-row gap-[0.75rem] justify-between items-center border-[1px] p-4 w-[100%] md:w-[40%] cursor-pointer"
+                className="flex flex-row gap-[0.75rem] h-[100%] justify-between items-center border-[1px] p-4 w-[100%] md:w-[40%] cursor-pointer"
                 onClick={() => {
                   setShowAddressOptions(true);
                   if (selectedAddress)

@@ -120,7 +120,7 @@ func (u *drugUsecaseImpl) UpdateOneDrug(ctx context.Context, drugId int64, drugR
 		return apperror.DrugNotFoundError()
 	}
 
-	sameNameDrug, err := u.drugRepository.GetDrugByName(ctx, drug.Name)
+	sameNameDrug, err := u.drugRepository.GetDrugByName(ctx, "%"+drug.Name+"%")
 	if err != nil {
 		return apperror.InternalServerError(err)
 	}
