@@ -22,9 +22,6 @@ RUN apk --no-cache add ca-certificates
 # Copy the built binary from the builder stage
 COPY --from=builder /app/maxhealth_be /maxhealth_be
 
-# Copy .env
-COPY .env .env
-
 # Ensure the binary is executable
 RUN chmod +x /maxhealth_be
 
