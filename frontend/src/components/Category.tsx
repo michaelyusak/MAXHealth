@@ -11,7 +11,24 @@ const Category = (): React.ReactElement => {
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const categoriesPerPage = 8;
+  // const categoriesPerPage = 8;
+  const [categoriesPerPage, setCategoriesPerPage] = useState<number>(
+    window.innerWidth <= 768 ? 4 : 8
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setCategoriesPerPage(window.innerWidth <= 768 ? 4 : 8);
+    };
+
+    // Add event listener on component mount
+    window.addEventListener("resize", handleResize);
+
+    // Clean up the event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const dispatch = useAppDispatch();
 
@@ -27,7 +44,9 @@ const Category = (): React.ReactElement => {
 
   const fetchDataCategory = async () => {
     try {
-      const response = await fetch(import.meta.env.VITE_DEPLOYMENT_URL +  "/categories/");
+      const response = await fetch(
+        import.meta.env.VITE_DEPLOYMENT_URL + "/categories/"
+      );
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -63,7 +82,7 @@ const Category = (): React.ReactElement => {
       </h1>
       <div className="flex items-center py-[10px] justify-between md:px-[50px] w-[100%]">
         <button
-          className={`text-[20px] border-4 rounded-[50%] p-2 ${
+          className={`text-[14px] xl:text-[20px] border-4 rounded-[50%] p-2 ${
             isArrowLeftDisabled
               ? "text-gray-500 : border-gray-500"
               : "border-teal-500"
@@ -73,7 +92,7 @@ const Category = (): React.ReactElement => {
         >
           <FaArrowLeft />
         </button>
-        <div className=" md:w-[85%] xl:h-[400px] md:h-[800px] m-[auto] grid grid-cols-[repeat(auto-fit,_minmax(240px,_1fr))] gap-2 justify-items-center py-[15px] items-start place-content-start">
+        <div className="w-full xl:h-[400px] h-[400px] gap-x-[5px] gap-y-[10px] grid grid-cols-[repeat(auto-fit,_minmax(140px,_1fr))] md:grid-cols-[repeat(auto-fit,_minmax(200px,_1fr))] xl:grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] content-center justify-items-center place-content-start">
           {currentCategoryData.map((data) => (
             <Link
               key={data.category_id}
@@ -85,7 +104,7 @@ const Category = (): React.ReactElement => {
           ))}
         </div>
         <button
-          className={`text-[20px] border-4 rounded-[50%] p-2 ${
+          className={`text-[14px] xl:text-[20px] border-4 rounded-[50%] p-2 ${
             isArrowRightDisabled
               ? "text-gray-500 : border-gray-500"
               : "border-teal-500"

@@ -42,7 +42,7 @@ const Doctor = (): React.ReactElement => {
 
   return (
     <>
-      <div className="w-[100%] py-20 md:pl-[11vw] pl-3 flex flex-row relative items-center md:my-20 bg-[#2b5bed] md:h-[30vh]">
+      <div className="w-[100%] py-[20px] flex flex-row my-[50px] px-[20px] xl:px-[50px] relative items-center bg-[#2b5bed]">
         <div className="flex flex-col md:w-[40vw] gap-3">
           <h2 className="text-white md:text-[35px] font-bold leading-10 text-[30px]">We’re welcoming new patients and can’t wait to meet you!</h2>
           <p className="text-white md:text-[16px] font-normal text-sm">

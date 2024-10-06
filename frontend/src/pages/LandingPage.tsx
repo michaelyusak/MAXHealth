@@ -43,7 +43,8 @@ const LandingPage = (): React.ReactElement => {
       <section>
         <Category />
       </section>
-      <section className="flex flex-col justify-center items-center py-8 gap-5">
+
+      <section className="flex flex-col justify-center items-center xl:py-8 gap-5">
         <Doctor />
       </section>
     </>
