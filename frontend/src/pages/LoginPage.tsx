@@ -152,13 +152,13 @@ const LoginPage = (): React.ReactElement => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   return (
-    <div className="relative w-[80%] lg:w-[40%] h-[70%] lg:h-[100vh] m-auto lg:m-0 bg-white shadow-[0_5px_300px_10px_rgba(0,0,0,0.3)] rounded-[10px] p-[50px] lg:p-[100px] flex flex-col justify-center gap-[25px]">
-      <h1 className="text-[30px] font-[600]">Login to account</h1>
+    <div className="relative w-[80%] lg:w-[40%] lg:h-[100vh] m-auto lg:m-0 bg-white shadow-[0_5px_300px_10px_rgba(0,0,0,0.3)] rounded-[10px] p-[15px] md:p-[30px] xl:p-[50px] lg:p-[100px] flex flex-col justify-center gap-[10px] xl:gap-[25px]">
+      <h1 className="text-[24px] md:text-[26px] xl:text-[30px] font-[600]">Login to account</h1>
       <article>
-        <p className="text-[20px] font-[600]">
+        <p className="text-[18px] md:text-[20px] xl:text-[20px] font-[600]">
           Maximize Your Health Journey With Max Health!
         </p>
-        <p className="text-[18px] font-[400]">
+        <p className="text-[16px] md:text-[18px] xl:text-[18px] font-[400]">
           chat with doctors and find your medicines all in one App
         </p>
       </article>
@@ -171,13 +171,13 @@ const LoginPage = (): React.ReactElement => {
 
       <div className="flex flex-col gap-[10px]">
         <button
-          className="text-[16px] font-[600] w-fit h-fit"
+          className="text-[14px] xl:text-[16px] font-[600] w-fit h-fit"
           onClick={() => navigate(path.resetPassword)}
         >
           Forgot password?
         </button>
         <button
-          className="text-[16px] font-[600] w-fit h-fit"
+          className="text-[14px] xl:text-[16px] font-[600] w-fit h-fit"
           onClick={() => navigate("/auth/register")}
         >
           Create an account
