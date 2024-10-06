@@ -51,8 +51,10 @@ const RegisterPage = (): React.ReactElement => {
 
   return (
     <>
-      <div className="relative w-[80%] lg:w-[40%] h-[85%] lg:h-[100vh] lg:m-0 m-auto justify-center bg-white shadow-[0_5px_300px_10px_rgba(0,0,0,0.3)] rounded-[10px] p-[15px] md:p-[30px] xl:p-[50px] lg:p-[100px] flex flex-col gap-[15px] xl:gap-[25px]">
-        <h1 className="text-[24px] md:text-[26px] xl:text-[30px] font-[600]">Register new account</h1>
+      <div className="relative w-[80%] lg:w-[40%] lg:h-[100vh] lg:m-0 m-auto justify-center bg-white shadow-[0_5px_300px_10px_rgba(0,0,0,0.3)] rounded-[10px] p-[15px] md:p-[30px] xl:p-[50px] lg:p-[100px] flex flex-col gap-[10px] xl:gap-[25px]">
+        <h1 className="text-[24px] md:text-[26px] xl:text-[30px] font-[600]">
+          Register new account
+        </h1>
         <article>
           <p className="text-[18px] md:text-[20px] xl:text-[20px] font-[600]">
             Maximize Your Health Journey With Max Health!
@@ -62,15 +64,13 @@ const RegisterPage = (): React.ReactElement => {
           </p>
         </article>
 
-        <div className={"h-[30%] flex items-center justify-center"}>
-          <Form
-            inputFields={registerInputFields}
-            submitButtonText="Register"
-            onSubmit={(inputValues) => handleRegisterUser(inputValues)}
-          ></Form>
-        </div>
+        <Form
+          inputFields={registerInputFields}
+          submitButtonText="Register"
+          onSubmit={(inputValues) => handleRegisterUser(inputValues)}
+        ></Form>
 
-        <div className="flex flex-col gap-[5px]">
+        <div className="flex flex-col gap-[10px]">
           <button
             className="text-[14px] xl:text-[16px] text-left font-[600] w-fit h-fit"
             onClick={() => navigate("/auth/doctors/register")}

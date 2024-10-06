@@ -267,7 +267,7 @@ const Input = ({
               ></input>
               <label htmlFor={`inputfile${inputField.name}`}>
                 <div
-                  className={`w-[50%] hover:translate-x-px bg-slate-200 border-[1px] outline-0 text-[#000D44] rounded-[30px] px-[1.25rem] py-[1rem] cursor-pointer ${
+                  className={`w-full xl:w-[50%] hover:translate-x-px bg-slate-200 border-[1px] outline-0 text-[#000D44] rounded-[30px] px-[1.25rem] py-[1rem] cursor-pointer ${
                     isError
                       ? "focus:border-[#F60707] bg-[#fb9c9c]"
                       : "focus:border-[#14C57B]"

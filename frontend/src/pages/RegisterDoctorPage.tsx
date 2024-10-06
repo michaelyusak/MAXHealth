@@ -97,8 +97,10 @@ const RegisterDoctorPage = (): React.ReactElement => {
   }
 
   return (
-    <div className="relative w-[80%] lg:w-[40%] h-[85%] lg:m-0 m-auto lg:h-[100vh] justify-center bg-white shadow-[0_5px_300px_10px_rgba(0,0,0,0.3)] rounded-[10px] p-[15px] md:p-[30px] xl:p-[50px] lg:p-[100px] flex flex-col gap-[10px] xl:gap-[25px]">
-      <h1 className="text-[24px] md:text-[26px] xl:text-[30px] font-[600]">Register new account</h1>
+    <div className="relative w-[80%] lg:w-[40%] lg:m-0 m-auto lg:h-[100vh] justify-center bg-white shadow-[0_5px_300px_10px_rgba(0,0,0,0.3)] rounded-[10px] p-[15px] md:p-[30px] xl:p-[50px] lg:p-[100px] flex flex-col gap-[10px] xl:gap-[25px]">
+      <h1 className="text-[24px] md:text-[26px] xl:text-[30px] font-[600]">
+        Register new account
+      </h1>
       <article>
         <p className="text-[18px] md:text-[20px] xl:text-[20px] font-[400]">
           Access to the most powerful tool in
@@ -108,32 +110,31 @@ const RegisterDoctorPage = (): React.ReactElement => {
         </p>
       </article>
 
-      <div className={"flex flex-col gap-[10px] items-center justify-center"}>
-        <ItemSelector
-          items={doctorSpecializationNames}
-          placeholder="Select your medical specialization"
-          value={selectedDoctorSpecialization}
-          setValue={(value) => setSelectedDoctorSpecialization(value)}
-          buttonAdditionalClassname="w-full border-0 bg-slate-200 rounded-[30px]"
-          optionsAdditionalClassname="top-[55px]"
-          rounded="rounded-[30px]"
-          height="50px"
-          px="px-[1.25rem]"
-          py="py-[1rem]"
-          border="border-[1px]"
-          borderColor="focus:border-[#14C57B]"
-        ></ItemSelector>
-        <Form
-          inputFields={registerDoctorInputFields}
-          submitButtonText="Register"
-          onSubmit={(inputValues) =>
-            handleRegisterDoctor(
-              inputValues,
-              getSpecializationIdByName(selectedDoctorSpecialization)
-            )
-          }
-        ></Form>
-      </div>
+      <ItemSelector
+        items={doctorSpecializationNames}
+        placeholder="Select your medical specialization"
+        value={selectedDoctorSpecialization}
+        setValue={(value) => setSelectedDoctorSpecialization(value)}
+        buttonAdditionalClassname="w-full border-0 bg-slate-200 rounded-[30px]"
+        optionsAdditionalClassname="top-[55px]"
+        rounded="rounded-[30px]"
+        height="50px"
+        px="px-[1.25rem]"
+        py="py-[1rem]"
+        border="border-[1px]"
+        borderColor="focus:border-[#14C57B]"
+      ></ItemSelector>
+
+      <Form
+        inputFields={registerDoctorInputFields}
+        submitButtonText="Register"
+        onSubmit={(inputValues) =>
+          handleRegisterDoctor(
+            inputValues,
+            getSpecializationIdByName(selectedDoctorSpecialization)
+          )
+        }
+      ></Form>
 
       <button
         className="text-[14px] xl:text-[16px] font-[600] w-fit h-fit"

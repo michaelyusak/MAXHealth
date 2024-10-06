@@ -35,7 +35,7 @@ const LandingPage = (): React.ReactElement => {
           </div>
         </div>
 
-        <div className="m-auto w-[270px] md:m-0 md:w-full">
+        <div className="m-auto w-[270px] hidden md:block md:m-0 md:w-full">
           <img src={image.heroImage} />
         </div>
       </div>
