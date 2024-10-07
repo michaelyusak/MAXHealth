@@ -137,59 +137,59 @@ func (u *doctorUsecaseImpl) UpdateData(ctx context.Context, doctor entity.Detail
 
 func (u *doctorUsecaseImpl) GetAllDoctors(
 	c context.Context,
-	Sort string,
-	SortBy string,
-	Limit string,
-	SpecializationId string,
-	Page string) (*dto.GetAllDoctorResponse, error) {
+	sort string,
+	sortBy string,
+	limit string,
+	specializationId string,
+	page string) (*dto.GetAllDoctorResponse, error) {
 
-	pageInt, err := strconv.Atoi(Page)
+	pageInt, err := strconv.Atoi(page)
 	if err != nil {
 		pageInt = 1
 	}
 
-	limitInt, err := strconv.Atoi(Limit)
+	limitInt, err := strconv.Atoi(limit)
 	if err != nil {
 		limitInt = 12
 	}
 
-	offset := (pageInt - 1) * limitInt
-	if offset < 0 {
-		offset = 0
+	offsetInt := (pageInt - 1) * limitInt
+	if offsetInt < 0 {
+		offsetInt = 0
 	}
 
-	SortList := strings.Split(Sort, ",")
-	SortByList := strings.Split(SortBy, ",")
+	sortList := strings.Split(sort, ",")
+	sortByList := strings.Split(sortBy, ",")
 
-	if Sort == "" && SortBy != "" {
+	if sort == "" && sortBy != "" {
 		return nil, apperror.BadRequestError(errors.New("sort parameter is required when sortBy is provided"))
 	}
 
-	if SortBy == "" && Sort != "" {
+	if sortBy == "" && sort != "" {
 		return nil, apperror.BadRequestError(errors.New("sortBy parameter is required when sort is provided"))
 	}
 
-	if Sort != "" {
-		for _, sortDirection := range SortList {
+	if sort != "" {
+		for _, sortDirection := range sortList {
 			if sortDirection != "asc" && sortDirection != "desc" {
 				return nil, apperror.BadRequestError(errors.New("invalid sort direction"))
 			}
 		}
 	}
 
-	if SortBy != "" {
-		for _, sortByName := range SortByList {
+	if sortBy != "" {
+		for _, sortByName := range sortByList {
 			if sortByName != "fee_per_patient" && sortByName != "experience" {
 				return nil, apperror.BadRequestError(errors.New("invalid sortBy Name"))
 			}
 		}
 	}
 
-	if len(SortByList) != len(SortList) {
+	if len(sortByList) != len(sortList) {
 		return nil, apperror.BadRequestError(errors.New("invalid length Sort or SortBy"))
 	}
 
-	doctors, pageInfo, err := u.doctorRepository.GetAllDoctor(c, SortList, SortByList, Limit, offset, SpecializationId)
+	doctors, pageInfo, err := u.doctorRepository.GetAllDoctor(c, sortList, sortByList, limitInt, offsetInt, specializationId)
 	if err != nil {
 		return nil, apperror.InternalServerError(err)
 	}

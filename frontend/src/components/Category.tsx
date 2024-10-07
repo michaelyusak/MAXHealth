@@ -5,30 +5,17 @@ import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useAppDispatch } from "../redux/reduxHooks";
 import { store } from "../slices/InitailCategoryFilter";
+import { IconButton } from "@material-tailwind/react";
+import { IconContext } from "react-icons";
 
 const Category = (): React.ReactElement => {
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  // const categoriesPerPage = 8;
   const [categoriesPerPage, setCategoriesPerPage] = useState<number>(
     window.innerWidth <= 768 ? 4 : 8
   );
-
-  useEffect(() => {
-    const handleResize = () => {
-      setCategoriesPerPage(window.innerWidth <= 768 ? 4 : 8);
-    };
-
-    // Add event listener on component mount
-    window.addEventListener("resize", handleResize);
-
-    // Clean up the event listener on component unmount
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
 
   const dispatch = useAppDispatch();
 
@@ -60,6 +47,18 @@ const Category = (): React.ReactElement => {
   };
 
   useEffect(() => {
+    const handleResize = () => {
+      setCategoriesPerPage(window.innerWidth <= 768 ? 4 : 8);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
     fetchDataCategory();
   }, []);
 
@@ -81,17 +80,19 @@ const Category = (): React.ReactElement => {
         Explore Our Product and Services
       </h1>
       <div className="flex items-center py-[10px] justify-between md:px-[50px] w-[100%]">
-        <button
-          className={`text-[14px] xl:text-[20px] border-4 rounded-[50%] p-2 ${
-            isArrowLeftDisabled
-              ? "text-gray-500 : border-gray-500"
-              : "border-teal-500"
-          }`}
-          onClick={handlePreviousPage}
+        <IconButton
+          placeholder={""}
+          onPointerEnterCapture={() => {}}
+          onPointerLeaveCapture={() => {}}
+          size="md"
           disabled={isArrowLeftDisabled}
+          onClick={handlePreviousPage}
         >
-          <FaArrowLeft />
-        </button>
+          <IconContext.Provider value={{ size: "20px", color: "#374151" }}>
+            <FaArrowLeft></FaArrowLeft>
+          </IconContext.Provider>
+        </IconButton>
+
         <div className="w-full xl:h-[400px] h-[400px] gap-x-[5px] gap-y-[10px] grid grid-cols-[repeat(auto-fit,_minmax(140px,_1fr))] md:grid-cols-[repeat(auto-fit,_minmax(200px,_1fr))] xl:grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] content-center justify-items-center place-content-start">
           {currentCategoryData.map((data) => (
             <Link
@@ -103,17 +104,19 @@ const Category = (): React.ReactElement => {
             </Link>
           ))}
         </div>
-        <button
-          className={`text-[14px] xl:text-[20px] border-4 rounded-[50%] p-2 ${
-            isArrowRightDisabled
-              ? "text-gray-500 : border-gray-500"
-              : "border-teal-500"
-          }`}
-          onClick={handleNextPage}
+
+        <IconButton
+          placeholder={""}
+          onPointerEnterCapture={() => {}}
+          onPointerLeaveCapture={() => {}}
+          size="md"
           disabled={isArrowRightDisabled}
+          onClick={handleNextPage}
         >
-          <FaArrowRight />
-        </button>
+          <IconContext.Provider value={{ size: "20px", color: "#374151" }}>
+            <FaArrowRight></FaArrowRight>
+          </IconContext.Provider>
+        </IconButton>
       </div>
     </div>
   );

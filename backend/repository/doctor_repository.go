@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"math"
-	"strconv"
 
 	"max-health/database"
 	"max-health/entity"
@@ -14,7 +13,7 @@ type DoctorRepository interface {
 	PostOneDoctor(ctx context.Context, accountId int, specializationId int64, certificateName string) error
 	UpdateDataOne(ctx context.Context, doctor *entity.DetailedDoctor) error
 	FindSpecializationById(ctx context.Context, specializationId int64) (*string, error)
-	GetAllDoctor(ctx context.Context, Sort []string, SortBy []string, Limit string, offset int, specialization_id string) ([]entity.Doctor, *entity.PageInfo, error)
+	GetAllDoctor(ctx context.Context, sort []string, sortBy []string, limit int, offset int, specialization_id string) ([]entity.Doctor, *entity.PageInfo, error)
 	FindDoctorByAccountId(ctx context.Context, accountId int64) (*entity.Doctor, error)
 	FindDoctorByDoctorId(ctx context.Context, doctorId int64) (*entity.DetailedDoctor, error)
 	UpdateDoctorStatus(ctx context.Context, doctorAccountId int64, isOnline bool) error
@@ -63,14 +62,9 @@ func (r *doctorRepositoryPostgres) FindSpecializationById(ctx context.Context, s
 	return &specializationName, nil
 }
 
-func (r *doctorRepositoryPostgres) GetAllDoctor(ctx context.Context, Sort []string, SortBy []string, Limit string, offset int, specialization_id string) ([]entity.Doctor, *entity.PageInfo, error) {
+func (r *doctorRepositoryPostgres) GetAllDoctor(ctx context.Context, sort []string, sortBy []string, limit int, offset int, specialization_id string) ([]entity.Doctor, *entity.PageInfo, error) {
 	doctors := []entity.Doctor{}
-	pageInfo := &entity.PageInfo{}
-
-	intLimit, err := strconv.Atoi(Limit)
-	if err != nil {
-		return nil, nil, err
-	}
+	pageInfo := entity.PageInfo{}
 
 	var whereClause string
 	if specialization_id == "" {
@@ -79,17 +73,17 @@ func (r *doctorRepositoryPostgres) GetAllDoctor(ctx context.Context, Sort []stri
 		whereClause = "where d.deleted_at IS NULL AND a.verified_at IS NOT NULL AND d.specialization_id = " + specialization_id
 	}
 
-	orderByClause := "ORDER BY d.is_online DESC"
+	orderByClause := "ORDER BY d.doctor_id ASC, d.is_online DESC"
 
-	if Sort[0] != "" {
-		for i := 0; i < len(Sort); i++ {
+	if sort[0] != "" {
+		for i := 0; i < len(sort); i++ {
 			if i == 0 {
 				orderByClause += ","
 			}
 
-			orderByClause += " " + SortBy[i] + " " + Sort[i]
+			orderByClause += " " + sortBy[i] + " " + sort[i]
 
-			if i < len(Sort)-1 {
+			if i < len(sort)-1 {
 				orderByClause += ","
 			}
 		}
@@ -105,7 +99,7 @@ func (r *doctorRepositoryPostgres) GetAllDoctor(ctx context.Context, Sort []stri
 		OFFSET $2
 	`
 
-	rows, err := r.db.QueryContext(ctx, queries, Limit, offset)
+	rows, err := r.db.QueryContext(ctx, queries, limit, offset)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil, err
@@ -135,15 +129,15 @@ func (r *doctorRepositoryPostgres) GetAllDoctor(ctx context.Context, Sort []stri
 		return nil, nil, err
 	}
 
-	pageInfo.PageCount = int(math.Ceil(float64(pageInfo.ItemCount) / float64(intLimit)))
-	pageInfo.Page = int(math.Ceil(float64(offset+1) / float64(intLimit)))
+	pageInfo.PageCount = int(math.Ceil(float64(pageInfo.ItemCount) / float64(limit)))
+	pageInfo.Page = int(math.Ceil(float64(offset+1) / float64(limit)))
 
 	err = rows.Err()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return doctors, pageInfo, nil
+	return doctors, &pageInfo, nil
 }
 
 func (r *doctorRepositoryPostgres) FindDoctorByAccountId(ctx context.Context, accountId int64) (*entity.Doctor, error) {

@@ -131,7 +131,7 @@ func userRouting(router *gin.Engine, handler *handler.UserHandler, authMiddlewar
 func doctorRouting(router *gin.Engine, handler *handler.DoctorHandler, authMiddleware gin.HandlerFunc, doctorAuthorizationMiddleware gin.HandlerFunc) {
 	doctorRouter := router.Group("/doctors")
 	doctorRouter.PATCH("/profile", authMiddleware, doctorAuthorizationMiddleware, handler.UpdateData)
-	doctorRouter.GET("/", handler.GetAllDoctors)
+	doctorRouter.GET("", handler.GetAllDoctors)
 	doctorRouter.GET("/specializations", handler.GetAllDoctorSpecialization)
 	doctorRouter.GET("/profile", authMiddleware, doctorAuthorizationMiddleware, handler.GetProfile)
 	doctorRouter.GET(":doctor_id", handler.GetProfileForPublic)

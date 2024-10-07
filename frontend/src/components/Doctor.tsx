@@ -1,50 +1,80 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import * as image from "../assets/img";
-import CarouselComp from "./CarouselComp";
-import { DoctorData } from "../interfaces/Doctor";
+import { IDoctor, DoctorData } from "../interfaces/Doctor";
 import Button from "./Button";
 import { Link } from "react-router-dom";
+import DoctorLandingPageCard from "./DoctorLandingPageCard";
+import { IconButton } from "@material-tailwind/react";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
+import { IconContext } from "react-icons";
+import { HandleGet } from "../util/API";
 
 const Doctor = (): React.ReactElement => {
-  const [dataDoctor, setDataDoctor] = useState<DoctorData | null>(null);
-  const [error, setError] = useState<Error | null>(null);
+  const [doctorData, setDoctorData] = useState<{
+    [page: number]: { data: IDoctor[] };
+  }>();
   const [isLoading, setLoading] = useState<boolean>(true);
+  const [doctorPerPage, setDoctorPerPage] = useState<number>(
+    window.innerWidth <= 768 ? 2 : 4
+  );
+  const [page, setPage] = useState<number>(1);
+  const [carouselPage, setCarouselPage] = useState<number>(1);
+  const [maxPage, setMaxPage] = useState<number>(1)
 
-  const fetchDataDoctors = async () => {
-    const options: RequestInit = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
+  const handleGetDoctors = useCallback(() => {
+    const url =
+      import.meta.env.VITE_DEPLOYMENT_URL +
+      `/doctors?page=${page}&limit=${doctorPerPage}&sort=desc&sortBy=experience`;
 
-    try {
-      const response = await fetch(import.meta.env.VITE_DEPLOYMENT_URL +  "/doctors/", options);
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const doctorsData = await response.json();
-      setDataDoctor(doctorsData.data);
-    } catch (error) {
-      setError(error instanceof Error ? error : new Error("An error occurred"));
-    } finally {
-      setLoading(false);
-    }
-  };
+    HandleGet<DoctorData>(url)
+      .then((data) => {
+        setDoctorData((prevVal) => ({
+          ...prevVal,
+          [page]: { data: data.doctors },
+        }));
+
+        setCarouselPage(page);
+        setMaxPage(data.page_info.page_count)
+      })
+      .catch((error: Error) => {
+        console.log(error.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [page, doctorPerPage]);
 
   useEffect(() => {
-    fetchDataDoctors();
+    if (doctorData && doctorData[page]) {
+      setCarouselPage(page);
+      return;
+    }
+
+    handleGetDoctors();
+  }, [handleGetDoctors, doctorData, page]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDoctorPerPage(window.innerWidth <= 768 ? 2 : 4);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
-  if (!dataDoctor) return <p>No data</p>;
+  if (!doctorData) return <p>No data</p>;
 
   return (
     <>
       <div className="w-[100%] py-[20px] flex flex-row my-[50px] px-[20px] xl:px-[50px] relative items-center bg-[#2b5bed]">
         <div className="flex flex-col md:w-[40vw] gap-3">
-          <h2 className="text-white md:text-[35px] font-bold leading-10 text-[30px]">We’re welcoming new patients and can’t wait to meet you!</h2>
+          <h2 className="text-white md:text-[35px] font-bold leading-10 text-[30px]">
+            We’re welcoming new patients and can’t wait to meet you!
+          </h2>
           <p className="text-white md:text-[16px] font-normal text-sm">
             A brief statement outlining the purpose and mission of the clinic.
             This can include the commitment to patient care, community health,
@@ -52,7 +82,11 @@ const Doctor = (): React.ReactElement => {
             services provided
           </p>
           <Link to="/telemedicine/">
-            <Button type="button" buttonStyle="green" additionalClassName={"rounded-lg py-2 px-3 text-white"}>
+            <Button
+              type="button"
+              buttonStyle="green"
+              additionalClassName={"rounded-lg py-2 px-3 text-white"}
+            >
               Book Appointment
             </Button>
           </Link>
@@ -61,15 +95,48 @@ const Doctor = (): React.ReactElement => {
           <img src={image.doctor5} className="h-[400px] w-[450px] object-fit" />
         </div>
       </div>
+
       <h1 className="font-extrabold md:text-[50px] text-[#000D44] capitalize text-[30px]">
         Discover our doctors
       </h1>
-      {dataDoctor && dataDoctor.doctors.length > 0 && (
-        <CarouselComp
-          doctorData={dataDoctor}
-          imageWidth={300}
-          imageHeight={450}
-        />
+
+      {doctorData && doctorData[carouselPage] && (
+        <div className="flex justify-center gap-[10px] w-full px-[10px] md:px-[20px] xl:px-[50px] items-center">
+          <IconButton
+            placeholder={""}
+            onPointerEnterCapture={() => {}}
+            onPointerLeaveCapture={() => {}}
+            size="md"
+            disabled={page == 1}
+            onClick={() => setPage((prevVal) => prevVal - 1)}
+          >
+            <IconContext.Provider value={{ size: "20px", color: "#374151" }}>
+              <FaArrowLeft></FaArrowLeft>
+            </IconContext.Provider>
+          </IconButton>
+
+          <div className="grid grid-cols-2 xl:grid-cols-4 justify-between w-full place-content-start">
+            {doctorData[carouselPage].data.map((doctor, i) => (
+              <DoctorLandingPageCard
+                doctor={doctor}
+                key={i}
+              ></DoctorLandingPageCard>
+            ))}
+          </div>
+
+          <IconButton
+            placeholder={""}
+            onPointerEnterCapture={() => {}}
+            onPointerLeaveCapture={() => {}}
+            size="md"
+            disabled={page == maxPage}
+            onClick={() => setPage((prevVal) => prevVal + 1)}
+          >
+            <IconContext.Provider value={{ size: "20px", color: "#374151" }}>
+              <FaArrowRight></FaArrowRight>
+            </IconContext.Provider>
+          </IconButton>
+        </div>
       )}
     </>
   );

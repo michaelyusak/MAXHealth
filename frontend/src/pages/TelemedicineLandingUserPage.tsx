@@ -80,7 +80,7 @@ const TelemedicineLandingUserPage = (): React.ReactElement => {
 
     const url =
       import.meta.env.VITE_DEPLOYMENT_URL +
-      `/doctors/?${
+      `/doctors?${
         getSpecializationIdByName(selectedSpecialization) == 0
           ? ""
           : `specialization=${getSpecializationIdByName(

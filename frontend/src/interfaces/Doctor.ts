@@ -4,10 +4,10 @@ export interface DoctorData {
     item_count: number
     page: number
   }
-  doctors: Doctor[]
+  doctors: IDoctor[]
 }
 
-interface Doctor {
+export interface IDoctor {
   doctor_id: number
   account_id: number
   fee_per_patient: string
