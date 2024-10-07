@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import * as image from "../assets/img";
 import { FaArrowLeft } from "react-icons/fa6";
+import { IconContext } from "react-icons";
 
 const AuthenticationTemplate = (): React.ReactElement => {
   const path = useLocation().pathname;
@@ -17,11 +18,17 @@ const AuthenticationTemplate = (): React.ReactElement => {
         } items-center`}
       >
         <button
-          onClick={() => navigate("/")}
-          className="absolute top-[5%] left-[7%] md:left-[5%] xl:left-[2%] p-[7px] border-[1px] border-gray-500 rounded-[100%] bg-gray-200 md:opacity-50 md:hover:opacity-100"
+          onClick={() => {
+            navigate("/")
+          }}
+          disabled={false}
+          className="absolute top-[5%] left-[7%] md:left-[5%] xl:left-[2%] bg-white px-[15px] py-[5px] rounded-[8px] shadow-lg"
         >
-          <FaArrowLeft></FaArrowLeft>
+          <IconContext.Provider value={{ size: "20px", color: "#374151" }}>
+            <FaArrowLeft></FaArrowLeft>
+          </IconContext.Provider>
         </button>
+
         <img
           alt=""
           src={image.backgroundHero}
