@@ -2,6 +2,7 @@ package util
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"max-health/config"
@@ -14,6 +15,17 @@ type JwtCustomClaims struct {
 	Email         string `json:"email"`
 	Role          string `json:"role"`
 	TokenDuration int    `json:"token_duration"`
+}
+
+type CentrifugoClientClaims struct {
+	AccountId int64
+	ExpiredAt int64
+}
+
+type CentrifugoChannelClaims struct {
+	AccountId int64
+	Channel   string
+	ExpiredAt int64
 }
 
 type TokenAuthentication interface {
@@ -70,4 +82,33 @@ func (ja JwtAuthentication) ParseAndVerify(signed string, secretKey string) (*Jw
 	}
 
 	return &customClaims, nil
+}
+
+func (ja JwtAuthentication) CentrifugoClientCreateAndSign(customClaims CentrifugoClientClaims) (*string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": fmt.Sprintf("%v", customClaims.AccountId),
+		"exp": customClaims.ExpiredAt,
+	})
+
+	signed, err := token.SignedString([]byte(ja.Config.CentrifugoSecret))
+	if err != nil {
+		return nil, err
+	}
+
+	return &signed, nil
+}
+
+func (ja JwtAuthentication) CentrifugoChannelCreateAndSign(customClaims CentrifugoChannelClaims) (*string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":     fmt.Sprintf("%v", customClaims.AccountId),
+		"channel": customClaims.Channel,
+		"exp":     customClaims.ExpiredAt,
+	})
+
+	signed, err := token.SignedString([]byte(ja.Config.CentrifugoSecret))
+	if err != nil {
+		return nil, err
+	}
+
+	return &signed, nil
 }

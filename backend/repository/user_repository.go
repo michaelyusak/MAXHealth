@@ -43,6 +43,8 @@ func (r *userRepositoryPostgres) FindUserByAccountId(ctx context.Context, accoun
 		return nil, err
 	}
 
+	user.AccountId = accountId
+
 	return &user, nil
 }
 

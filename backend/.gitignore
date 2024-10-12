@@ -6,3 +6,5 @@ assets/doctor_certificates/*
 assets/profile_pictures/*
 
 sql/Dockerfile
+
+centrifugo/config.json
