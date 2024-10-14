@@ -1,5 +1,5 @@
 # Use the official Centrifugo image as the base image
-FROM centrifugo/centrifugo:v5
+FROM centrifugo/centrifugo:v5.4
 
 # Set the working directory
 WORKDIR /centrifugo

@@ -29,7 +29,8 @@ type Config struct {
 }
 
 var (
-	EmailHost string
+	EmailHost     string
+	CentrifugoUrl string
 )
 
 func Init(log *logrus.Logger) *Config {
@@ -39,6 +40,7 @@ func Init(log *logrus.Logger) *Config {
 	}
 
 	EmailHost = os.Getenv("EMAIL_HOST")
+	CentrifugoUrl = os.Getenv("CENTRIFUGO_URL")
 
 	hashCost, err := strconv.Atoi(os.Getenv("HASH_COST"))
 	if err != nil {

@@ -15,6 +15,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
 
@@ -81,6 +82,13 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 		Method: jwt.SigningMethodHS256,
 	}
 	hashHelper := &util.HashHelperImpl{}
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024 * 1024 * 1024,
+		WriteBufferSize: 1024 * 1024 * 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
 
 	authenticationUsecase := usecase.NewAuthenticationUsecaseImpl(usecase.AuthenticationUsecaseImplOpts{
 		DrugRepository:               &drugRepository,
@@ -131,7 +139,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	orderPharmacyUsecase := usecase.NewOrderPharmacyUsecaseImpl(transaction, &orderPharmacyRepository, &orderItemRepository, &userRepository, &pharmacyManagerRepository)
 	reportUsecase := usecase.NewreportUsecaseImpl(&orderItemRepository, &pharmacyRepository, &pharmacyManagerRepository)
 	stockUsecase := usecase.NewStockUsecaseImpl(&stockRepository, &pharmacyManagerRepository)
-	wsUsecase := usecase.NewWsUsecaseImpl(&userRepository, &doctorRepository, wsChatRoomRepository, jwtAuthentication)
+	wsUsecase := usecase.NewWsUsecaseImpl(&userRepository, &doctorRepository, wsChatRoomRepository, &chatRepository, jwtAuthentication)
 
 	pingHandler := handler.NewPingHandler(handler.PingHandlerOpts{})
 	authenticationHandler := handler.NewAuthenticationHandler(&authenticationUsecase)
@@ -151,7 +159,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	orderPharmacyHandler := handler.NewOrderPharmacyHandler(&orderPharmacyUsecase)
 	reportHandler := handler.NewReportHandler(&reportUsecase)
 	stockHandler := handler.NewStockHandler(&stockUsecase)
-	wsHandler := handler.NewWsHandler(wsUsecase)
+	wsHandler := handler.NewWsHandler(wsUsecase, upgrader, log)
 
 	return newRouter(
 		routerOpts{
@@ -330,6 +338,7 @@ func telemedicineRouting(router *gin.Engine, handler *handler.TelemedicineHandle
 func wsRouting(router *gin.Engine, handler *handler.WsHandler, authMiddleware, userAuthorizationMiddleware gin.HandlerFunc) {
 	router.POST("/v2/chat-room", authMiddleware, userAuthorizationMiddleware, handler.CreateRoom)
 	router.POST("/v2/chat-room/token", authMiddleware, handler.GenerateToken)
+	router.GET("/ws/chat-room", authMiddleware, handler.ConnectToRoom)
 }
 
 func corsRouting(router *gin.Engine, configCors cors.Config) {

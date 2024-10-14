@@ -9,7 +9,7 @@ import (
 
 func GenerateRandomString() (string, error) {
 	base62Chars := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	idLength := 5
+	idLength := 4
 
 	var randomString string
 	for i := 0; i < idLength; i++ {

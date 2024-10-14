@@ -2,8 +2,8 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"log"
 	"max-health/appconstant"
 	"max-health/apperror"
 	"max-health/entity"
@@ -15,20 +15,23 @@ import (
 type WsUsecase interface {
 	GenerateToken(ctx context.Context, roomHash string) (entity.WsToken, error)
 	CreateRoom(ctx context.Context, userAccountId, doctorAccountId int64) (*entity.WsChatRoom, error)
+	HandleCentrifugo(ctx context.Context, wsToken entity.WsToken, toClient, fromClient chan []byte, chClose chan bool) error
 }
 
 type wsUsecaseImpl struct {
 	userRepository       repository.UserRepository
 	doctorRepository     repository.DoctorRepository
 	wsChatRoomRepository repository.WsChatRoomRepository
+	chatRepository       repository.ChatRepository
 	jwtHelper            util.JwtAuthentication
 }
 
-func NewWsUsecaseImpl(userRepository repository.UserRepository, doctorRepository repository.DoctorRepository, wsChatRoomRepository repository.WsChatRoomRepository, jwtHelper util.JwtAuthentication) *wsUsecaseImpl {
+func NewWsUsecaseImpl(userRepository repository.UserRepository, doctorRepository repository.DoctorRepository, wsChatRoomRepository repository.WsChatRoomRepository, chatRepository repository.ChatRepository, jwtHelper util.JwtAuthentication) *wsUsecaseImpl {
 	return &wsUsecaseImpl{
 		userRepository:       userRepository,
 		doctorRepository:     doctorRepository,
 		wsChatRoomRepository: wsChatRoomRepository,
+		chatRepository:       chatRepository,
 		jwtHelper:            jwtHelper,
 	}
 }
@@ -97,8 +100,7 @@ func (u *wsUsecaseImpl) CreateRoom(ctx context.Context, userAccountId, doctorAcc
 		return nil, apperror.InternalServerError(err)
 	}
 	if chatRoom != nil {
-		log.Println(chatRoom.ExpiredAt, time.Now())
-		if chatRoom.ExpiredAt.Add(7 * time.Hour).After(time.Now()) {
+		if chatRoom.ExpiredAt.After(time.Now()) {
 			return chatRoom, nil
 		}
 	}
@@ -108,10 +110,10 @@ func (u *wsUsecaseImpl) CreateRoom(ctx context.Context, userAccountId, doctorAcc
 		return nil, apperror.InternalServerError(err)
 	}
 
-	chatRoomExpiredAt := time.Now().Add(appconstant.ChatRoomDuration)
+	chatRoomExpiredAt := time.Now().Add(appconstant.ChatRoomDuration).Local()
 
 	newWsChatRoom := entity.WsChatRoom{
-		Hash:            fmt.Sprintf("private:%s#%v,%v", hash, user.AccountId, doctor.AccountId),
+		Hash:            fmt.Sprintf("$private:%s#%v,%v", hash, user.AccountId, doctor.AccountId),
 		UserAccountId:   user.AccountId,
 		DoctorAccountId: doctor.AccountId,
 		ExpiredAt:       &chatRoomExpiredAt,
@@ -126,4 +128,56 @@ func (u *wsUsecaseImpl) CreateRoom(ctx context.Context, userAccountId, doctorAcc
 	newWsChatRoom.Id = *roomId
 
 	return &newWsChatRoom, nil
+}
+
+func (u *wsUsecaseImpl) HandleCentrifugo(ctx context.Context, wsToken entity.WsToken, toClient, fromClient chan []byte, chClose chan bool) error {
+	fromCentrifugo := make(chan []byte)
+
+	centrifugoHelper, err := util.NewCentrifugoHelperImpl(wsToken.Token.ClientToken, wsToken.Token.ChannelToken, wsToken.Channel)
+	if err != nil {
+		return apperror.InternalServerError(err)
+	}
+	defer centrifugoHelper.Stop()
+
+	err = centrifugoHelper.Connect(chClose)
+	if err != nil {
+		return apperror.InternalServerError(err)
+	}
+
+	err = centrifugoHelper.Start(ctx, chClose, fromCentrifugo)
+	if err != nil {
+		return apperror.InternalServerError(err)
+	}
+
+	for {
+		select {
+		case data := <-fromClient:
+			var chat entity.Chat
+			err := json.Unmarshal(data, &chat)
+			if err != nil {
+				continue
+			}
+
+			chatId, createdAt, err := u.chatRepository.PostOneChat(ctx, chat)
+			if err != nil {
+				continue
+			}
+
+			chat.Id = *chatId
+			chat.CreatedAt = &createdAt
+
+			res, err := json.Marshal(chat)
+			if err != nil {
+				continue
+			}
+
+			err = centrifugoHelper.Publish(ctx, res)
+			if err != nil {
+				continue
+			}
+
+		case data := <-fromCentrifugo:
+			toClient <- data
+		}
+	}
 }

@@ -12,6 +12,18 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
+    platform: linux/amd64
+
+  maxhealth-centrifugo:
+    build: 
+      context: ../backend/centrifugo
+    ports:
+      - "8000:8000"
+    ulimits:
+      nofile:
+        soft: 1000
+        hard: 1000
+    platform: linux/amd64
 
   maxhealth-be:
     build:
@@ -20,8 +32,8 @@ services:
       - "8080:8080"
     restart: always
     depends_on:
-      maxhealth-db:
-        condition: service_healthy
+      - maxhealth-db
+      - maxhealth-centrifugo
     platform: linux/amd64
 
   maxhealth-fe:
