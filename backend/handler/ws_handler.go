@@ -7,7 +7,6 @@ import (
 	"max-health/dto"
 	"max-health/usecase"
 	"max-health/util"
-	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -112,11 +111,9 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 	defer close(toClient)
 	defer close(chClose)
 
-	h.logger.Info("upgrading connection")
-
 	conn, err := h.upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
-		h.logger.Errorf("error establish ws connection: %s", err.Error())
+		ctx.Error(err)
 		return
 	}
 	defer conn.Close()
@@ -124,18 +121,15 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 	wsToken := dto.ToWsTokenEntity(req)
 
 	go func() {
-		h.logger.Info("handle cent")
-
 		err = h.wsUsecase.HandleCentrifugo(ctx.Request.Context(), wsToken, toClient, fromClient, chClose)
 		if err != nil {
-			h.logger.Errorf("error handling message: %s from %s", err.Error(), string(debug.Stack()))
+			ctx.Error(err)
+			chClose <- true
 			return
 		}
 	}()
 
 	go func() {
-		h.logger.Info("listening cent")
-
 		for {
 			chat := <-toClient
 
@@ -148,12 +142,11 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 	}()
 
 	go func() {
-		h.logger.Info("listening client")
-
 		for {
 			messageType, chat, err := conn.ReadMessage()
 			if err != nil {
 				h.logger.Errorf("error reading message: %s", err.Error())
+				chClose <- true
 				return
 			}
 
