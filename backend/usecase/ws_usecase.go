@@ -133,6 +133,8 @@ func (u *wsUsecaseImpl) CreateRoom(ctx context.Context, userAccountId, doctorAcc
 func (u *wsUsecaseImpl) HandleCentrifugo(ctx context.Context, wsToken entity.WsToken, toClient, fromClient chan []byte, chClose chan bool) error {
 	fromCentrifugo := make(chan []byte)
 
+	defer close(fromCentrifugo)
+
 	centrifugoHelper, err := util.NewCentrifugoHelperImpl(wsToken.Token.ClientToken, wsToken.Token.ChannelToken, wsToken.Channel)
 	if err != nil {
 		return apperror.InternalServerError(err)

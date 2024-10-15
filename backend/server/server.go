@@ -32,6 +32,8 @@ func Init() {
 
 	quit := make(chan os.Signal, 10)
 
+	defer close(quit)
+
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	<-quit

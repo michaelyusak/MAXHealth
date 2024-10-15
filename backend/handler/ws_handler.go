@@ -108,6 +108,12 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 	toClient := make(chan []byte)
 	chClose := make(chan bool)
 
+	defer close(fromClient)
+	defer close(toClient)
+	defer close(chClose)
+
+	h.logger.Info("upgrading connection")
+
 	conn, err := h.upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		h.logger.Errorf("error establish ws connection: %s", err.Error())
@@ -118,7 +124,9 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 	wsToken := dto.ToWsTokenEntity(req)
 
 	go func() {
-		err = h.wsUsecase.HandleCentrifugo(ctx, wsToken, toClient, fromClient, chClose)
+		h.logger.Info("handle cent")
+
+		err = h.wsUsecase.HandleCentrifugo(ctx.Request.Context(), wsToken, toClient, fromClient, chClose)
 		if err != nil {
 			h.logger.Errorf("error handling message: %s from %s", err.Error(), string(debug.Stack()))
 			return
@@ -126,6 +134,8 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 	}()
 
 	go func() {
+		h.logger.Info("listening cent")
+
 		for {
 			chat := <-toClient
 
@@ -138,6 +148,8 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 	}()
 
 	go func() {
+		h.logger.Info("listening client")
+
 		for {
 			messageType, chat, err := conn.ReadMessage()
 			if err != nil {

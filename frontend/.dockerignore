@@ -1,1 +1,5 @@
 build
+
+nginx.conf
+
+.env
