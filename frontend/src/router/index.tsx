@@ -43,6 +43,7 @@ import NotFoundPage from "../pages/NotFoundPage";
 import ManagerReportPage from "../pages/ManagerReportPage";
 import ManagerStockChangesPage from "../pages/ManagerStockChangesPage";
 import AdminReportPage from "../pages/AdminReportPage";
+import WsChatPage from "../pages/WsChatPage";
 
 const router = createBrowserRouter(
   [
@@ -165,6 +166,23 @@ const router = createBrowserRouter(
                 {
                   path: "/telemedicine/chats/",
                   element: <ChatPage></ChatPage>,
+                },
+              ],
+            },
+            {
+              path: "/telemedicine/chats/ws",
+              element: (
+                <ProtectedRoute
+                  acceptedRoles={["user"]}
+                  roleBasedOnFailRedirectTo={{
+                    ["user"]: { to: "/telemedicine/" },
+                  }}
+                ></ProtectedRoute>
+              ),
+              children: [
+                {
+                  path: "/telemedicine/chats/ws",
+                  element: <WsChatPage></WsChatPage>,
                 },
               ],
             },
