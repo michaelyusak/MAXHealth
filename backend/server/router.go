@@ -343,8 +343,8 @@ func wsRouting(router *gin.Engine, handler *handler.WsHandler, authMiddleware, u
 
 func corsRouting(router *gin.Engine, configCors cors.Config) {
 	configCors.AllowAllOrigins = true
-	configCors.AllowMethods = []string{"POST", "GET", "PUT", "PATCH", "DELETE"}
-	configCors.AllowHeaders = []string{"Origin", "Authorization", "Content-Type", "Accept", "User-Agent", "Cache-Control"}
+	configCors.AllowMethods = []string{"POST", "GET", "PUT", "PATCH", "DELETE", "OPTIONS"}
+	configCors.AllowHeaders = []string{"Origin", "Authorization", "Content-Type", "Accept", "User-Agent", "Cache-Control", "Host", "X-Real-IP", "X-Forwarded-For", "X-Forwarded-Proto"}
 	configCors.ExposeHeaders = []string{"Content-Length"}
 	configCors.AllowCredentials = true
 	router.Use(cors.New(configCors))
