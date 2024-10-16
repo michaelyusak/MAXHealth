@@ -22,13 +22,15 @@ type Config struct {
 	AccessSecret        string
 	RefreshSecret       string
 	ResetPasswordSecret string
+	CentrifugoSecret    string
 	RajaOngkirApiKey    string
 	HashCost            int
 	GracefulPeriod      int
 }
 
 var (
-	EmailHost string
+	EmailHost     string
+	CentrifugoUrl string
 )
 
 func Init(log *logrus.Logger) *Config {
@@ -38,6 +40,7 @@ func Init(log *logrus.Logger) *Config {
 	}
 
 	EmailHost = os.Getenv("EMAIL_HOST")
+	CentrifugoUrl = os.Getenv("CENTRIFUGO_URL")
 
 	hashCost, err := strconv.Atoi(os.Getenv("HASH_COST"))
 	if err != nil {
@@ -67,6 +70,7 @@ func Init(log *logrus.Logger) *Config {
 		AccessSecret:        os.Getenv("ACCESS_TOKEN_SECRET_KEY"),
 		RefreshSecret:       os.Getenv("REFRESH_TOKEN_SECRET_KEY"),
 		ResetPasswordSecret: os.Getenv("RESET_PASSWORD_SECRET_KEY"),
+		CentrifugoSecret:    os.Getenv("CENTRIFUGO_SECRET"),
 		RajaOngkirApiKey:    os.Getenv("RAJA_ONGKIR_API_KEY"),
 		HashCost:            hashCost,
 		GracefulPeriod:      gracefulPeriod,

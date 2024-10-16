@@ -29,6 +29,15 @@ type ChatRoom struct {
 	Chats                []Chat
 }
 
+type WsChatRoom struct {
+	Id                   int64
+	Hash                 string
+	DoctorAccountId      int64
+	UserAccountId        int64
+	ExpiredAt            *time.Time
+	Chats                []Chat
+}
+
 type ChatRoomPreview struct {
 	Id                    int64
 	ParticipantName       string

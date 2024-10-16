@@ -16,6 +16,7 @@ cities,
 districts,
 subdistricts,
 chat_rooms,
+ws_chat_rooms,
 chats,
 user_addresses,
 cart_items,
@@ -396,6 +397,17 @@ CREATE TABLE stock_request_status(
 
 CREATE TABLE chat_rooms(
     chat_room_id BIGSERIAL PRIMARY KEY,
+    user_account_id BIGINT NOT NULL,
+    doctor_account_id BIGINT NOT NULL,
+    expired_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP DEFAULT NULL 
+);
+
+CREATE TABLE ws_chat_rooms(
+    ws_chat_room_id BIGSERIAL PRIMARY KEY,
+    room_hash VARCHAR NOT NULL,
     user_account_id BIGINT NOT NULL,
     doctor_account_id BIGINT NOT NULL,
     expired_at TIMESTAMP,

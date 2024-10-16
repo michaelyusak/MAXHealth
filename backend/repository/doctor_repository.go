@@ -151,6 +151,8 @@ func (r *doctorRepositoryPostgres) FindDoctorByAccountId(ctx context.Context, ac
 		return nil, err
 	}
 
+	doctor.AccountId = accountId
+
 	return &doctor, nil
 }
 
