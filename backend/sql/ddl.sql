@@ -410,7 +410,7 @@ CREATE TABLE ws_chat_rooms(
     room_hash VARCHAR NOT NULL,
     user_account_id BIGINT NOT NULL,
     doctor_account_id BIGINT NOT NULL,
-    expired_at TIMESTAMP,
+    expired_at TIMESTAMP DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP DEFAULT NULL 

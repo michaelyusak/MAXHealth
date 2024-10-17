@@ -28,31 +28,6 @@ func NewWsHandler(wsUsecase usecase.WsUsecase, upgrader websocket.Upgrader, logg
 	}
 }
 
-func (h *WsHandler) CreateRoom(ctx *gin.Context) {
-	ctx.Header("Content-Type", "application/json")
-
-	userAccountId, exists := ctx.Get(appconstant.AccountId)
-	if !exists {
-		ctx.Error(apperror.UnauthorizedError())
-		return
-	}
-
-	var req dto.CreateWsRoomReq
-	err := ctx.ShouldBindJSON(&req)
-	if err != nil {
-		ctx.Error(err)
-		return
-	}
-
-	chatRoom, err := h.wsUsecase.CreateRoom(ctx.Request.Context(), userAccountId.(int64), req.DoctorAccountId)
-	if err != nil {
-		ctx.Error(err)
-		return
-	}
-
-	util.ResponseOK(ctx, dto.ToWsChatRoomRes(*chatRoom))
-}
-
 func (h *WsHandler) GenerateToken(ctx *gin.Context) {
 	ctx.Header("Content-Type", "application/json")
 

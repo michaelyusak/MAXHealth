@@ -24,58 +24,6 @@ func NewTelemedicineHandler(telemedicineUsecase usecase.TelemedicineUsecase) Tel
 	}
 }
 
-func (h *TelemedicineHandler) UserCreateRoom(ctx *gin.Context) {
-	ctx.Header("Content-Type", "application/json")
-
-	userAccountId, exist := ctx.Get(appconstant.AccountId)
-	if !exist {
-		ctx.Error(apperror.UnauthorizedError())
-		return
-	}
-
-	var createRoomRequest dto.UserCreateRoomRequest
-
-	err := ctx.ShouldBindJSON(&createRoomRequest)
-	if err != nil {
-		ctx.Error(err)
-		return
-	}
-
-	roomId, err := h.telemedicineUsecase.UserCreateRoom(ctx.Request.Context(), userAccountId.(int64), createRoomRequest.DoctorAccountId)
-	if err != nil {
-		ctx.Error(err)
-		return
-	}
-
-	util.ResponseCreated(ctx, dto.UserCreateRoomResponse{RoomId: roomId})
-}
-
-func (h *TelemedicineHandler) DoctorJoinRoom(ctx *gin.Context) {
-	ctx.Header("Content-Type", "application/json")
-
-	doctorAccountId, exist := ctx.Get(appconstant.AccountId)
-	if !exist {
-		ctx.Error(apperror.UnauthorizedError())
-		return
-	}
-
-	var joinRoomRequest dto.DoctorJoinRoomRequest
-
-	err := ctx.ShouldBindJSON(&joinRoomRequest)
-	if err != nil {
-		ctx.Error(err)
-		return
-	}
-
-	err = h.telemedicineUsecase.DoctorJoinRoom(ctx.Request.Context(), doctorAccountId.(int64), joinRoomRequest.RoomId)
-	if err != nil {
-		ctx.Error(err)
-		return
-	}
-
-	util.ResponseOK(ctx, nil)
-}
-
 func (h *TelemedicineHandler) PostOneMessage(ctx *gin.Context) {
 	ctx.Header("Content-Type", "application/json")
 
@@ -374,34 +322,4 @@ func (h *TelemedicineHandler) CheckoutFromPrescription(ctx *gin.Context) {
 	}
 
 	util.ResponseOK(ctx, dto.OrderCheckoutResponse{OrderId: *orderId})
-}
-
-func (h *TelemedicineHandler) CloseChatRoom(ctx *gin.Context) {
-	ctx.Header("Content-Type", "application/json")
-
-	accountId, exists := ctx.Get(appconstant.AccountId)
-	if !exists {
-		ctx.Error(apperror.UnauthorizedError())
-		return
-	}
-
-	roomIdStr := ctx.Param(appconstant.RoomIdString)
-	if !exists {
-		ctx.Error(apperror.UnauthorizedError())
-		return
-	}
-
-	roomId, err := strconv.Atoi(roomIdStr)
-	if err != nil {
-		ctx.Error(apperror.BadRequestError(err))
-		return
-	}
-
-	err = h.telemedicineUsecase.CloseChatRoom(ctx.Request.Context(), accountId.(int64), int64(roomId))
-	if err != nil {
-		ctx.Error(err)
-		return
-	}
-
-	util.ResponseOK(ctx, nil)
 }

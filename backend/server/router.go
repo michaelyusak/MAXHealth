@@ -39,6 +39,7 @@ type routerOpts struct {
 	Report             *handler.ReportHandler
 	Stock              *handler.StockHandler
 	Ws                 *handler.WsHandler
+	ChatRoom           *handler.ChatRoomHandler
 }
 
 type utilOpts struct {
@@ -139,7 +140,8 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	orderPharmacyUsecase := usecase.NewOrderPharmacyUsecaseImpl(transaction, &orderPharmacyRepository, &orderItemRepository, &userRepository, &pharmacyManagerRepository)
 	reportUsecase := usecase.NewreportUsecaseImpl(&orderItemRepository, &pharmacyRepository, &pharmacyManagerRepository)
 	stockUsecase := usecase.NewStockUsecaseImpl(&stockRepository, &pharmacyManagerRepository)
-	wsUsecase := usecase.NewWsUsecaseImpl(&userRepository, &doctorRepository, wsChatRoomRepository, &chatRepository, jwtAuthentication)
+	wsUsecase := usecase.NewWsUsecaseImpl(wsChatRoomRepository, &chatRepository, jwtAuthentication)
+	chatRoomUsecase := usecase.NewChatRoomUsecaseImpl(&userRepository, &doctorRepository, wsChatRoomRepository, &accountRepository)
 
 	pingHandler := handler.NewPingHandler(handler.PingHandlerOpts{})
 	authenticationHandler := handler.NewAuthenticationHandler(&authenticationUsecase)
@@ -160,6 +162,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	reportHandler := handler.NewReportHandler(&reportUsecase)
 	stockHandler := handler.NewStockHandler(&stockUsecase)
 	wsHandler := handler.NewWsHandler(wsUsecase, upgrader, log)
+	chatRoomHandler := handler.NewChatRoomHandler(chatRoomUsecase)
 
 	return newRouter(
 		routerOpts{
@@ -182,6 +185,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 			Report:             &reportHandler,
 			Stock:              &stockHandler,
 			Ws:                 wsHandler,
+			ChatRoom:           chatRoomHandler,
 		},
 		utilOpts{
 			JwtHelper: jwtAuthentication,
@@ -233,7 +237,8 @@ func newRouter(h routerOpts, u utilOpts, config *config.Config, log *logrus.Logg
 	orderPharmacyRouting(router, h.OrderPharmacy, authMiddleware, pharmacyManagerAuthorizationMiddleware, userAuthorizationMiddleware, adminAuthorizationMiddleware)
 	reportRouting(router, h.Report, authMiddleware, pharmacyManagerAuthorizationMiddleware, adminAuthorizationMiddleware)
 	stockRouting(router, h.Stock, authMiddleware, pharmacyManagerAuthorizationMiddleware)
-	wsRouting(router, h.Ws, authMiddleware, userAuthorizationMiddleware)
+	wsRouting(router, h.Ws, authMiddleware)
+	chatRoomRouting(router, h.ChatRoom, authMiddleware, userAuthorizationMiddleware, doctorAuthorizationMiddleware)
 	pingRouting(router, h.Ping, authMiddleware, userAuthorizationMiddleware, doctorAuthorizationMiddleware, pharmacyManagerAuthorizationMiddleware, adminAuthorizationMiddleware)
 	pprofRouting(router)
 
@@ -321,30 +326,34 @@ func addressRouting(router *gin.Engine, handler *handler.AddressHandler) {
 }
 
 func telemedicineRouting(router *gin.Engine, handler *handler.TelemedicineHandler, authMiddleware gin.HandlerFunc, userAuthorizationMiddleware gin.HandlerFunc, doctorAuthorizationMiddleware gin.HandlerFunc) {
-	router.POST("/chat-rooms", authMiddleware, userAuthorizationMiddleware, handler.UserCreateRoom)
-	router.PATCH("/chat-rooms", authMiddleware, doctorAuthorizationMiddleware, handler.DoctorJoinRoom)
 	router.POST("/chat-rooms/chats", authMiddleware, handler.PostOneMessage)
 	router.GET("/chat-rooms/chats/:room_id", authMiddleware, handler.Listen)
 	router.GET("/chat-rooms/:room_id", authMiddleware, handler.GetAllChat)
 	router.GET("/chat-rooms", authMiddleware, handler.GetAllChatRoomPreview)
 	router.GET("/chat-rooms/requests", authMiddleware, doctorAuthorizationMiddleware, handler.DoctorGetChatRequest)
-	router.PATCH("/chat-rooms/:room_id/close-room", authMiddleware, userAuthorizationMiddleware, handler.CloseChatRoom)
 	router.PATCH("/prescriptions/:prescription_id", authMiddleware, userAuthorizationMiddleware, handler.SavePrescription)
 	router.GET("/prescriptions", authMiddleware, userAuthorizationMiddleware, handler.GetAllPrescriptions)
 	router.GET("/prescriptions/:prescription_id", authMiddleware, userAuthorizationMiddleware, handler.PreapereForCheckout)
 	router.POST("/prescriptions/checkout", authMiddleware, userAuthorizationMiddleware, handler.CheckoutFromPrescription)
 }
 
-func wsRouting(router *gin.Engine, handler *handler.WsHandler, authMiddleware, userAuthorizationMiddleware gin.HandlerFunc) {
-	router.POST("/v2/chat-room", authMiddleware, userAuthorizationMiddleware, handler.CreateRoom)
+func wsRouting(router *gin.Engine, handler *handler.WsHandler, authMiddleware gin.HandlerFunc) {
 	router.POST("/v2/chat-room/token", authMiddleware, handler.GenerateToken)
 	router.GET("/ws/chat-room", authMiddleware, handler.ConnectToRoom)
 }
 
+func chatRoomRouting(router *gin.Engine, handler *handler.ChatRoomHandler, authMiddleware, userAuthorizationMiddleware, doctorAuthorizationMiddleware gin.HandlerFunc) {
+	chatRoomRouter := router.Group("/v2/chat-room")
+
+	chatRoomRouter.POST("", authMiddleware, userAuthorizationMiddleware, handler.UserCreateRoom)
+	chatRoomRouter.PATCH("/:room_id/close", authMiddleware, userAuthorizationMiddleware, handler.CloseChatRoom)
+	chatRoomRouter.PATCH("/start", authMiddleware, doctorAuthorizationMiddleware, handler.DoctorJoinRoom)
+}
+
 func corsRouting(router *gin.Engine, configCors cors.Config) {
-	configCors.AllowAllOrigins = true
+	configCors.AllowOrigins = []string{"http://localhost:5173", "http://localhost"}
 	configCors.AllowMethods = []string{"POST", "GET", "PUT", "PATCH", "DELETE", "OPTIONS"}
-	configCors.AllowHeaders = []string{"Origin", "Authorization", "Content-Type", "Accept", "User-Agent", "Cache-Control", "Host", "X-Real-IP", "X-Forwarded-For", "X-Forwarded-Proto"}
+	configCors.AllowHeaders = []string{"Origin", "Authorization", "Content-Type", "Accept", "User-Agent", "Cache-Control", "Host", "X-Real-IP", "X-Forwarded-For", "X-Forwarded-Proto", "Access-Control-Allow-Origin"}
 	configCors.ExposeHeaders = []string{"Content-Length"}
 	configCors.AllowCredentials = true
 	router.Use(cors.New(configCors))

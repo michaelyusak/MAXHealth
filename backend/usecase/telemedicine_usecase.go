@@ -20,8 +20,6 @@ import (
 )
 
 type TelemedicineUsecase interface {
-	UserCreateRoom(ctx context.Context, userAccountId, doctorAccountId int64) (*int64, error)
-	DoctorJoinRoom(ctx context.Context, doctorAccountId, roomId int64) error
 	PostOneMessage(ctx context.Context, accountId int64, postOneMessageRequest dto.PostOneMessageRequest, file multipart.File, fileHeader *multipart.FileHeader) (*dto.Chat, error)
 	Listen(ctx context.Context, accountId int64, roomId int64) (*dto.Chat, error)
 	findListenerBySender(sender entity.Participant) bool
@@ -35,7 +33,6 @@ type TelemedicineUsecase interface {
 	GetAllPrescriptions(ctx context.Context, accountId int64, limit, page string) (*dto.PrescriptionResponseList, error)
 	PrepareForCheckout(ctx context.Context, accountId, prescriptionId int64, addressIdString string) (*dto.PreapareForCheckoutResponse, error)
 	CheckoutFromPrescription(ctx context.Context, checkoutFromPrescriptionRequest dto.CheckoutFromPrescriptionRequest) (*int64, error)
-	CloseChatRoom(ctx context.Context, userAccountId, roomId int64) error
 }
 
 type telemedicineUsecaseImpl struct {
@@ -76,61 +73,6 @@ func NewTelemedicineUsecaseImpl(chatRoomRepository repository.ChatRoomRepository
 		abortChannel:               make(chan entity.Participant),
 		transaction:                transaction,
 	}
-}
-
-func (u *telemedicineUsecaseImpl) UserCreateRoom(ctx context.Context, userAccountId, doctorAccountId int64) (*int64, error) {
-	user, err := u.userRepository.FindUserByAccountId(ctx, userAccountId)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-	if user == nil {
-		return nil, apperror.ForbiddenAction()
-	}
-
-	doctor, err := u.doctorRepository.FindDoctorByAccountId(ctx, doctorAccountId)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-	if doctor == nil {
-		return nil, apperror.ForbiddenAction()
-	}
-
-	room, err := u.chatRoomRepository.FindActiveChatRoom(ctx, userAccountId, doctorAccountId)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-	if room != nil {
-		return nil, apperror.OnGoingChatExistError()
-	}
-
-	roomId, err := u.chatRoomRepository.CreateOneRoom(ctx, userAccountId, doctorAccountId)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-
-	u.chatChannel[*roomId] = make(chan entity.Chat)
-
-	return roomId, nil
-}
-
-func (u *telemedicineUsecaseImpl) DoctorJoinRoom(ctx context.Context, doctorAccountId, roomId int64) error {
-	room, err := u.chatRoomRepository.FindChatRoomById(ctx, roomId)
-	if err != nil {
-		return apperror.InternalServerError(err)
-	}
-	if room == nil {
-		return apperror.BadRequestError(err)
-	}
-	if room.DoctorAccountId != doctorAccountId {
-		return apperror.ForbiddenAction()
-	}
-
-	err = u.chatRoomRepository.StartChat(ctx, roomId, doctorAccountId)
-	if err != nil {
-		return apperror.InternalServerError(err)
-	}
-
-	return nil
 }
 
 func (u *telemedicineUsecaseImpl) PostOneMessage(ctx context.Context, accountId int64, postOneMessageRequest dto.PostOneMessageRequest, file multipart.File, fileHeader *multipart.FileHeader) (*dto.Chat, error) {
@@ -768,36 +710,4 @@ func (u *telemedicineUsecaseImpl) CheckoutFromPrescription(ctx context.Context, 
 	}
 
 	return &orderId, nil
-}
-
-func (u *telemedicineUsecaseImpl) CloseChatRoom(ctx context.Context, userAccountId, roomId int64) error {
-	chatRoom, err := u.chatRoomRepository.FindChatRoomById(ctx, roomId)
-	if err != nil {
-		return apperror.InternalServerError(err)
-	}
-
-	if chatRoom == nil {
-		return apperror.ChatRoomNotFoundError()
-	}
-
-	if chatRoom.UserAccountId != userAccountId {
-		return apperror.ForbiddenAction()
-	}
-
-	if chatRoom.ExpiredAt != nil && chatRoom.ExpiredAt.Before(time.Now()) {
-		return apperror.ChatRoomAlreadyClosedError()
-	}
-
-	err = u.chatRoomRepository.CloseChatRoom(ctx, chatRoom.Id)
-	if err != nil {
-		return apperror.InternalServerError(err)
-	}
-
-	for _, l := range u.listeners {
-		if l.RoomId == chatRoom.Id {
-			u.abortChannel <- l
-		}
-	}
-
-	return nil
 }
