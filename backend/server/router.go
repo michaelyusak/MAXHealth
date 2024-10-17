@@ -40,6 +40,7 @@ type routerOpts struct {
 	Stock              *handler.StockHandler
 	Ws                 *handler.WsHandler
 	ChatRoom           *handler.ChatRoomHandler
+	Media              *handler.MediaHandler
 }
 
 type utilOpts struct {
@@ -142,6 +143,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	stockUsecase := usecase.NewStockUsecaseImpl(&stockRepository, &pharmacyManagerRepository)
 	wsUsecase := usecase.NewWsUsecaseImpl(wsChatRoomRepository, &chatRepository, jwtAuthentication)
 	chatRoomUsecase := usecase.NewChatRoomUsecaseImpl(&userRepository, &doctorRepository, wsChatRoomRepository, &accountRepository)
+	mediaUsecase := usecase.NewMediaUsecaseImpl()
 
 	pingHandler := handler.NewPingHandler(handler.PingHandlerOpts{})
 	authenticationHandler := handler.NewAuthenticationHandler(&authenticationUsecase)
@@ -162,6 +164,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	reportHandler := handler.NewReportHandler(&reportUsecase)
 	stockHandler := handler.NewStockHandler(&stockUsecase)
 	wsHandler := handler.NewWsHandler(wsUsecase, upgrader, log)
+	mediaHandler := handler.NewMediaHandler(mediaUsecase)
 	chatRoomHandler := handler.NewChatRoomHandler(chatRoomUsecase)
 
 	return newRouter(
@@ -186,6 +189,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 			Stock:              &stockHandler,
 			Ws:                 wsHandler,
 			ChatRoom:           chatRoomHandler,
+			Media:              mediaHandler,
 		},
 		utilOpts{
 			JwtHelper: jwtAuthentication,
@@ -239,6 +243,7 @@ func newRouter(h routerOpts, u utilOpts, config *config.Config, log *logrus.Logg
 	stockRouting(router, h.Stock, authMiddleware, pharmacyManagerAuthorizationMiddleware)
 	wsRouting(router, h.Ws, authMiddleware)
 	chatRoomRouting(router, h.ChatRoom, authMiddleware, userAuthorizationMiddleware, doctorAuthorizationMiddleware)
+	mediaRouting(router, h.Media, authMiddleware)
 	pingRouting(router, h.Ping, authMiddleware, userAuthorizationMiddleware, doctorAuthorizationMiddleware, pharmacyManagerAuthorizationMiddleware, adminAuthorizationMiddleware)
 	pprofRouting(router)
 
@@ -340,6 +345,12 @@ func telemedicineRouting(router *gin.Engine, handler *handler.TelemedicineHandle
 func wsRouting(router *gin.Engine, handler *handler.WsHandler, authMiddleware gin.HandlerFunc) {
 	router.POST("/v2/chat-room/token", authMiddleware, handler.GenerateToken)
 	router.GET("/ws/chat-room", authMiddleware, handler.ConnectToRoom)
+}
+
+func mediaRouting(router *gin.Engine, handler *handler.MediaHandler, authMiddleware gin.HandlerFunc) {
+	mediaRouter := router.Group("/media")
+
+	mediaRouter.POST("/upload", authMiddleware, handler.UploadMedia)
 }
 
 func chatRoomRouting(router *gin.Engine, handler *handler.ChatRoomHandler, authMiddleware, userAuthorizationMiddleware, doctorAuthorizationMiddleware gin.HandlerFunc) {
