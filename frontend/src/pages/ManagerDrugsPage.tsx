@@ -23,7 +23,7 @@ const ManagerDrugsPage = (): React.ReactElement => {
 
   const fetchDataPharmacy = useCallback(() => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/managers/pharmacies?search=${pharmacySearch}&page=${pagePharmacy}`;
 
     setIsLoading(true);
@@ -42,7 +42,7 @@ const ManagerDrugsPage = (): React.ReactElement => {
 
   const fetchDataDrugsByPharmacyId = useCallback(() => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/managers/pharmacies/${selectedPharmacyId}/drugs?search=${drugSearch}&page=${pageDrugs}`;
 
     setIsLoading(true);

@@ -32,9 +32,9 @@ func ToRoomPreviewResponse(room entity.WsChatRoomPreview) RoomPreviewResponse {
 }
 
 func ToRoomListResponse(roomList []entity.WsChatRoomPreview) RoomListResponse {
-	var pending []RoomPreviewResponse
-	var onGoing []RoomPreviewResponse
-	var expired []RoomPreviewResponse
+	pending := []RoomPreviewResponse{}
+	onGoing := []RoomPreviewResponse{}
+	expired := []RoomPreviewResponse{}
 
 	for _, room := range roomList {
 		roomResponse := ToRoomPreviewResponse(room)

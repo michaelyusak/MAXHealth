@@ -79,7 +79,7 @@ const TelemedicineLandingUserPage = (): React.ReactElement => {
     }
 
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/doctors?${
         getSpecializationIdByName(selectedSpecialization) == 0
           ? ""
@@ -116,7 +116,7 @@ const TelemedicineLandingUserPage = (): React.ReactElement => {
 
   useEffect(() => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL + "/doctors/specializations";
+      import.meta.env.VITE_HTTP_BASE_URL + "/doctors/specializations";
 
     HandleGet<DoctorSpecialization[]>(url)
       .then((responseData) => {
@@ -158,7 +158,7 @@ const TelemedicineLandingUserPage = (): React.ReactElement => {
   function handleCreateChatRoom() {
     document.body.style.overflow = "auto";
 
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/chat-rooms";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/v2/chat-room";
     const bodyRaw = JSON.stringify({
       doctor_account_id: selectedDoctorAccountId,
     });

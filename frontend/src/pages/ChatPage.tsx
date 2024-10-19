@@ -46,7 +46,7 @@ const ChatPage = (): React.ReactElement => {
   const [role, setRole] = useState<"user" | "doctor">();
 
   const fetchRoomList = useCallback(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/chat-rooms";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/chat-rooms";
 
     HandleGet<IChatRoomPreview[]>(url, true)
       .then((responseData) => {
@@ -91,7 +91,7 @@ const ChatPage = (): React.ReactElement => {
   useEffect(() => {
     if (selectedRoomId) {
       const url =
-        import.meta.env.VITE_DEPLOYMENT_URL + `/chat-rooms/${selectedRoomId}`;
+        import.meta.env.VITE_HTTP_BASE_URL + `/chat-rooms/${selectedRoomId}`;
 
       setIsLoading(true);
       HandleGet<IChatRoom>(url, true)

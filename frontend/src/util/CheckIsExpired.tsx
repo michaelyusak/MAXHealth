@@ -1,5 +1,5 @@
-export function IsExpired(timeStr?: string): boolean {
-  if (!timeStr) {
+export function IsExpired(timeStr: string): boolean {
+  if (timeStr == "") {
     return false;
   }
 

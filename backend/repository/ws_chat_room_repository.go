@@ -9,7 +9,7 @@ import (
 )
 
 type WsChatRoomRepository interface {
-	FindWsChatRoom(ctx context.Context, userAccountId, doctorAccountId int64) (*entity.WsChatRoom, error)
+	FindActiveWsChatRoom(ctx context.Context, userAccountId, doctorAccountId int64) (*entity.WsChatRoom, error)
 	FindWsChatRoomByHash(ctx context.Context, roomHash string) (*entity.WsChatRoom, error)
 	CreateWsChatRoom(ctx context.Context, newWsChatRoom entity.WsChatRoom) (*int64, error)
 	GetAllRooms(ctx context.Context, accountId int64) ([]entity.WsChatRoomPreview, error)
@@ -28,7 +28,7 @@ func NewWsChatRoomRepositoryPostgres(db *sql.DB) *wsChatRoomRepositoryPostgres {
 	}
 }
 
-func (r *wsChatRoomRepositoryPostgres) FindWsChatRoom(ctx context.Context, userAccountId, doctorAccountId int64) (*entity.WsChatRoom, error) {
+func (r *wsChatRoomRepositoryPostgres) FindActiveWsChatRoom(ctx context.Context, userAccountId, doctorAccountId int64) (*entity.WsChatRoom, error) {
 	var wsChatRoom entity.WsChatRoom
 
 	err := r.db.QueryRowContext(ctx, database.FindWsChatRoomQuery, userAccountId, doctorAccountId).Scan(&wsChatRoom.Id, &wsChatRoom.Hash, &wsChatRoom.UserAccountId, &wsChatRoom.DoctorAccountId, &wsChatRoom.ExpiredAt)

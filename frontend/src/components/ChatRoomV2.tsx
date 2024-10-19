@@ -1,22 +1,18 @@
 import React, {
   ChangeEvent,
+  useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
 } from "react";
-import { HandleAddFormData, HandleGet, HandlePatchBodyRaw } from "../util/API";
-import { IChat } from "../interfaces/Telemedicine";
+import { HandleAddRaw, HandleGet, HandlePatchBodyRaw } from "../util/API";
+import Cookies from "js-cookie";
 import { HandleShowToast } from "../util/ShowToast";
 import { ToastContext } from "../contexts/ToastData";
 import { FormatTimeChat } from "../util/DateFormatter";
 import { BiSolidMessageSquareError } from "react-icons/bi";
 import { BsFillSendFill } from "react-icons/bs";
-import {
-  MsgRoomIsNowExpired,
-  MsgRefreshTokenNotFound,
-} from "../appconstants/appconstants";
-import { useNavigate } from "react-router-dom";
 import { FaPills } from "react-icons/fa";
 import CreatePrescriptionModal from "./CreatePrescriptionModal";
 import PrescriptionModal from "./PrescriptionModal";
@@ -25,182 +21,29 @@ import Modal from "./Modal";
 import EndChatConfirmationModal from "./EndChatConfirmationModal";
 import { GrDocumentPdf } from "react-icons/gr";
 import { CgAttachment } from "react-icons/cg";
-import { GetRemaining } from "../util/CheckIsExpired";
+import { GetRemaining, IsExpired } from "../util/CheckIsExpired";
+import { IChatRoomDetail, IChatRoomPreviewV2 } from "../interfaces/ChatRoom";
+import { io, protocol } from "socket.io-client";
+import { IWsToken } from "../interfaces/ws_token";
 
-type chatRoomProps = {
-  roomId: number;
+type chatRoomV2Props = {
   accountId: number;
-  doctorCertifcateUrl?: string;
-  chats: IChat[];
-  appendChat: (chat: IChat) => void;
-  isRoomExpired?: boolean;
-  expiredAt?: string;
-  setRoomIsExpired: () => void;
   role: "doctor" | "user";
   setModal: (element: React.ReactElement | undefined) => void;
-  onNewMessage: (value: { [key: number]: { chat: IChat } }) => void;
+  room: IChatRoomPreviewV2;
 };
 
-const ChatRoom = ({
-  roomId,
+const ChatRoomV2 = ({
   accountId,
-  chats,
-  doctorCertifcateUrl,
-  appendChat,
-  isRoomExpired,
-  expiredAt,
-  setRoomIsExpired,
   role,
   setModal,
-  onNewMessage,
-}: chatRoomProps): React.ReactElement => {
+  room,
+}: chatRoomV2Props): React.ReactElement => {
   const { setToast } = useContext(ToastContext);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const url =
-      import.meta.env.VITE_HTTP_BASE_URL + `/chat-rooms/chats/${roomId}`;
-
-    if (isRoomExpired != undefined && !isRoomExpired) {
-      HandleGet<IChat>(url, true)
-        .then((responseData) => {
-          if (responseData) {
-            appendChat(responseData);
-            onNewMessage({ [roomId]: { chat: responseData } });
-          }
-        })
-        .catch((error: Error) => {
-          if (error.message == MsgRefreshTokenNotFound) {
-            navigate("/auth/login");
-
-            setRoomIsExpired();
-
-            HandleShowToast(setToast, false, error.message, 5);
-          }
-        });
-    }
-  }, [
-    navigate,
-    setToast,
-    appendChat,
-    chats,
-    isRoomExpired,
-    roomId,
-    onNewMessage,
-    setRoomIsExpired,
-  ]);
+  //   const navigate = useNavigate();
 
   const [message, setMessage] = useState<string>("");
-
   const [isFirstRender, setIsFirstRender] = useState<boolean>(true);
-
-  useEffect(() => {
-    setIsFirstRender(true);
-  }, [roomId]);
-
-  useEffect(() => {
-    const scrollable = document.getElementById("scrollable-div");
-    const lastChat = document.getElementById("last-chat");
-
-    if (!scrollable || !lastChat) {
-      return;
-    }
-
-    if (isFirstRender) {
-      scrollable.scrollTo({
-        top: lastChat.offsetTop,
-        behavior: "instant",
-      });
-      setIsFirstRender(false);
-    }
-  }, [chats, isFirstRender]);
-
-  useEffect(() => {
-    const scrollable = document.getElementById("scrollable-div");
-    const lastChat = document.getElementById("last-chat");
-
-    if (!scrollable || !lastChat) {
-      return;
-    }
-
-    if (!isFirstRender) {
-      scrollable?.scrollTo({
-        top: lastChat?.offsetTop,
-        behavior: "smooth",
-      });
-    }
-  }, [isFirstRender, chats]);
-
-  function handleSendMessage() {
-    const url = import.meta.env.VITE_HTTP_BASE_URL + "/chat-rooms/chats";
-
-    const formData = new FormData();
-
-    const prescriptionDrugs: {
-      drug: {
-        id: number;
-        name: string;
-        image: string;
-      };
-      quantity: number;
-      note: string;
-    }[] = [];
-
-    if (keys && values) {
-      if (keys.length > 0) {
-        keys.forEach((key) => {
-          prescriptionDrugs.push({
-            drug: {
-              id: +key,
-              name: values[+key].name,
-              image: values[+key].image,
-            },
-            quantity: values[+key].quantity,
-            note: values[+key].note,
-          });
-        });
-      }
-    }
-
-    const data = {
-      room_id: roomId,
-      message: message,
-      prescription_drugs: prescriptionDrugs,
-    };
-
-    formData.append("data", JSON.stringify(data));
-
-    if (fileValue) {
-      formData.append("file", fileValue);
-    }
-
-    if (message != "") {
-      setDisabledSend(true);
-      HandleAddFormData<IChat>(formData, url, true)
-        .then((responseData) => {
-          if (responseData) {
-            onNewMessage({ [roomId]: { chat: responseData } });
-            appendChat(responseData);
-          }
-        })
-        .catch((error: Error) => {
-          if (error.message == MsgRoomIsNowExpired) {
-            setRoomIsExpired();
-          }
-
-          HandleShowToast(setToast, false, error.message, 5);
-        })
-        .finally(() => {
-          setDisabledSend(false);
-          setMessage("");
-          handleRemoveAttachment();
-          setKeys(undefined);
-          setValues(undefined);
-          setAttachment(undefined);
-        });
-    }
-  }
-
   const [keys, setKeys] = useState<string[]>();
   const [values, setValues] = useState<{
     [key: number]: {
@@ -210,13 +53,16 @@ const ChatRoom = ({
       note: string;
     };
   }>();
-
-  const attachmentFile = useRef<HTMLInputElement>(null);
+  const [remainingTime, setRemainingTime] = useState<string>();
+  const [disabledSend, setDisabledSend] = useState<boolean>(false);
   const [attachment, setAttachment] = useState<{
     url: string;
     format: string;
   }>();
   const [fileValue, setFileValue] = useState<File>();
+  const [roomDetail, setRoomDetail] = useState<IChatRoomDetail>();
+
+  const attachmentFile = useRef<HTMLInputElement>(null);
 
   function handleRemoveAttachment() {
     if (attachmentFile.current) {
@@ -266,14 +112,14 @@ const ChatRoom = ({
 
   function handleEndChat() {
     const url =
-      import.meta.env.VITE_HTTP_BASE_URL + `/chat-rooms/${roomId}/close-room`;
+      import.meta.env.VITE_HTTP_BASE_URL + `v2/chat-room/${room.id}/close`;
 
-    setRoomIsExpired();
+    // setRoomIsExpired();
 
     HandlePatchBodyRaw("", url, true)
       .then(() => {
         HandleShowToast(setToast, true, "Consultation Has Ended", 5);
-        setRoomIsExpired();
+        // setRoomIsExpired();
         setModal(undefined);
       })
       .catch((error: Error) => {
@@ -281,38 +127,232 @@ const ChatRoom = ({
       });
   }
 
-  const [remainingTime, setRemainingTime] = useState<string>();
-  const [disabledSend, setDisabledSend] = useState<boolean>(false);
+  const handleGenerateToken = useCallback(async (): Promise<
+    IWsToken | undefined
+  > => {
+    if (!roomDetail) {
+      return;
+    }
+
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/v2/chat-room/token";
+
+    const body = JSON.stringify({
+      "room_hash": roomDetail.room_hash,
+    });
+
+    console.log("hash", roomDetail.room_hash)
+
+    console.log("outside try catch", body)
+
+    try {
+        console.log("body", body)
+      const token: IWsToken = await HandleAddRaw<IWsToken>(url, body, true);
+      return token;
+    } catch (error) {
+      HandleShowToast(setToast, false, (error as Error).message, 7);
+      return undefined;
+    }
+  }, [roomDetail, setToast]);
+
+  //   function handleSendMessage() {
+  //     const url = import.meta.env.VITE_HTTP_BASE_URL + "/chat-rooms/chats";
+
+  //     const formData = new FormData();
+
+  //     const prescriptionDrugs: {
+  //       drug: {
+  //         id: number;
+  //         name: string;
+  //         image: string;
+  //       };
+  //       quantity: number;
+  //       note: string;
+  //     }[] = [];
+
+  //     if (keys && values) {
+  //       if (keys.length > 0) {
+  //         keys.forEach((key) => {
+  //           prescriptionDrugs.push({
+  //             drug: {
+  //               id: +key,
+  //               name: values[+key].name,
+  //               image: values[+key].image,
+  //             },
+  //             quantity: values[+key].quantity,
+  //             note: values[+key].note,
+  //           });
+  //         });
+  //       }
+  //     }
+
+  //     const data = {
+  //       room_id: room.id,
+  //       message: message,
+  //       prescription_drugs: prescriptionDrugs,
+  //     };
+
+  //     formData.append("data", JSON.stringify(data));
+
+  //     if (fileValue) {
+  //       formData.append("file", fileValue);
+  //     }
+
+  //     if (message != "") {
+  //       setDisabledSend(true);
+  //       HandleAddFormData<IChat>(formData, url, true)
+  //         .then((responseData) => {
+  //           if (responseData) {
+  //             // onNewMessage({ [roomId]: { chat: responseData } });
+  //             // appendChat(responseData);
+  //           }
+  //         })
+  //         .catch((error: Error) => {
+  //           if (error.message == MsgRoomIsNowExpired) {
+  //             // setRoomIsExpired();
+  //           }
+
+  //           HandleShowToast(setToast, false, error.message, 5);
+  //         })
+  //         .finally(() => {
+  //           setDisabledSend(false);
+  //           setMessage("");
+  //           handleRemoveAttachment();
+  //           setKeys(undefined);
+  //           setValues(undefined);
+  //           setAttachment(undefined);
+  //         });
+  //     }
+  //   }
 
   useEffect(() => {
-    if (isRoomExpired) {
+    const url =
+      import.meta.env.VITE_HTTP_BASE_URL +
+      "/v2/chat-room/" +
+      room.id.toString();
+
+    HandleGet<IChatRoomDetail>(url, true)
+      .then((data) => {
+        setRoomDetail(data);
+      })
+      .catch((error: Error) => {
+        HandleShowToast(setToast, false, error.message, 7);
+      });
+  }, [room, setToast]);
+
+  const handleWebSocket = useCallback(async () => {
+    const token = await handleGenerateToken();
+
+    if (!token) {
       return;
     }
 
-    const remaining = GetRemaining(expiredAt);
+    const protocols = "channel"+btoa(token.channel)+"-client-token"+btoa(token.token.client_token)+"-channel-token"+btoa(token.token.channel_token)
+
+    const socket = new WebSocket(import.meta.env.VITE_WS_BASE_URL+"/chat-room", protocols)
+
+    socket.onopen = () => {
+        console.log("connected")
+    }
+
+  }, [handleGenerateToken]);
+
+  useEffect(() => {
+    if (!roomDetail) {
+        return
+    }
+
+    handleWebSocket()
+  }, [handleWebSocket, roomDetail]);
+
+  //   useEffect(() => {
+  //     const url =
+  //       import.meta.env.VITE_HTTP_BASE_URL + `/chat-rooms/chats/${room.id}`;
+
+  //     if (IsExpired(room.expired_at)) {
+  //       HandleGet<IChat>(url, true)
+  //         .then((responseData) => {
+  //           if (responseData) {
+  //             // todo append chat
+  //           }
+  //         })
+  //         .catch((error: Error) => {
+  //           if (error.message == MsgRefreshTokenNotFound) {
+  //             navigate("/auth/login");
+
+  //             HandleShowToast(setToast, false, error.message, 5);
+  //           }
+  //         });
+  //     }
+  //   }, [navigate, setToast, room.expired_at, room.id]);
+
+  useEffect(() => {
+    setIsFirstRender(true);
+  }, [room]);
+
+  useEffect(() => {
+    const scrollable = document.getElementById("scrollable-div");
+    const lastChat = document.getElementById("last-chat");
+
+    if (!scrollable || !lastChat) {
+      return;
+    }
+
+    if (isFirstRender) {
+      scrollable.scrollTo({
+        top: lastChat.offsetTop,
+        behavior: "instant",
+      });
+      setIsFirstRender(false);
+    }
+  }, [isFirstRender]);
+
+  useEffect(() => {
+    const scrollable = document.getElementById("scrollable-div");
+    const lastChat = document.getElementById("last-chat");
+
+    if (!scrollable || !lastChat) {
+      return;
+    }
+
+    if (!isFirstRender) {
+      scrollable?.scrollTo({
+        top: lastChat?.offsetTop,
+        behavior: "smooth",
+      });
+    }
+  }, [isFirstRender]);
+
+  useEffect(() => {
+    if (!roomDetail) {
+      return;
+    }
+
+    if (IsExpired(roomDetail.expired_at)) {
+      return;
+    }
+
+    const remaining = GetRemaining(roomDetail.expired_at);
 
     if (remaining === "00:00") {
-      setRoomIsExpired();
+      //   setRoomIsExpired();
       return;
     }
 
-    if (!isRoomExpired) {
-      const interval = setInterval(() => {
-        setRemainingTime(GetRemaining(expiredAt));
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [expiredAt, isRoomExpired, setRoomIsExpired]);
+    const interval = setInterval(() => {
+      setRemainingTime(GetRemaining(roomDetail.expired_at));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [setRemainingTime, roomDetail]);
 
   return (
     <>
-      {accountId ? (
+      {roomDetail && accountId ? (
         <>
           <div
             className={`lg:h-[800px] h-[750px] justify-between relative  w-full lg:w-[69%] bg-gray-200 flex rounded-r-3xl flex-col`}
           >
             <div className="w-full h-[100px] bg-gradient-to-t from-[#E5E7EB] to-[#DFF1FD]"></div>
-            {expiredAt != undefined && !isRoomExpired && (
+            {roomDetail.expired_at !== "" && !IsExpired(room.expired_at) && (
               <div className="flex flex-col lg:flex-row gap-[20px] absolute top-[8px] right-[20px] justify-center lg:left-[50%] lg:translate-x-[-50%] items-center">
                 <p className="text-[20px] font-[600] text-gray-600">
                   Remaining
@@ -324,11 +364,11 @@ const ChatRoom = ({
             )}
             {role == "user" && (
               <div>
-                {roomId && (
+                {room && (
                   <button
                     onClick={() => {
-                      if (doctorCertifcateUrl) {
-                        window.open(doctorCertifcateUrl);
+                      if (roomDetail.doctor_certificate_url) {
+                        window.open(roomDetail.doctor_certificate_url);
                         return;
                       }
                     }}
@@ -337,7 +377,7 @@ const ChatRoom = ({
                     See Doctor Certificate
                   </button>
                 )}
-                {isRoomExpired != undefined && !isRoomExpired && (
+                {!IsExpired(roomDetail.expired_at) && (
                   <button
                     onClick={() =>
                       setModal(
@@ -358,15 +398,19 @@ const ChatRoom = ({
 
             <div className="h-full flex pt-[100px] lg:pt-0 justify-between flex-col relative">
               <>
-                {chats && (
+                {roomDetail.chats && (
                   <div
                     id="scrollable-div"
                     className="flex flex-col pt-[20px] px-[20px] pb-[20px] gap-[10px] h-[655px] overflow-y-auto"
                     style={{ scrollbarWidth: "none" }}
                   >
-                    {chats.map((chat, i) => (
+                    {roomDetail.chats.map((chat, i) => (
                       <div
-                        id={i == chats.length - 1 ? "last-chat" : undefined}
+                        id={
+                          i == roomDetail.chats.length - 1
+                            ? "last-chat"
+                            : undefined
+                        }
                         className={`flex items-${
                           chat.sender_account_id == accountId ? "end" : "start"
                         } w-full flex-col`}
@@ -461,14 +505,14 @@ const ChatRoom = ({
                     ))}
                   </div>
                 )}
-                {expiredAt == undefined && role == "doctor" ? (
+                {roomDetail.expired_at == "" && role == "doctor" ? (
                   <div className="w-full bg-[#000D44] text-center absolute bottom-0 rounded-r-3xl py-[10px]">
                     <p className="text-[20px] font-[600] text-white">
                       Chat can only be started after you click the accept
                       button.
                     </p>
                   </div>
-                ) : isRoomExpired ? (
+                ) : IsExpired(roomDetail.expired_at) ? (
                   <div className="w-full bg-[#000D44] text-center absolute bottom-0 rounded-r-3xl py-[10px]">
                     <p className="text-[20px] text-white font-[600]">
                       Room is expired.{" "}
@@ -599,4 +643,4 @@ const ChatRoom = ({
   );
 };
 
-export default ChatRoom;
+export default ChatRoomV2;

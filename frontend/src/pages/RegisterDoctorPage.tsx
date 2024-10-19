@@ -56,7 +56,7 @@ const RegisterDoctorPage = (): React.ReactElement => {
 
   useEffect(() => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL + "/doctors/specializations";
+      import.meta.env.VITE_HTTP_BASE_URL + "/doctors/specializations";
 
     HandleGet<DoctorSpecialization[]>(url).then((responseData) => {
       setDoctorSpecialization(responseData);

@@ -211,7 +211,7 @@ const ManagerReportPage = (): React.ReactElement => {
 
   const handlePharmacySearch = () => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/managers/pharmacies?search=${selectedFilter.pharmacyName}&limit=1000000`;
     HandleGet<pharmacyDataResponse>(url, true)
       .then((responseData) => {

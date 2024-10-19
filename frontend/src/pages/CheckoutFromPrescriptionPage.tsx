@@ -103,7 +103,7 @@ const CheckoutFromPrescriptionPage = (): React.ReactElement => {
       return;
     }
 
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + `/prescriptions/${prescription_id}?address_id=${selectedAddress.id}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL + `/prescriptions/${prescription_id}?address_id=${selectedAddress.id}`;
 
     setIsLoading(true);
     window.scrollTo({
@@ -137,7 +137,7 @@ const CheckoutFromPrescriptionPage = (): React.ReactElement => {
   }, [prescription_id, selectedAddress, setToast]);
 
   const getAddress = useCallback(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/address";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/address";
 
     HandleGet<{ address: IAddress[] }>(url, true)
       .then((responseData) => {
@@ -149,7 +149,7 @@ const CheckoutFromPrescriptionPage = (): React.ReactElement => {
   }, [setToast]);
 
   function handlePlaceOrder() {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/prescriptions/checkout";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/prescriptions/checkout";
 
     if (!selectedAddress) {
       HandleShowToast(setToast, false, "Select an address first", 5);

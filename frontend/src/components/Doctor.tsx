@@ -23,7 +23,7 @@ const Doctor = (): React.ReactElement => {
 
   const handleGetDoctors = useCallback(() => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/doctors?page=${page}&limit=${doctorPerPage}&sort=desc&sortBy=experience`;
 
     HandleGet<DoctorData>(url)

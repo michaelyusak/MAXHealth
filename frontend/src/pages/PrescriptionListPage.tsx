@@ -11,7 +11,7 @@ const PrescriptionListPage = (): React.ReactElement => {
   const { setToast } = useContext(ToastContext);
 
   useEffect(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/prescriptions";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/prescriptions";
     HandleGet<IPrescriptionListResponse>(url, true)
       .then((responseData) => {
         setPrescriptions(responseData);

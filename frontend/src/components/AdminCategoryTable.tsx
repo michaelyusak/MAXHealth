@@ -16,7 +16,7 @@ const AdminCategoryTable = (): React.ReactElement => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const getAllCategory = useCallback(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/categories/";
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  "/categories/";
 
     setIsLoading(true);
 
@@ -90,7 +90,7 @@ const AdminCategoryTable = (): React.ReactElement => {
   }
 
   function handleDeleteCategory() {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/categories/${deleteId}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  `/categories/${deleteId}`;
 
     setIsLoading(true);
     HandleDelete(url, true)

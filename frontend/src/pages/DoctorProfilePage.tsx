@@ -23,7 +23,7 @@ const DoctorProfilePage = (): React.ReactElement => {
   function handleEditProfile() {
     setShowEditDoctorProfileDialog(false);
 
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/doctors/profile";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/doctors/profile";
 
     HandleGet<IDoctorProfile>(url, true)
       .then((responseData) => {
@@ -39,7 +39,7 @@ const DoctorProfilePage = (): React.ReactElement => {
   }
 
   const getDoctorProfile = useCallback(async () => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/doctors/profile";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/doctors/profile";
 
     HandleGet<IDoctorProfile>(url, true)
       .then((responseData) => {
@@ -55,7 +55,7 @@ const DoctorProfilePage = (): React.ReactElement => {
   }, [navigate, setToast]);
 
   const getDoctorIsOnline = useCallback(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/doctors/availability";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/doctors/availability";
 
     HandleGet<{ is_online: boolean }>(url, true).then((responseData) => {
       setIsDoctorOnline({
@@ -67,7 +67,7 @@ const DoctorProfilePage = (): React.ReactElement => {
 
   const updateDoctorIsOnline = useCallback(
     (isOnline: boolean) => {
-      const url = import.meta.env.VITE_DEPLOYMENT_URL + "/doctors/availability";
+      const url = import.meta.env.VITE_HTTP_BASE_URL + "/doctors/availability";
 
       HandlePatchBodyRaw(JSON.stringify({ is_online: isOnline }), url, true)
         .then(() => {

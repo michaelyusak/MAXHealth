@@ -59,7 +59,7 @@ const AdminManageUserTable = ({
 
   const handleSearchUser = () => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/admin/manager/${selectPartner}/pharmacies?search=${searchData}`;
     setIsLoading(true);
 
@@ -76,7 +76,7 @@ const AdminManageUserTable = ({
   };
 
   const handleDeletePartner = (id: number) => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + `/partners/${id}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL + `/partners/${id}`;
     setIsLoading(true);
     HandleDelete<pharmacyManagers>(url, true)
       .then(() => {
@@ -95,7 +95,7 @@ const AdminManageUserTable = ({
   };
 
   const fetchDataPartner = useCallback(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/partners";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/partners";
     setIsLoading(true);
     HandleGet<pharmacyManagers>(url, true)
       .then((data) => {
@@ -112,7 +112,7 @@ const AdminManageUserTable = ({
   const fetchDataPharmacy = useCallback(() => {
     if (selectPartner) {
       const url =
-        import.meta.env.VITE_DEPLOYMENT_URL +
+        import.meta.env.VITE_HTTP_BASE_URL +
         `/admin/manager/${selectPartner}/pharmacies?page=${page}&limit=${limit}`;
       setIsLoading(true);
 

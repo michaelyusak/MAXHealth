@@ -32,7 +32,7 @@ const Category = (): React.ReactElement => {
   const fetchDataCategory = async () => {
     try {
       const response = await fetch(
-        import.meta.env.VITE_DEPLOYMENT_URL + "/categories/"
+        import.meta.env.VITE_HTTP_BASE_URL + "/categories/"
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");

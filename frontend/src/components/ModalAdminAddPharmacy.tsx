@@ -42,7 +42,7 @@ const ModalAdminAddPharmacy = ({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/pharmacies";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/pharmacies";
 
     const body = {
       pharmacy_name: input,

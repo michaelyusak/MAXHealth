@@ -84,10 +84,6 @@ func (h *ChatRoomHandler) CloseChatRoom(ctx *gin.Context) {
 	}
 
 	roomIdStr := ctx.Param(appconstant.RoomIdString)
-	if !exists {
-		ctx.Error(apperror.UnauthorizedError())
-		return
-	}
 
 	roomId, err := strconv.Atoi(roomIdStr)
 	if err != nil {
@@ -107,25 +103,51 @@ func (h *ChatRoomHandler) CloseChatRoom(ctx *gin.Context) {
 func (h *ChatRoomHandler) DoctorJoinRoom(ctx *gin.Context) {
 	ctx.Header("Content-Type", "application/json")
 
-	doctorAccountId, exist := ctx.Get(appconstant.AccountId)
-	if !exist {
+	doctorAccountId, exists := ctx.Get(appconstant.AccountId)
+	if !exists {
 		ctx.Error(apperror.UnauthorizedError())
 		return
 	}
 
-	var joinRoomRequest dto.DoctorJoinRoomRequest
+	roomIdStr := ctx.Param(appconstant.RoomIdString)
 
-	err := ctx.ShouldBindJSON(&joinRoomRequest)
+	roomId, err := strconv.Atoi(roomIdStr)
 	if err != nil {
-		ctx.Error(err)
+		ctx.Error(apperror.BadRequestError(err))
 		return
 	}
 
-	err = h.chatRoomUsecase.DoctorJoinRoom(ctx.Request.Context(), doctorAccountId.(int64), joinRoomRequest.RoomId)
+	err = h.chatRoomUsecase.DoctorJoinRoom(ctx.Request.Context(), doctorAccountId.(int64), int64(roomId))
 	if err != nil {
 		ctx.Error(err)
 		return
 	}
 
 	util.ResponseOK(ctx, nil)
+}
+
+func (h *ChatRoomHandler) GetRoomDetail(ctx *gin.Context) {
+	ctx.Header("Content-Type", "application/json")
+
+	accountId, exists := ctx.Get(appconstant.AccountId)
+	if !exists {
+		ctx.Error(apperror.UnauthorizedError())
+		return
+	}
+
+	roomIdStr := ctx.Param(appconstant.RoomIdString)
+
+	roomId, err := strconv.Atoi(roomIdStr)
+	if err != nil {
+		ctx.Error(apperror.BadRequestError(err))
+		return
+	}
+
+	roomDetail, err := h.chatRoomUsecase.GetRoomDetail(ctx.Request.Context(), accountId.(int64), int64(roomId))
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+
+	util.ResponseOK(ctx, dto.ToWsChatRoomRes(*roomDetail))
 }

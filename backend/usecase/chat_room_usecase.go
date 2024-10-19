@@ -18,6 +18,7 @@ type ChatRoomUsecasae interface {
 	UserCreateRoom(ctx context.Context, userAccountId, doctorAccountId int64) (*entity.WsChatRoom, error)
 	CloseChatRoom(ctx context.Context, userAccountId, roomId int64) error
 	DoctorJoinRoom(ctx context.Context, doctorAccountId, roomId int64) error
+	GetRoomDetail(ctx context.Context, accountId, roomId int64) (*entity.WsChatRoom, error)
 }
 
 type chatRoomUsecaseImpl struct {
@@ -70,11 +71,15 @@ func (u *chatRoomUsecaseImpl) UserCreateRoom(ctx context.Context, userAccountId,
 		return nil, apperror.DoctorNotFoundError()
 	}
 
-	chatRoom, err := u.wsChatRoomRepository.FindWsChatRoom(ctx, user.AccountId, doctor.AccountId)
+	chatRoom, err := u.wsChatRoomRepository.FindActiveWsChatRoom(ctx, user.AccountId, doctor.AccountId)
 	if err != nil {
 		return nil, apperror.InternalServerError(err)
 	}
 	if chatRoom != nil {
+		if chatRoom.ExpiredAt == nil {
+			return chatRoom, nil
+		}
+
 		if chatRoom.ExpiredAt.After(time.Now()) {
 			return chatRoom, nil
 		}
@@ -140,7 +145,7 @@ func (u *chatRoomUsecaseImpl) DoctorJoinRoom(ctx context.Context, doctorAccountI
 		return apperror.ForbiddenAction()
 	}
 
-	expiredAt := time.Now().Add(appconstant.ChatRoomDuration).Local()
+	expiredAt := time.Now().Add(appconstant.ChatRoomDuration).UTC()
 
 	err = u.wsChatRoomRepository.StartWsChat(ctx, roomId, expiredAt)
 	if err != nil {
@@ -148,4 +153,28 @@ func (u *chatRoomUsecaseImpl) DoctorJoinRoom(ctx context.Context, doctorAccountI
 	}
 
 	return nil
+}
+
+func (u *chatRoomUsecaseImpl) GetRoomDetail(ctx context.Context, accountId, roomId int64) (*entity.WsChatRoom, error) {
+	account, err := u.accountRepository.FindOneById(ctx, accountId)
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+	if account == nil {
+		return nil, apperror.UnauthorizedError()
+	}
+
+	room, err := u.wsChatRoomRepository.FindChatRoomById(ctx, roomId)
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+	if room == nil {
+		return nil, apperror.ChatRoomNotFoundError()
+	}
+
+	if account.Id != room.DoctorAccountId && account.Id != room.UserAccountId {
+		return nil, apperror.UnauthorizedError()
+	}
+
+	return room, nil
 }

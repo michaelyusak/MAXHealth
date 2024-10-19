@@ -2,11 +2,14 @@ package handler
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
 	"max-health/appconstant"
 	"max-health/apperror"
 	"max-health/dto"
 	"max-health/usecase"
 	"max-health/util"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -56,15 +59,48 @@ func (h *WsHandler) GenerateToken(ctx *gin.Context) {
 }
 
 func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
-	_, exists := ctx.Get(appconstant.AccountId)
-	if !exists {
-		ctx.Error(apperror.UnauthorizedError())
-		return
-	}
+	var channel string
+	var channelToken string
+	var clientToken string
 
-	channel := ctx.GetHeader(appconstant.ChannelHeaderKey)
-	channelToken := ctx.GetHeader(appconstant.ChannelTokenHeaderKey)
-	clientToken := ctx.GetHeader(appconstant.ClientTokenHeaderKey)
+	data := ctx.GetHeader("Sec-WebSocket-Protocol")
+
+	dataSplitted := strings.Split(data, ",")
+
+	for _, val := range dataSplitted {
+		if strings.Contains(val, appconstant.ClientTokenHeaderKey) {
+			valDecoded, err := base64.StdEncoding.DecodeString(strings.Split(val, ":")[1])
+			if err != nil {
+				ctx.Error(apperror.InternalServerError(err))
+				return
+			}
+
+			clientToken = string(valDecoded)
+			continue
+		}
+
+		if strings.Contains(val, appconstant.ChannelTokenHeaderKey) {
+			valDecoded, err := base64.StdEncoding.DecodeString(strings.Split(val, ":")[1])
+			if err != nil {
+				ctx.Error(apperror.InternalServerError(err))
+				return
+			}
+
+			channelToken = string(valDecoded)
+			continue
+		}
+
+		if strings.Contains(val, appconstant.ChannelHeaderKey) {
+			valDecoded, err := base64.StdEncoding.DecodeString(strings.Split(val, ":")[1])
+			if err != nil {
+				ctx.Error(apperror.InternalServerError(err))
+				return
+			}
+
+			channel = string(valDecoded)
+			continue
+		}
+	}
 
 	req := dto.ConnectToRoomReq{
 		ClientToken:  clientToken,
@@ -95,11 +131,22 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 
 	wsToken := dto.ToWsTokenEntity(req)
 
+	requestId, exist := ctx.Get(appconstant.RequestId)
+	if !exist {
+		requestId = ""
+	}
+	path := ctx.Request.URL.Path
+
 	go func() {
+		h.logger.WithFields(logrus.Fields{
+			"path":       path,
+			"request-id": requestId,
+		}).Infof("open connection to centrifugo")
+
 		err = h.wsUsecase.HandleCentrifugo(ctx.Request.Context(), wsToken, toClient, fromClient, chClose)
 		if err != nil {
+			conn.Close()
 			ctx.Error(err)
-			chClose <- true
 			return
 		}
 	}()
@@ -110,7 +157,11 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 
 			err := conn.WriteMessage(websocket.TextMessage, chat)
 			if err != nil {
-				h.logger.Errorf("error writing message: %s", err.Error())
+				h.logger.WithFields(logrus.Fields{
+					"error":      fmt.Sprintf("error writing message: %s", err.Error()),
+					"path":       path,
+					"request-id": requestId,
+				}).Warn()
 				return
 			}
 		}
@@ -120,8 +171,11 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 		for {
 			messageType, chat, err := conn.ReadMessage()
 			if err != nil {
-				h.logger.Errorf("error reading message: %s", err.Error())
-				chClose <- true
+				h.logger.WithFields(logrus.Fields{
+					"error":      fmt.Sprintf("error reading message: %s", err.Error()),
+					"path":       path,
+					"request-id": requestId,
+				}).Warn()
 				return
 			}
 
@@ -131,5 +185,14 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 		}
 	}()
 
-	<-chClose
+	select {}
+}
+
+func (h *WsHandler) ConnectToRoomV2(ctx *gin.Context) {
+	// TO DO
+	// LISTEN FOR AUTH MESSAGE
+	// IF GOT AUTH MESSAGE SEND TO CHANNEL {{AUTH_MSG}}
+	// ONE GO ROUTINE TO HANDLE CENTRIFUGO (START WHEN GET AUTH MSG)
+	// IF GOT MESSAGE BEFORE AUTH_MSG, CLOSE CONN
+	// CAN CREATE LOCAL VAR TO STORE TOKEN
 }

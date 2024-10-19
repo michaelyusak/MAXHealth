@@ -92,7 +92,7 @@ const CheckoutPage = (): React.ReactElement => {
       Cookies.get("data") ?? ""
     );
 
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/orders";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/orders";
 
     HandleAddRaw(
       url,
@@ -132,7 +132,7 @@ const CheckoutPage = (): React.ReactElement => {
   };
 
   const getAddress = useCallback(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/address";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/address";
 
     HandleGet<{ address: IAddress[] }>(url, true)
       .then((responseData) => {
@@ -162,7 +162,7 @@ const CheckoutPage = (): React.ReactElement => {
         Cookies.get("data") ?? ""
       );
 
-      const url = import.meta.env.VITE_DEPLOYMENT_URL + "/cart/delivery";
+      const url = import.meta.env.VITE_HTTP_BASE_URL + "/cart/delivery";
       HandleAddRaw<{ pharmacies: IPharmacyCourier[] }>(
         url,
         JSON.stringify({
@@ -362,7 +362,7 @@ const CheckoutPage = (): React.ReactElement => {
                           Cookies.get("data") ?? ""
                         );
                         const url =
-                          import.meta.env.VITE_DEPLOYMENT_URL +
+                          import.meta.env.VITE_HTTP_BASE_URL +
                           "/cart/delivery";
                         HandleAddRaw<{ pharmacies: IPharmacyCourier[] }>(
                           url,

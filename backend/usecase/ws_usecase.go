@@ -73,6 +73,17 @@ func (u *wsUsecaseImpl) GenerateToken(ctx context.Context, roomHash string) (ent
 }
 
 func (u *wsUsecaseImpl) HandleCentrifugo(ctx context.Context, wsToken entity.WsToken, toClient, fromClient chan []byte, chClose chan bool) error {
+	room, err := u.wsChatRoomRepository.FindWsChatRoomByHash(ctx, wsToken.Channel)
+	if err != nil {
+		return apperror.InternalServerError(err)
+	}
+	if room == nil {
+		return apperror.ChatRoomNotFoundError()
+	}
+	if room.ExpiredAt.Before(time.Now()) {
+		return apperror.ChatRoomAlreadyClosedError()
+	}
+	
 	fromCentrifugo := make(chan []byte)
 
 	defer close(fromCentrifugo)

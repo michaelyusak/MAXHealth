@@ -31,7 +31,7 @@ const ManagerPharmacyManagement = ({
   });
   const [dataPharmacyEdit, setDataPharmacyEdit] = useState<pharmacyData>();
   const fetchDataPharmacy = useCallback(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/managers/pharmacies?search=${OnSearch}&page=${page}&limit=${limit}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  `/managers/pharmacies?search=${OnSearch}&page=${page}&limit=${limit}`;
 
     setIsLoading(true);
     HandleGet<pharmacyDataResponse>(url, true)
@@ -48,7 +48,7 @@ const ManagerPharmacyManagement = ({
   }, [setToast, page, limit, onTotalPage, OnSearch]);
 
   const handleDelete = () => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + `/pharmacies/${dataPharmacyEdit?.id}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL + `/pharmacies/${dataPharmacyEdit?.id}`;
 
     setIsLoading(true);
     HandleDelete(url, true)

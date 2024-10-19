@@ -7,7 +7,7 @@ import { HandleShowToast } from "../util/ShowToast";
 import { ToastContext } from "../contexts/ToastData";
 import { IsExpired } from "../util/CheckIsExpired";
 
-type chatRoomPreviewCardProps = {
+type chatRoomPreviewCardV2Props = {
   chatRoomPreview: IChatRoomPreview;
   handleRoomChatOnClick: (isExpired: boolean) => void;
   status: "expired" | "pending" | "on-going";
@@ -15,22 +15,21 @@ type chatRoomPreviewCardProps = {
   refetchRoomList: () => void;
   forRole: "user" | "doctor";
   lastChat?: IChat;
-  newChat?: IChat;
 };
 
-const ChatRoomPreviewCard = ({
+const ChatRoomPreviewCardV2 = ({
   chatRoomPreview,
   handleRoomChatOnClick,
   selectedRoomChat,
   status,
   forRole,
   refetchRoomList,
-  newChat,
-}: chatRoomPreviewCardProps): React.ReactElement => {
+  lastChat
+}: chatRoomPreviewCardV2Props): React.ReactElement => {
   const { setToast } = useContext(ToastContext);
 
   function handleAcceptChatRequest() {
-    const url = import.meta.env.VITE_HTTP_BASE_URL +  "/chat-rooms";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/chat-rooms";
     const bodyRaw = JSON.stringify({ room_id: selectedRoomId });
     HandlePatchBodyRaw(bodyRaw, url, true)
       .then(() => {
@@ -134,14 +133,14 @@ const ChatRoomPreviewCard = ({
 
               <p className="font-[600] text-gray-600">
                 {FormatTimeChat(
-                  newChat
-                    ? newChat.created_at
+                  lastChat
+                    ? lastChat.created_at
                     : chatRoomPreview.last_chat.created_at
                 )}
               </p>
             </div>
             <p className="line-clamp-2 text-[18px] text-black">
-              {newChat ? newChat.message : chatRoomPreview.last_chat.message}
+              {lastChat ? lastChat.message : chatRoomPreview.last_chat.message}
             </p>
           </div>
         </div>
@@ -213,4 +212,4 @@ const ChatRoomPreviewCard = ({
   );
 };
 
-export default ChatRoomPreviewCard;
+export default ChatRoomPreviewCardV2;

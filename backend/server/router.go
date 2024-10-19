@@ -344,7 +344,7 @@ func telemedicineRouting(router *gin.Engine, handler *handler.TelemedicineHandle
 
 func wsRouting(router *gin.Engine, handler *handler.WsHandler, authMiddleware gin.HandlerFunc) {
 	router.POST("/v2/chat-room/token", authMiddleware, handler.GenerateToken)
-	router.GET("/ws/chat-room", authMiddleware, handler.ConnectToRoom)
+	router.GET("/ws/chat-room", handler.ConnectToRoom)
 }
 
 func mediaRouting(router *gin.Engine, handler *handler.MediaHandler, authMiddleware gin.HandlerFunc) {
@@ -358,7 +358,9 @@ func chatRoomRouting(router *gin.Engine, handler *handler.ChatRoomHandler, authM
 
 	chatRoomRouter.POST("", authMiddleware, userAuthorizationMiddleware, handler.UserCreateRoom)
 	chatRoomRouter.PATCH("/:room_id/close", authMiddleware, userAuthorizationMiddleware, handler.CloseChatRoom)
-	chatRoomRouter.PATCH("/start", authMiddleware, doctorAuthorizationMiddleware, handler.DoctorJoinRoom)
+	chatRoomRouter.PATCH("/:room_id/join", authMiddleware, doctorAuthorizationMiddleware, handler.DoctorJoinRoom)
+	chatRoomRouter.GET("", authMiddleware, handler.GetAllRooms)
+	chatRoomRouter.GET("/:room_id", authMiddleware, handler.GetRoomDetail)
 }
 
 func corsRouting(router *gin.Engine, configCors cors.Config) {

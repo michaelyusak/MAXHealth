@@ -23,7 +23,7 @@ const PrescriptionModal = ({
 
   function handleSavePrescription() {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL + `/prescriptions/${prescriptionId}`;
+      import.meta.env.VITE_HTTP_BASE_URL + `/prescriptions/${prescriptionId}`;
 
     HandlePatchBodyRaw("", url, true)
       .then(() => {
