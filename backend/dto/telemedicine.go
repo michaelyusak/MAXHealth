@@ -230,3 +230,10 @@ func ToWsChatRoomRes(wsChatRoom entity.WsChatRoom) WsChatRoomRes {
 		Chats:           ConvertToChatListDTO(wsChatRoom.Chats),
 	}
 }
+
+func ToAttachmentEntity(dto Attachment) entity.Attachment {
+	return entity.Attachment{
+		Url:    dto.Url,
+		Format: dto.Format,
+	}
+}

@@ -141,7 +141,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	orderPharmacyUsecase := usecase.NewOrderPharmacyUsecaseImpl(transaction, &orderPharmacyRepository, &orderItemRepository, &userRepository, &pharmacyManagerRepository)
 	reportUsecase := usecase.NewreportUsecaseImpl(&orderItemRepository, &pharmacyRepository, &pharmacyManagerRepository)
 	stockUsecase := usecase.NewStockUsecaseImpl(&stockRepository, &pharmacyManagerRepository)
-	wsUsecase := usecase.NewWsUsecaseImpl(wsChatRoomRepository, &chatRepository, jwtAuthentication)
+	wsUsecase := usecase.NewWsUsecaseImpl(wsChatRoomRepository, &prescriptionRepository, &prescriptionDrugRepository, &chatRepository, jwtAuthentication, transaction)
 	chatRoomUsecase := usecase.NewChatRoomUsecaseImpl(&userRepository, &doctorRepository, wsChatRoomRepository, &accountRepository)
 	mediaUsecase := usecase.NewMediaUsecaseImpl()
 

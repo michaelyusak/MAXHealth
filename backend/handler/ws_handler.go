@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"max-health/appconstant"
 	"max-health/apperror"
 	"max-health/dto"
@@ -17,7 +16,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/mitchellh/mapstructure"
 	"github.com/sirupsen/logrus"
 )
 
@@ -96,8 +94,6 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 		isAuthenticated = true
 		mutex.Unlock()
 
-		log.Println("got ws token", wsToken)
-
 		h.logger.WithFields(logrus.Fields{
 			"path":       path,
 			"request-id": requestId,
@@ -105,8 +101,11 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 
 		err = h.wsUsecase.HandleCentrifugo(ctx.Request.Context(), wsToken, toClient, fromClient, chClose)
 		if err != nil {
-			ctx.Error(err)
-			return
+			h.logger.WithFields(logrus.Fields{
+				"error":      fmt.Sprintf("error handling centrifugo: %s", err.Error()),
+				"path":       path,
+				"request-id": requestId,
+			}).Error()
 		}
 	}()
 
@@ -134,6 +133,11 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 		for {
 			messageType, message, err := conn.ReadMessage()
 			if err != nil {
+				if websocket.IsUnexpectedCloseError(err) {
+					chClose <- true
+					break
+				}
+
 				h.logger.WithFields(logrus.Fields{
 					"error":      fmt.Sprintf("error reading message: %s", err.Error()),
 					"path":       path,
@@ -154,12 +158,12 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 					}).Warn()
 				}
 
-				log.Println("got message", wsMsg.Type, wsMsg.Data)
-
 				if wsMsg.Type == "auth" {
 					var authData dto.AuthWsData
 
-					err := mapstructure.Decode(wsMsg.Data, &authData)
+					marshaled, _ := json.Marshal(wsMsg.Data)
+
+					err := json.Unmarshal(marshaled, &authData)
 					if err != nil {
 						h.logger.WithFields(logrus.Fields{
 							"error":      fmt.Sprintf("error unmarshal auth data: %s", err.Error()),
@@ -167,8 +171,6 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 							"request-id": requestId,
 						}).Warn()
 					}
-
-					log.Println("sending auth")
 
 					chAuth <- dto.AuthWsDataToEntity(authData)
 
@@ -187,7 +189,12 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 				}
 				mutex.Unlock()
 
-				fromClient <- message
+				if wsMsg.Type == "chat" {
+					wsChatData, _ := json.Marshal(wsMsg.Data)
+
+					fromClient <- wsChatData
+				}
+
 			}
 		}
 	}()

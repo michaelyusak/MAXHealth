@@ -39,10 +39,6 @@ func NewCentrifugoHelperImpl(clientToken, channelToken, channel string) (*centri
 }
 
 func (h *centrifugoHelperImpl) Connect(chClose chan bool) error {
-	h.client.OnDisconnected(func(de centrifuge.DisconnectedEvent) {
-		chClose <- true
-	})
-
 	h.client.OnError(func(ee centrifuge.ErrorEvent) {
 		h.client.Disconnect()
 	})
@@ -57,10 +53,6 @@ func (h *centrifugoHelperImpl) Connect(chClose chan bool) error {
 
 func (h *centrifugoHelperImpl) Start(ctx context.Context, chClose chan bool, fromCentrifugo chan []byte) error {
 	h.subscription.OnError(func(see centrifuge.SubscriptionErrorEvent) {
-		chClose <- true
-	})
-
-	h.subscription.OnUnsubscribed(func(ue centrifuge.UnsubscribedEvent) {
 		chClose <- true
 	})
 
