@@ -2,18 +2,22 @@ package handler
 
 import (
 	"context"
-	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"max-health/appconstant"
 	"max-health/apperror"
 	"max-health/dto"
+	"max-health/entity"
 	"max-health/usecase"
 	"max-health/util"
-	"strings"
+	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/websocket"
+	"github.com/mitchellh/mapstructure"
 	"github.com/sirupsen/logrus"
 )
 
@@ -59,68 +63,8 @@ func (h *WsHandler) GenerateToken(ctx *gin.Context) {
 }
 
 func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
-	var channel string
-	var channelToken string
-	var clientToken string
-
-	data := ctx.GetHeader("Sec-WebSocket-Protocol")
-
-	dataSplitted := strings.Split(data, ",")
-
-	for _, val := range dataSplitted {
-		if strings.Contains(val, appconstant.ClientTokenHeaderKey) {
-			valDecoded, err := base64.StdEncoding.DecodeString(strings.Split(val, ":")[1])
-			if err != nil {
-				ctx.Error(apperror.InternalServerError(err))
-				return
-			}
-
-			clientToken = string(valDecoded)
-			continue
-		}
-
-		if strings.Contains(val, appconstant.ChannelTokenHeaderKey) {
-			valDecoded, err := base64.StdEncoding.DecodeString(strings.Split(val, ":")[1])
-			if err != nil {
-				ctx.Error(apperror.InternalServerError(err))
-				return
-			}
-
-			channelToken = string(valDecoded)
-			continue
-		}
-
-		if strings.Contains(val, appconstant.ChannelHeaderKey) {
-			valDecoded, err := base64.StdEncoding.DecodeString(strings.Split(val, ":")[1])
-			if err != nil {
-				ctx.Error(apperror.InternalServerError(err))
-				return
-			}
-
-			channel = string(valDecoded)
-			continue
-		}
-	}
-
-	req := dto.ConnectToRoomReq{
-		ClientToken:  clientToken,
-		ChannelToken: channelToken,
-		Channel:      channel,
-	}
-
-	err := validator.New().Struct(req)
-	if err != nil {
-		ctx.Error(err)
-		return
-	}
-
-	fromClient := make(chan []byte)
-	toClient := make(chan []byte)
-	chClose := make(chan bool)
-
-	defer close(fromClient)
-	defer close(toClient)
-	defer close(chClose)
+	var isAuthenticated bool
+	var mutex sync.Mutex
 
 	conn, err := h.upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
@@ -129,15 +73,31 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 	}
 	defer conn.Close()
 
-	wsToken := dto.ToWsTokenEntity(req)
-
 	requestId, exist := ctx.Get(appconstant.RequestId)
 	if !exist {
 		requestId = ""
 	}
 	path := ctx.Request.URL.Path
 
+	chAuth := make(chan entity.WsToken)
+	fromClient := make(chan []byte, 10)
+	toClient := make(chan []byte, 10)
+	chClose := make(chan bool, 10)
+
+	defer close(chAuth)
+	defer close(fromClient)
+	defer close(toClient)
+	defer close(chClose)
+
 	go func() {
+		wsToken := <-chAuth
+
+		mutex.Lock()
+		isAuthenticated = true
+		mutex.Unlock()
+
+		log.Println("got ws token", wsToken)
+
 		h.logger.WithFields(logrus.Fields{
 			"path":       path,
 			"request-id": requestId,
@@ -145,7 +105,6 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 
 		err = h.wsUsecase.HandleCentrifugo(ctx.Request.Context(), wsToken, toClient, fromClient, chClose)
 		if err != nil {
-			conn.Close()
 			ctx.Error(err)
 			return
 		}
@@ -157,42 +116,115 @@ func (h *WsHandler) ConnectToRoom(ctx *gin.Context) {
 
 			err := conn.WriteMessage(websocket.TextMessage, chat)
 			if err != nil {
+				if errors.Is(err, websocket.ErrCloseSent) {
+					break
+				}
+
 				h.logger.WithFields(logrus.Fields{
 					"error":      fmt.Sprintf("error writing message: %s", err.Error()),
 					"path":       path,
 					"request-id": requestId,
-				}).Warn()
-				return
+				}).Error()
+				continue
 			}
 		}
 	}()
 
 	go func() {
 		for {
-			messageType, chat, err := conn.ReadMessage()
+			messageType, message, err := conn.ReadMessage()
 			if err != nil {
 				h.logger.WithFields(logrus.Fields{
 					"error":      fmt.Sprintf("error reading message: %s", err.Error()),
 					"path":       path,
 					"request-id": requestId,
 				}).Warn()
-				return
+				continue
 			}
 
 			if messageType == websocket.TextMessage {
-				fromClient <- chat
+				var wsMsg dto.WsMessage
+
+				err := json.Unmarshal(message, &wsMsg)
+				if err != nil {
+					h.logger.WithFields(logrus.Fields{
+						"error":      fmt.Sprintf("error unmarshal message: %s", err.Error()),
+						"path":       path,
+						"request-id": requestId,
+					}).Warn()
+				}
+
+				log.Println("got message", wsMsg.Type, wsMsg.Data)
+
+				if wsMsg.Type == "auth" {
+					var authData dto.AuthWsData
+
+					err := mapstructure.Decode(wsMsg.Data, &authData)
+					if err != nil {
+						h.logger.WithFields(logrus.Fields{
+							"error":      fmt.Sprintf("error unmarshal auth data: %s", err.Error()),
+							"path":       path,
+							"request-id": requestId,
+						}).Warn()
+					}
+
+					log.Println("sending auth")
+
+					chAuth <- dto.AuthWsDataToEntity(authData)
+
+					continue
+				}
+
+				mutex.Lock()
+				if !isAuthenticated {
+					h.logger.WithFields(logrus.Fields{
+						"error":      "request unauthenticated",
+						"path":       path,
+						"request-id": requestId,
+					}).Warn()
+					chClose <- true
+					break
+				}
+				mutex.Unlock()
+
+				fromClient <- message
 			}
 		}
 	}()
 
-	select {}
+	<-chClose
+	closeConn(conn)
 }
 
-func (h *WsHandler) ConnectToRoomV2(ctx *gin.Context) {
-	// TO DO
-	// LISTEN FOR AUTH MESSAGE
-	// IF GOT AUTH MESSAGE SEND TO CHANNEL {{AUTH_MSG}}
-	// ONE GO ROUTINE TO HANDLE CENTRIFUGO (START WHEN GET AUTH MSG)
-	// IF GOT MESSAGE BEFORE AUTH_MSG, CLOSE CONN
-	// CAN CREATE LOCAL VAR TO STORE TOKEN
+func closeConn(conn *websocket.Conn) error {
+	deadline := time.Now().Add(time.Minute)
+	err := conn.WriteControl(
+		websocket.CloseMessage,
+		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
+		deadline,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+	if err != nil {
+		return err
+	}
+
+	for {
+		_, _, err = conn.NextReader()
+		if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+			break
+		}
+		if err != nil {
+			break
+		}
+	}
+
+	err = conn.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }
