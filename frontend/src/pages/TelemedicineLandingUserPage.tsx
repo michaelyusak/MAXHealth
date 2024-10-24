@@ -208,14 +208,14 @@ const TelemedicineLandingUserPage = (): React.ReactElement => {
       {showChatConfirmationModal && (
         <>
           <div className="w-[100vw] h-[100vh] absolute z-[50] top-0 left-0 bg-black opacity-[0.75]"></div>
-          <div className="lg:w-[30%] w-[80%] h-[30%] lg:h-[30%] absolute z-[50] top-[50%] left-[50%] justify-between items-center flex flex-col translate-x-[-50%] rounded-xl translate-y-[-50%] bg-white p-[30px]">
-            <p className="text-[20px] word-break text-center">
+          <div className="lg:w-[30%] w-[80%] absolute z-[50] top-[50%] left-[50%] justify-between items-center flex flex-col gap-[0.5rem] translate-x-[-50%] rounded-xl translate-y-[-50%] bg-white p-[1rem] md:p-[2rem] xl:p-[3rem]">
+            <p className="text-[20px] word-break text-justify">
               Are you sure want to proceed? You will be given a session of
               medical consultation worth of{" "}
               <b className="font-[600]">30 minutes</b>. The timer will start
               once doctor join the room chat.
             </p>
-            <div className="flex w-[70%] lg:w-[50%] justify-between">
+            <div className="flex w-full gap-[1rem] justify-center">
               <button
                 onClick={() => handleCloseChatConfirmationModal()}
                 className="px-[20px] py-[3px] rounded-[8px] text-[20px] font-[600] text-white bg-[#FF0000]"
@@ -292,7 +292,7 @@ const TelemedicineLandingUserPage = (): React.ReactElement => {
           <div className="grid min-h-[700px] gap-y-[10px] gap-x-[5px] grid-cols-[repeat(auto-fit,_minmax(180px,_1fr))] md:grid-cols-[repeat(auto-fit,_minmax(300px,_1fr))] xl:grid-cols-[repeat(auto-fill,_minmax(350px,_1fr))] items-start justify-center place-content-start justify-items-center">
             {doctorList && doctorList.doctors ? (
               doctorList.doctors.map((doctor) => (
-                <div className="w-[180px] md:w-[300px] xl:w-[350px] h-[320px] xl:h-[400px] rounded-xl flex shadow-[0px_0px_15px_0px_rgba(0,0,0,0.3)] flex-col items-center justify-between px-[20px] py-[10px]">
+                <div className="w-[180px] md:w-[300px] xl:w-[350px] h-[350px] xl:h-[400px] rounded-xl flex shadow-[0px_0px_15px_0px_rgba(0,0,0,0.3)] flex-col items-center justify-between px-[20px] py-[10px]">
                   <img
                     className="w-[150px] xl:w-[175px] aspect-square object-cover rounded-[100%]"
                     alt=""
