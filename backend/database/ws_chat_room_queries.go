@@ -4,12 +4,12 @@ const (
 	FindWsChatRoomQuery = `
 		SELECT ws_chat_room_id, room_hash, user_account_id, doctor_account_id, expired_at
 		FROM ws_chat_rooms
-		WHERE
-		user_account_id = $1 
+		WHERE user_account_id = $1 
 		AND doctor_account_id = $2
 		AND deleted_at IS NULL
+		AND expired_at IS NOT NULL
 		ORDER BY created_at DESC
-		LIMIT 1
+		LIMIT 1;
 	`
 
 	CreateWsChatRoomQuery = `
@@ -66,9 +66,9 @@ const (
 	`
 
 	StartWsChatQuery = `
-		UPDATE chat_rooms
+		UPDATE ws_chat_rooms
 		SET expired_at = $2
-		WHERE chat_room_id = $1
+		WHERE ws_chat_room_id = $1
 		AND expired_at IS NULL
 		AND deleted_at IS NULL
 	`

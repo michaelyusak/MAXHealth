@@ -4,13 +4,14 @@ import (
 	"context"
 	"max-health/appconstant"
 	"max-health/apperror"
+	"max-health/entity"
 	"max-health/util"
 	"mime/multipart"
 	"net/http"
 )
 
 type MediaUsecase interface {
-	UploadMedia(ctx context.Context, file multipart.File, fileHeader *multipart.FileHeader) (string, error)
+	UploadMedia(ctx context.Context, file multipart.File, fileHeader *multipart.FileHeader) (*entity.Attachment, error)
 }
 
 type mediaUsecaseImpl struct{}
@@ -19,16 +20,19 @@ func NewMediaUsecaseImpl() *mediaUsecaseImpl {
 	return &mediaUsecaseImpl{}
 }
 
-func (u *mediaUsecaseImpl) UploadMedia(ctx context.Context, file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
-	filePath, _, err := util.ValidateFile(*fileHeader, appconstant.CategoryPicturesUrl, []string{"png", "jpg", "jpeg"}, 2000000)
+func (u *mediaUsecaseImpl) UploadMedia(ctx context.Context, file multipart.File, fileHeader *multipart.FileHeader) (*entity.Attachment, error) {
+	filePath, format, err := util.ValidateFile(*fileHeader, appconstant.CategoryPicturesUrl, []string{"png", "jpg", "jpeg"}, 2000000)
 	if err != nil {
-		return "", apperror.NewAppError(http.StatusBadRequest, err, err.Error())
+		return nil, apperror.NewAppError(http.StatusBadRequest, err, err.Error())
 	}
 
-	imageUrl, err := util.UploadToCloudinary(file, *filePath)
+	url, err := util.UploadToCloudinary(file, *filePath)
 	if err != nil {
-		return "", apperror.InternalServerError(err)
+		return nil, apperror.InternalServerError(err)
 	}
 
-	return imageUrl, nil
+	return &entity.Attachment{
+		Url:    &url,
+		Format: format,
+	}, nil
 }

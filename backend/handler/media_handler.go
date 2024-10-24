@@ -40,13 +40,11 @@ func (h *MediaHandler) UploadMedia(ctx *gin.Context) {
 		return
 	}
 
-	url, err := h.mediaUsecase.UploadMedia(ctx.Request.Context(), file, fileHeader)
+	attachment, err := h.mediaUsecase.UploadMedia(ctx.Request.Context(), file, fileHeader)
 	if err != nil {
 		ctx.Error(err)
 		return
 	}
 
-	util.ResponseOK(ctx, dto.UploadMediaResponse{
-		Url: url,
-	})
+	util.ResponseOK(ctx, dto.ToAttachmentResponse(*attachment))
 }

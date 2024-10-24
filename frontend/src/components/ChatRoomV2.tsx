@@ -6,8 +6,12 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { HandleAddRaw, HandleGet, HandlePatchBodyRaw } from "../util/API";
-import Cookies from "js-cookie";
+import {
+  HandleAddFormData,
+  HandleAddRaw,
+  HandleGet,
+  HandlePatchBodyRaw,
+} from "../util/API";
 import { HandleShowToast } from "../util/ShowToast";
 import { ToastContext } from "../contexts/ToastData";
 import { FormatTimeChat } from "../util/DateFormatter";
@@ -23,14 +27,20 @@ import { GrDocumentPdf } from "react-icons/gr";
 import { CgAttachment } from "react-icons/cg";
 import { GetRemaining, IsExpired } from "../util/CheckIsExpired";
 import { IChatRoomDetail, IChatRoomPreviewV2 } from "../interfaces/ChatRoom";
-import { io, protocol } from "socket.io-client";
-import { IWsToken } from "../interfaces/ws_token";
+import { IWsToken } from "../interfaces/WsToken";
+import { IChatWsData, IWsMessage } from "../interfaces/WsMessage";
+import {
+  IAttachment,
+  IChat,
+  IPrescriptionDrug,
+} from "../interfaces/Telemedicine";
 
 type chatRoomV2Props = {
   accountId: number;
   role: "doctor" | "user";
   setModal: (element: React.ReactElement | undefined) => void;
   room: IChatRoomPreviewV2;
+  height: string;
 };
 
 const ChatRoomV2 = ({
@@ -38,6 +48,7 @@ const ChatRoomV2 = ({
   role,
   setModal,
   room,
+  height,
 }: chatRoomV2Props): React.ReactElement => {
   const { setToast } = useContext(ToastContext);
   //   const navigate = useNavigate();
@@ -63,6 +74,7 @@ const ChatRoomV2 = ({
   const [roomDetail, setRoomDetail] = useState<IChatRoomDetail>();
 
   const attachmentFile = useRef<HTMLInputElement>(null);
+  const socketRef = useRef<WebSocket | null>(null);
 
   function handleRemoveAttachment() {
     if (attachmentFile.current) {
@@ -137,15 +149,10 @@ const ChatRoomV2 = ({
     const url = import.meta.env.VITE_HTTP_BASE_URL + "/v2/chat-room/token";
 
     const body = JSON.stringify({
-      "room_hash": roomDetail.room_hash,
+      room_hash: roomDetail.room_hash,
     });
 
-    console.log("hash", roomDetail.room_hash)
-
-    console.log("outside try catch", body)
-
     try {
-        console.log("body", body)
       const token: IWsToken = await HandleAddRaw<IWsToken>(url, body, true);
       return token;
     } catch (error) {
@@ -154,75 +161,92 @@ const ChatRoomV2 = ({
     }
   }, [roomDetail, setToast]);
 
-  //   function handleSendMessage() {
-  //     const url = import.meta.env.VITE_HTTP_BASE_URL + "/chat-rooms/chats";
+  function startWs() {
+    const socket = new WebSocket(
+      import.meta.env.VITE_WS_BASE_URL + "/chat-room"
+    );
+    socketRef.current = socket;
+  }
 
-  //     const formData = new FormData();
+  async function handlePostFile(file: File): Promise<IAttachment | undefined> {
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/media/upload";
 
-  //     const prescriptionDrugs: {
-  //       drug: {
-  //         id: number;
-  //         name: string;
-  //         image: string;
-  //       };
-  //       quantity: number;
-  //       note: string;
-  //     }[] = [];
+    const formData = new FormData();
 
-  //     if (keys && values) {
-  //       if (keys.length > 0) {
-  //         keys.forEach((key) => {
-  //           prescriptionDrugs.push({
-  //             drug: {
-  //               id: +key,
-  //               name: values[+key].name,
-  //               image: values[+key].image,
-  //             },
-  //             quantity: values[+key].quantity,
-  //             note: values[+key].note,
-  //           });
-  //         });
-  //       }
-  //     }
+    formData.append("file", file);
 
-  //     const data = {
-  //       room_id: room.id,
-  //       message: message,
-  //       prescription_drugs: prescriptionDrugs,
-  //     };
+    try {
+      const attachment = await HandleAddFormData<IAttachment>(
+        formData,
+        url,
+        true
+      );
+      return attachment;
+    } catch (error) {
+      HandleShowToast(setToast, false, (error as Error).message, 7);
+      return undefined;
+    }
+  }
 
-  //     formData.append("data", JSON.stringify(data));
+  async function handleSendMessage() {
+    if (message == "") {
+      return;
+    }
 
-  //     if (fileValue) {
-  //       formData.append("file", fileValue);
-  //     }
+    if (disabledSend) {
+      return;
+    }
 
-  //     if (message != "") {
-  //       setDisabledSend(true);
-  //       HandleAddFormData<IChat>(formData, url, true)
-  //         .then((responseData) => {
-  //           if (responseData) {
-  //             // onNewMessage({ [roomId]: { chat: responseData } });
-  //             // appendChat(responseData);
-  //           }
-  //         })
-  //         .catch((error: Error) => {
-  //           if (error.message == MsgRoomIsNowExpired) {
-  //             // setRoomIsExpired();
-  //           }
+    const prescriptionDrugs: IPrescriptionDrug[] = [];
 
-  //           HandleShowToast(setToast, false, error.message, 5);
-  //         })
-  //         .finally(() => {
-  //           setDisabledSend(false);
-  //           setMessage("");
-  //           handleRemoveAttachment();
-  //           setKeys(undefined);
-  //           setValues(undefined);
-  //           setAttachment(undefined);
-  //         });
-  //     }
-  //   }
+    if (keys && values) {
+      if (keys.length > 0) {
+        keys.forEach((key) => {
+          prescriptionDrugs.push({
+            id: 0,
+            drug: {
+              id: +key,
+              name: values[+key].name,
+              image: values[+key].image,
+            },
+            quantity: values[+key].quantity,
+            note: values[+key].note,
+          });
+        });
+      }
+    }
+
+    const data: IChatWsData = {
+      channel: room.hash,
+      side: role == "user" ? 1 : 2,
+      message: message,
+      prescription_drugs: prescriptionDrugs,
+    };
+
+    if (fileValue) {
+      const attachment = await handlePostFile(fileValue);
+
+      if (attachment) {
+        data.attachment = attachment;
+      }
+    }
+
+    const wsMessage: IWsMessage = {
+      type: "chat",
+      data: data,
+    };
+
+    const wsPayload = JSON.stringify(wsMessage);
+
+    setDisabledSend(true);
+    if (socketRef.current) {
+      socketRef.current.send(wsPayload);
+
+      setMessage("");
+      handleRemoveAttachment();
+    }
+    setDisabledSend(false);
+  }
 
   useEffect(() => {
     const url =
@@ -246,44 +270,91 @@ const ChatRoomV2 = ({
       return;
     }
 
-    const protocols = "channel"+btoa(token.channel)+"-client-token"+btoa(token.token.client_token)+"-channel-token"+btoa(token.token.channel_token)
-
-    const socket = new WebSocket(import.meta.env.VITE_WS_BASE_URL+"/chat-room", protocols)
-
-    socket.onopen = () => {
-        console.log("connected")
+    if (!socketRef.current) {
+      startWs();
     }
 
-  }, [handleGenerateToken]);
+    const socket = socketRef.current;
+
+    if (!socket) {
+      return;
+    }
+
+    console.log("channel", token.channel);
+
+    socket.onopen = () => {
+      if (!socketRef.current) {
+        return;
+      }
+
+      const message: IWsMessage = {
+        type: "auth",
+        data: {
+          channel: token.channel,
+          client_token: token.token.client_token,
+          channel_token: token.token.channel_token,
+        },
+      };
+
+      const authMsg = JSON.stringify(message);
+
+      socket.send(authMsg);
+    };
+
+    socket.onmessage = (ev) => {
+      const msg = ev.data;
+
+      if (roomDetail) {
+        const msgObj: IChat = JSON.parse(msg);
+
+        setRoomDetail((prev) => {
+          if (!prev) {
+            return;
+          }
+
+          const updated = {
+            ...prev,
+            chats: prev.chats ? [...prev.chats, msgObj] : [msgObj],
+          };
+
+          return updated;
+        });
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.log("WebSocket error:", error);
+
+      socket.close();
+    };
+
+    socket.onclose = async () => {
+      console.log("WebSocket connection closed");
+
+      const newToken = await handleGenerateToken();
+
+      if (!newToken) {
+        return;
+      }
+
+      startWs();
+    };
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
+      }
+    };
+  }, [handleGenerateToken, roomDetail]);
 
   useEffect(() => {
     if (!roomDetail) {
-        return
+      return;
     }
 
-    handleWebSocket()
+    handleWebSocket();
   }, [handleWebSocket, roomDetail]);
-
-  //   useEffect(() => {
-  //     const url =
-  //       import.meta.env.VITE_HTTP_BASE_URL + `/chat-rooms/chats/${room.id}`;
-
-  //     if (IsExpired(room.expired_at)) {
-  //       HandleGet<IChat>(url, true)
-  //         .then((responseData) => {
-  //           if (responseData) {
-  //             // todo append chat
-  //           }
-  //         })
-  //         .catch((error: Error) => {
-  //           if (error.message == MsgRefreshTokenNotFound) {
-  //             navigate("/auth/login");
-
-  //             HandleShowToast(setToast, false, error.message, 5);
-  //           }
-  //         });
-  //     }
-  //   }, [navigate, setToast, room.expired_at, room.id]);
 
   useEffect(() => {
     setIsFirstRender(true);
@@ -297,30 +368,15 @@ const ChatRoomV2 = ({
       return;
     }
 
+    scrollable.scrollTo({
+      top: lastChat.offsetTop,
+      behavior: isFirstRender ? "instant" : "smooth",
+    });
+
     if (isFirstRender) {
-      scrollable.scrollTo({
-        top: lastChat.offsetTop,
-        behavior: "instant",
-      });
       setIsFirstRender(false);
     }
-  }, [isFirstRender]);
-
-  useEffect(() => {
-    const scrollable = document.getElementById("scrollable-div");
-    const lastChat = document.getElementById("last-chat");
-
-    if (!scrollable || !lastChat) {
-      return;
-    }
-
-    if (!isFirstRender) {
-      scrollable?.scrollTo({
-        top: lastChat?.offsetTop,
-        behavior: "smooth",
-      });
-    }
-  }, [isFirstRender]);
+  }, [isFirstRender, roomDetail]);
 
   useEffect(() => {
     if (!roomDetail) {
@@ -331,9 +387,8 @@ const ChatRoomV2 = ({
       return;
     }
 
-    const remaining = GetRemaining(roomDetail.expired_at);
-
-    if (remaining === "00:00") {
+    if (remainingTime === "00:00") {
+      setDisabledSend(true)
       //   setRoomIsExpired();
       return;
     }
@@ -342,14 +397,14 @@ const ChatRoomV2 = ({
       setRemainingTime(GetRemaining(roomDetail.expired_at));
     }, 1000);
     return () => clearInterval(interval);
-  }, [setRemainingTime, roomDetail]);
+  }, [setRemainingTime, remainingTime, roomDetail]);
 
   return (
     <>
       {roomDetail && accountId ? (
         <>
           <div
-            className={`lg:h-[800px] h-[750px] justify-between relative  w-full lg:w-[69%] bg-gray-200 flex rounded-r-3xl flex-col`}
+            className={`${height} justify-between relative  w-full lg:w-[69%] bg-gray-200 flex rounded-r-3xl flex-col`}
           >
             <div className="w-full h-[100px] bg-gradient-to-t from-[#E5E7EB] to-[#DFF1FD]"></div>
             {roomDetail.expired_at !== "" && !IsExpired(room.expired_at) && (
@@ -401,7 +456,7 @@ const ChatRoomV2 = ({
                 {roomDetail.chats && (
                   <div
                     id="scrollable-div"
-                    className="flex flex-col pt-[20px] px-[20px] pb-[20px] gap-[10px] h-[655px] overflow-y-auto"
+                    className="flex flex-col pt-[20px] px-[20px] pb-[60px] gap-[10px] h-[655px] overflow-y-auto"
                     style={{ scrollbarWidth: "none" }}
                   >
                     {roomDetail.chats.map((chat, i) => (

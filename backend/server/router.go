@@ -142,7 +142,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	reportUsecase := usecase.NewreportUsecaseImpl(&orderItemRepository, &pharmacyRepository, &pharmacyManagerRepository)
 	stockUsecase := usecase.NewStockUsecaseImpl(&stockRepository, &pharmacyManagerRepository)
 	wsUsecase := usecase.NewWsUsecaseImpl(wsChatRoomRepository, &prescriptionRepository, &prescriptionDrugRepository, &chatRepository, jwtAuthentication, transaction)
-	chatRoomUsecase := usecase.NewChatRoomUsecaseImpl(&userRepository, &doctorRepository, wsChatRoomRepository, &accountRepository)
+	chatRoomUsecase := usecase.NewChatRoomUsecaseImpl(&userRepository, &doctorRepository, wsChatRoomRepository, &accountRepository, &chatRepository)
 	mediaUsecase := usecase.NewMediaUsecaseImpl()
 
 	pingHandler := handler.NewPingHandler(handler.PingHandlerOpts{})
