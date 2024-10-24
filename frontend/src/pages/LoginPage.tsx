@@ -45,7 +45,7 @@ const LoginPage = (): React.ReactElement => {
     const roleName = dataParsed["role"];
 
     if (roleName == "user") {
-      const url = import.meta.env.VITE_DEPLOYMENT_URL + "/address";
+      const url = import.meta.env.VITE_HTTP_BASE_URL + "/address";
 
       HandleGet<{ address: IAddress[] }>(url, true).then((responseData) => {
         const userAddress = responseData.address;

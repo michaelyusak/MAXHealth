@@ -34,7 +34,7 @@ const AddressProfilePage = (): React.ReactElement => {
   const [selectedAddress, setSelectedAddress] = useState<IAddress | null>(null);
 
   const getAddress = useCallback(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/address";
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  "/address";
 
     HandleGet<{ address: IAddress[] }>(url, true)
       .then((responseData) => {
@@ -51,7 +51,7 @@ const AddressProfilePage = (): React.ReactElement => {
 
   function handleDeleteAddress() {
     if (selectedAddress?.id)
-      HandleDelete(import.meta.env.VITE_DEPLOYMENT_URL +  `/address/${selectedAddress.id}`, true)
+      HandleDelete(import.meta.env.VITE_HTTP_BASE_URL +  `/address/${selectedAddress.id}`, true)
         .then(() => {
           HandleShowToast(setToast, true, "Delete address success", 5);
           setShowDeleteConfirmationDialog(false);

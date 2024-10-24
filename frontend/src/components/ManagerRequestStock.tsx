@@ -25,7 +25,7 @@ const ManagerRequestStock = ({
 
   const fetchAllPossibleMutation = useCallback(() => {
     if (drug && drug.pharmacy_drug_id) {
-      const url = import.meta.env.VITE_DEPLOYMENT_URL + `/managers/pharmacies/drugs/${drug.pharmacy_drug_id}/mutation`;
+      const url = import.meta.env.VITE_HTTP_BASE_URL + `/managers/pharmacies/drugs/${drug.pharmacy_drug_id}/mutation`;
 
       setIsLoading(true);
       HandleGet<IPossibleMutation[]>(url, true)
@@ -59,7 +59,7 @@ const ManagerRequestStock = ({
   }, [fetchAllPossibleMutation]);
 
   function handlePostMutation(senderPharmacyDrugId: number, quantity: number) {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + `/managers/pharmacies/drugs/${drug.pharmacy_drug_id}/mutation`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL + `/managers/pharmacies/drugs/${drug.pharmacy_drug_id}/mutation`;
 
     const body = {
       sender_pharmacy_drug_id: senderPharmacyDrugId,

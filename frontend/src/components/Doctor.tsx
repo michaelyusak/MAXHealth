@@ -23,7 +23,7 @@ const Doctor = (): React.ReactElement => {
 
   const handleGetDoctors = useCallback(() => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/doctors?page=${page}&limit=${doctorPerPage}&sort=desc&sortBy=experience`;
 
     HandleGet<DoctorData>(url)
@@ -115,7 +115,7 @@ const Doctor = (): React.ReactElement => {
             </IconContext.Provider>
           </IconButton>
 
-          <div className="grid grid-cols-2 xl:grid-cols-4 justify-between w-full place-content-start">
+          <div className="grid grid-cols-2 xl:grid-cols-4 w-full justify-items-center">
             {doctorData[carouselPage].data.map((doctor, i) => (
               <DoctorLandingPageCard
                 doctor={doctor}

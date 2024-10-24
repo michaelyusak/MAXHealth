@@ -18,7 +18,7 @@ export const addAddressAutofillThunk = createAsyncThunk(
   "address/add",
   async (address: IAddressRequest, { rejectWithValue }) => {
     try {
-      const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/address/autofill";
+      const url = import.meta.env.VITE_HTTP_BASE_URL +  "/address/autofill";
 
       const bodyRaw = JSON.stringify({
         province_name: address.province,

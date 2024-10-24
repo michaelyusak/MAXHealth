@@ -18,7 +18,7 @@ const AddProductForm = (): React.ReactElement => {
   };
 
   const fetchDataCategory = useCallback(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/categories/`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  `/categories/`;
     setIsLoading(true);
 
     HandleGet<CategoryData[]>(url, true)

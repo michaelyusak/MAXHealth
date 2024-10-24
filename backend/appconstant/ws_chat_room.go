@@ -8,7 +8,7 @@ const (
 
 	ChatRoomDuration = time.Duration(30 * time.Minute)
 
-	ChannelHeaderKey      = "Channel"
-	ChannelTokenHeaderKey = "Channel-Token"
-	ClientTokenHeaderKey  = "Client-Token"
+	ChannelHeaderKey      = "channel"
+	ChannelTokenHeaderKey = "channel-token"
+	ClientTokenHeaderKey  = "client-token"
 )

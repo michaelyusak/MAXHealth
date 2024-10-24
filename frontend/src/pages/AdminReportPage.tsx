@@ -162,7 +162,7 @@ const AdminReportPage = (): React.ReactElement => {
   const getPharmacyDrugCategoryReport = useCallback(() => {
     if (selectedFilter.pharmacyId > 0) {
       const url =
-        import.meta.env.VITE_DEPLOYMENT_URL +
+        import.meta.env.VITE_HTTP_BASE_URL +
         `/admin/categories/reports?${
           selectedFilter.pharmacyId > 0
             ? `pharmacy_id=${selectedFilter.pharmacyId}`
@@ -200,7 +200,7 @@ const AdminReportPage = (): React.ReactElement => {
   const getPharmacyDrugReport = useCallback(() => {
     if (selectedFilter.pharmacyId > 0) {
       const url =
-        import.meta.env.VITE_DEPLOYMENT_URL +
+        import.meta.env.VITE_HTTP_BASE_URL +
         `/admin/drugs/reports?${
           selectedFilter.pharmacyId > 0
             ? `pharmacy_id=${selectedFilter.pharmacyId}`
@@ -235,7 +235,7 @@ const AdminReportPage = (): React.ReactElement => {
   ]);
 
   const getPartners = useCallback(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/partners";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/partners";
     HandleGet<pharmacyManagers>(url, true)
       .then((responseData) => {
         setPartners(responseData);
@@ -257,7 +257,7 @@ const AdminReportPage = (): React.ReactElement => {
   const handlePharmacySearch = () => {
     if (selectedFilter.partnerId > 0) {
       const url =
-        import.meta.env.VITE_DEPLOYMENT_URL +
+        import.meta.env.VITE_HTTP_BASE_URL +
         `/admin/manager/${selectedFilter.partnerId}/pharmacies?search=${selectedFilter.pharmacyName}&limit=20`;
 
       HandleGet<pharmacyDataResponse>(url, true)

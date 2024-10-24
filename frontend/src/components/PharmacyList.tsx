@@ -12,7 +12,7 @@ const PharmacyList = (): React.ReactElement => {
 
   const fetchDataPharmacy = useCallback(() => {
     
-      const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/managers/pharmacies`;
+      const url = import.meta.env.VITE_HTTP_BASE_URL +  `/managers/pharmacies`;
 
       setIsLoading(true);
       HandleGet<pharmacyDataResponse>(url, true)

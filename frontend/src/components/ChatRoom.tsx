@@ -59,7 +59,7 @@ const ChatRoom = ({
 
   useEffect(() => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL + `/chat-rooms/chats/${roomId}`;
+      import.meta.env.VITE_HTTP_BASE_URL + `/chat-rooms/chats/${roomId}`;
 
     if (isRoomExpired != undefined && !isRoomExpired) {
       HandleGet<IChat>(url, true)
@@ -132,7 +132,7 @@ const ChatRoom = ({
   }, [isFirstRender, chats]);
 
   function handleSendMessage() {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/chat-rooms/chats";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/chat-rooms/chats";
 
     const formData = new FormData();
 
@@ -266,7 +266,7 @@ const ChatRoom = ({
 
   function handleEndChat() {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL + `/chat-rooms/${roomId}/close-room`;
+      import.meta.env.VITE_HTTP_BASE_URL + `/chat-rooms/${roomId}/close-room`;
 
     setRoomIsExpired();
 

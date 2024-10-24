@@ -21,7 +21,7 @@ const ProfilePage = (): React.ReactElement => {
   function handleEditProfile() {
     setShowEditProfileDialog(false);
 
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/users/profile";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/users/profile";
 
     HandleGet<IProfile>(url, true)
       .then((responseData) => {
@@ -37,7 +37,7 @@ const ProfilePage = (): React.ReactElement => {
   }
 
   useEffect(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/users/profile";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/users/profile";
 
     HandleGet<IProfile>(url, true)
       .then((responseData) => {

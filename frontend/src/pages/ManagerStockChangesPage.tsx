@@ -24,7 +24,7 @@ const ManagerStockChangesPage = (): React.ReactElement => {
 
   useEffect(() => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/managers/stock-change?${
         selectedPharmacyId ? `pharmacy-id=${selectedPharmacyId}` : ""
       }`;
@@ -57,7 +57,7 @@ const ManagerStockChangesPage = (): React.ReactElement => {
 
   const fetchDataPharmacy = useCallback(() => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/managers/pharmacies?${
         searchParam ? `search=${searchParam}&` : ""
       }page=1&limit=20`;

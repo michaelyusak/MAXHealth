@@ -215,12 +215,25 @@ type WsChatRoomRes struct {
 }
 
 func ToWsChatRoomRes(wsChatRoom entity.WsChatRoom) WsChatRoomRes {
+	var expiredAt string
+
+	if wsChatRoom.ExpiredAt != nil {
+		expiredAt = wsChatRoom.ExpiredAt.Format(appconstant.ChatTimeFormat)
+	}
+
 	return WsChatRoomRes{
 		Id:              wsChatRoom.Id,
 		Hash:            wsChatRoom.Hash,
 		DoctorAccountId: wsChatRoom.DoctorAccountId,
 		UserAccountId:   wsChatRoom.UserAccountId,
-		ExpiredAt:       wsChatRoom.ExpiredAt.Format(appconstant.ChatTimeFormat),
+		ExpiredAt:       expiredAt,
 		Chats:           ConvertToChatListDTO(wsChatRoom.Chats),
+	}
+}
+
+func ToAttachmentEntity(dto Attachment) entity.Attachment {
+	return entity.Attachment{
+		Url:    dto.Url,
+		Format: dto.Format,
 	}
 }

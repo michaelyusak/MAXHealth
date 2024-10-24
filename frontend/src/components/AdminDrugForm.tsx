@@ -131,13 +131,13 @@ const AdminDrugForm = ({
 
     Promise.all([
       HandleGet<CategoryData[]>(
-        import.meta.env.VITE_DEPLOYMENT_URL + "/categories/"
+        import.meta.env.VITE_HTTP_BASE_URL + "/categories/"
       ),
       HandleGet<IDrugForm[]>(
-        import.meta.env.VITE_DEPLOYMENT_URL + "/drugs/forms"
+        import.meta.env.VITE_HTTP_BASE_URL + "/drugs/forms"
       ),
       HandleGet<IDrugClassification[]>(
-        import.meta.env.VITE_DEPLOYMENT_URL + "/drugs/classifications"
+        import.meta.env.VITE_HTTP_BASE_URL + "/drugs/classifications"
       ),
     ])
       .then((data) => {
@@ -353,7 +353,7 @@ const AdminDrugForm = ({
 
   function handleUpdateDrug() {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/admin/drugs/${inputValues["id"].value}`;
     setDrugFormIsLoading(true);
     const formData = new FormData();
@@ -401,7 +401,7 @@ const AdminDrugForm = ({
   }
 
   function handleAddDrug() {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/admin/drugs";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/admin/drugs";
     setDrugFormIsLoading(true);
     const formData = new FormData();
 
@@ -446,7 +446,7 @@ const AdminDrugForm = ({
 
   function handleDeleteDrug() {
     HandleDelete(
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
         `/admin/drugs/${inputValues["id"].value}`
     )
       .then(() => {

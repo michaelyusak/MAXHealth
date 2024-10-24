@@ -76,7 +76,7 @@ const ShopPage = (): React.ReactElement => {
       }
 
       const url =
-        import.meta.env.VITE_DEPLOYMENT_URL +
+        import.meta.env.VITE_HTTP_BASE_URL +
         `/drugs?lat=${latitude}&long=${longitude}&search=${searchDrugs}&${
           sortByCol != "" ? `sort-by=${sortByCol}&` : ""
         }${
@@ -119,7 +119,7 @@ const ShopPage = (): React.ReactElement => {
   );
 
   const getAddress = useCallback(async () => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/address";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/address";
 
     setIsLoading(true);
     HandleGet<{ address: IAddress[] }>(url, true)

@@ -240,7 +240,7 @@ const EditProfileForm = ({
     formData.append("data", JSON.stringify(data));
     formData.append("file", profilePicture ?? "");
 
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/users/profile";
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  "/users/profile";
 
     HandlePatchFormData(formData, url, true)
       .then((responseData) => {

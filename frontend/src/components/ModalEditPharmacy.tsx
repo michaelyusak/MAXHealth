@@ -149,7 +149,7 @@ const ModalEditPharmacy = ({
     event.preventDefault();
 
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL + `/pharmacies/${dataPharmacy?.id}`;
+      import.meta.env.VITE_HTTP_BASE_URL + `/pharmacies/${dataPharmacy?.id}`;
 
     const operationalData: operationalRequest[] = Object.entries(
       operationalHours

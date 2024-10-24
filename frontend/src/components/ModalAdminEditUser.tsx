@@ -47,7 +47,7 @@ const ModalAdminEditUser = ({
 
   function handleEditPharmacy(event: React.FormEvent) {
     event.preventDefault();
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/partners/${data?.id}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  `/partners/${data?.id}`;
 
     const formData = new FormData();
     const dataInput = {

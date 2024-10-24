@@ -30,7 +30,7 @@ const ChatRoomPreviewCard = ({
   const { setToast } = useContext(ToastContext);
 
   function handleAcceptChatRequest() {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/chat-rooms";
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  "/chat-rooms";
     const bodyRaw = JSON.stringify({ room_id: selectedRoomId });
     HandlePatchBodyRaw(bodyRaw, url, true)
       .then(() => {

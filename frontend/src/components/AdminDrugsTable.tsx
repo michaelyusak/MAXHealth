@@ -23,7 +23,7 @@ const AdminDrugsTable = (): React.ReactElement => {
 
   const fetchDataDrugs = useCallback(() => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/admin/drugs?page=${page}&limit=${itemPerPage}&search=${drugsSearchParam}`;
     setIsLoading(true);
 
@@ -145,7 +145,7 @@ const AdminDrugsTable = (): React.ReactElement => {
 
   function handleDeleteDrug() {
     HandleDelete(
-      import.meta.env.VITE_DEPLOYMENT_URL + `/admin/drugs/${deleteId}`,
+      import.meta.env.VITE_HTTP_BASE_URL + `/admin/drugs/${deleteId}`,
       true
     )
       .then(() => {

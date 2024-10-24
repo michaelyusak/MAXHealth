@@ -39,7 +39,7 @@ const ProductRelated = ({
   }
 
   useEffect(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/drugs?lat=-6.2266751&long=106.8303862&category=${categoryId}&limit=10&page=${page}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  `/drugs?lat=-6.2266751&long=106.8303862&category=${categoryId}&limit=10&page=${page}`;
 
     setRelatedDrugList(undefined);
 

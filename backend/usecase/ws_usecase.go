@@ -3,36 +3,39 @@ package usecase
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"max-health/appconstant"
 	"max-health/apperror"
+	"max-health/dto"
 	"max-health/entity"
 	"max-health/repository"
 	"max-health/util"
 	"time"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type WsUsecase interface {
 	GenerateToken(ctx context.Context, roomHash string) (entity.WsToken, error)
-	CreateRoom(ctx context.Context, userAccountId, doctorAccountId int64) (*entity.WsChatRoom, error)
 	HandleCentrifugo(ctx context.Context, wsToken entity.WsToken, toClient, fromClient chan []byte, chClose chan bool) error
 }
 
 type wsUsecaseImpl struct {
-	userRepository       repository.UserRepository
-	doctorRepository     repository.DoctorRepository
-	wsChatRoomRepository repository.WsChatRoomRepository
-	chatRepository       repository.ChatRepository
-	jwtHelper            util.JwtAuthentication
+	wsChatRoomRepository       repository.WsChatRoomRepository
+	prescriptionRepository     repository.PrescriptionRepository
+	prescriptionDrugRepository repository.PrescriptionDrugRepository
+	chatRepository             repository.ChatRepository
+	jwtHelper                  util.JwtAuthentication
+	transaction                repository.Transaction
 }
 
-func NewWsUsecaseImpl(userRepository repository.UserRepository, doctorRepository repository.DoctorRepository, wsChatRoomRepository repository.WsChatRoomRepository, chatRepository repository.ChatRepository, jwtHelper util.JwtAuthentication) *wsUsecaseImpl {
+func NewWsUsecaseImpl(wsChatRoomRepository repository.WsChatRoomRepository, prescriptionRepository repository.PrescriptionRepository, prescriptionDrugRepository repository.PrescriptionDrugRepository, chatRepository repository.ChatRepository, jwtHelper util.JwtAuthentication, transaction repository.Transaction) *wsUsecaseImpl {
 	return &wsUsecaseImpl{
-		userRepository:       userRepository,
-		doctorRepository:     doctorRepository,
-		wsChatRoomRepository: wsChatRoomRepository,
-		chatRepository:       chatRepository,
-		jwtHelper:            jwtHelper,
+		wsChatRoomRepository:       wsChatRoomRepository,
+		prescriptionRepository:     prescriptionRepository,
+		prescriptionDrugRepository: prescriptionDrugRepository,
+		chatRepository:             chatRepository,
+		jwtHelper:                  jwtHelper,
+		transaction:                transaction,
 	}
 }
 
@@ -78,61 +81,21 @@ func (u *wsUsecaseImpl) GenerateToken(ctx context.Context, roomHash string) (ent
 	return wsToken, nil
 }
 
-func (u *wsUsecaseImpl) CreateRoom(ctx context.Context, userAccountId, doctorAccountId int64) (*entity.WsChatRoom, error) {
-	user, err := u.userRepository.FindUserByAccountId(ctx, userAccountId)
+func (u *wsUsecaseImpl) HandleCentrifugo(ctx context.Context, wsToken entity.WsToken, toClient, fromClient chan []byte, chClose chan bool) error {
+	room, err := u.wsChatRoomRepository.FindWsChatRoomByHash(ctx, wsToken.Channel)
 	if err != nil {
-		return nil, apperror.InternalServerError(err)
+		return apperror.InternalServerError(err)
 	}
-	if user == nil {
-		return nil, apperror.UserNotFoundError()
+	if room == nil {
+		return apperror.ChatRoomNotFoundError()
 	}
-
-	doctor, err := u.doctorRepository.FindDoctorByAccountId(ctx, doctorAccountId)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-	if doctor == nil {
-		return nil, apperror.DoctorNotFoundError()
-	}
-
-	chatRoom, err := u.wsChatRoomRepository.FindWsChatRoom(ctx, user.AccountId, doctor.AccountId)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-	if chatRoom != nil {
-		if chatRoom.ExpiredAt.After(time.Now()) {
-			return chatRoom, nil
+	if room.ExpiredAt != nil {
+		if room.ExpiredAt.Before(time.Now()) {
+			return apperror.ChatRoomAlreadyClosedError()
 		}
 	}
 
-	hash, err := util.GenerateRandomString()
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-
-	chatRoomExpiredAt := time.Now().Add(appconstant.ChatRoomDuration).Local()
-
-	newWsChatRoom := entity.WsChatRoom{
-		Hash:            fmt.Sprintf("$private:%s#%v,%v", hash, user.AccountId, doctor.AccountId),
-		UserAccountId:   user.AccountId,
-		DoctorAccountId: doctor.AccountId,
-		ExpiredAt:       &chatRoomExpiredAt,
-		Chats:           []entity.Chat{},
-	}
-
-	roomId, err := u.wsChatRoomRepository.CreateWsChatRoom(ctx, newWsChatRoom)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-
-	newWsChatRoom.Id = *roomId
-
-	return &newWsChatRoom, nil
-}
-
-func (u *wsUsecaseImpl) HandleCentrifugo(ctx context.Context, wsToken entity.WsToken, toClient, fromClient chan []byte, chClose chan bool) error {
-	fromCentrifugo := make(chan []byte)
-
+	fromCentrifugo := make(chan []byte, 5)
 	defer close(fromCentrifugo)
 
 	centrifugoHelper, err := util.NewCentrifugoHelperImpl(wsToken.Token.ClientToken, wsToken.Token.ChannelToken, wsToken.Channel)
@@ -151,26 +114,13 @@ func (u *wsUsecaseImpl) HandleCentrifugo(ctx context.Context, wsToken entity.WsT
 		return apperror.InternalServerError(err)
 	}
 
+outer:
 	for {
 		select {
 		case data := <-fromClient:
-			var chat entity.Chat
-			err := json.Unmarshal(data, &chat)
+			res, err := u.handleChatMessage(ctx, data)
 			if err != nil {
-				continue
-			}
-
-			chatId, createdAt, err := u.chatRepository.PostOneChat(ctx, chat)
-			if err != nil {
-				continue
-			}
-
-			chat.Id = *chatId
-			chat.CreatedAt = &createdAt
-
-			res, err := json.Marshal(chat)
-			if err != nil {
-				continue
+				break outer
 			}
 
 			err = centrifugoHelper.Publish(ctx, res)
@@ -182,4 +132,84 @@ func (u *wsUsecaseImpl) HandleCentrifugo(ctx context.Context, wsToken entity.WsT
 			toClient <- data
 		}
 	}
+
+	return nil
+}
+
+func (u *wsUsecaseImpl) handleChatMessage(ctx context.Context, chatData []byte) ([]byte, error) {
+	var wsDataReq dto.WsChatData
+	err := json.Unmarshal(chatData, &wsDataReq)
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+
+	err = validator.New().Struct(wsDataReq)
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+
+	channel, side, chat := dto.ToChatEntity(wsDataReq)
+
+	room, err := u.wsChatRoomRepository.FindWsChatRoomByHash(ctx, channel)
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+	if room == nil {
+		return nil, apperror.InternalServerError(err)
+	}
+
+	chat.SenderAccountId = room.UserAccountId
+	if side == 2 {
+		chat.SenderAccountId = room.DoctorAccountId
+	}
+
+	chat.RoomId = room.Id
+
+	tx, err := u.transaction.BeginTx()
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+
+		tx.Commit()
+	}()
+
+	prescriptionRepo := tx.PrescriptionRepository()
+	prescriptionDrugRepo := tx.PrescriptionDrugRepository()
+	chatRepo := tx.ChatRepository()
+
+	if len(chat.Prescription.PrescriptionDrugs) > 0 {
+		prescriptionId, err := prescriptionRepo.CreateOnePrescription(ctx, room.UserAccountId, room.DoctorAccountId)
+		if err != nil {
+			return nil, apperror.InternalServerError(err)
+		}
+
+		for _, prescriptionDrug := range chat.Prescription.PrescriptionDrugs {
+			err := prescriptionDrugRepo.PostOnePrescriptionDrug(ctx, *prescriptionId, prescriptionDrug)
+			if err != nil {
+				return nil, apperror.InternalServerError(err)
+			}
+		}
+
+		chat.Prescription.Id = prescriptionId
+	}
+
+	chatId, createdAt, err := chatRepo.PostOneChat(ctx, chat)
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+
+	chat.Id = *chatId
+	chat.CreatedAt = &createdAt
+
+	res, err := json.Marshal(dto.ConvertToChatDTO(chat))
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+
+	return res, nil
 }

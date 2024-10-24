@@ -71,6 +71,8 @@ func (r *accountRepositoryPostgres) FindOneById(ctx context.Context, id int64) (
 		return nil, err
 	}
 
+	account.Id = id
+
 	return &account, nil
 }
 

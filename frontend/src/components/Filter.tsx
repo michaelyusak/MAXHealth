@@ -26,7 +26,7 @@ const Filter = ({
   const [categoryNames, setCategoryNames] = useState<string[]>([]);
 
   useEffect(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL + "/categories/";
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/categories/";
 
     HandleGet<CategoryData[]>(url)
       .then((responseData) => {

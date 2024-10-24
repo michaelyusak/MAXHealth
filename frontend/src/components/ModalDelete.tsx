@@ -21,7 +21,7 @@ const ModalDeleteDrugManager = ({
 
   function handleDelete(event: React.FormEvent) {
     event.preventDefault();
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/managers/pharmacies/drugs/${data?.pharmacy_drug_id}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  `/managers/pharmacies/drugs/${data?.pharmacy_drug_id}`;
     setIsLoading(true);
     HandleDelete(url, true)
       .then(() => {

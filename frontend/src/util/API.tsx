@@ -8,7 +8,7 @@ import {
 import { INominatimOpenStreetMapResponse } from "../interfaces/Address";
 
 export async function HandleSendVerificationEmail(email: string) {
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/verification";
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  "/verification";
   const options: RequestInit = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -31,7 +31,7 @@ export async function HandleRegister(inputValues: {
   const name = inputValues["name"]?.value;
   const email = inputValues["email"]?.value;
 
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/users/register";
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  "/users/register";
   const options: RequestInit = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -72,7 +72,7 @@ export async function HandleRegisterDoctor(
   formData.append("data", JSON.stringify(data));
   formData.append("file", certificate ?? "");
 
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/doctors/register";
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  "/doctors/register";
   const options: RequestInit = {
     method: "POST",
     body: formData,
@@ -97,7 +97,7 @@ export async function HandleVerifyPassword(
   const code = inputValues["code"].value;
   const password = inputValues["password"].value;
 
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/verification/password";
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  "/verification/password";
   const options: RequestInit = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -122,7 +122,7 @@ export async function HandleLogin(inputValues: {
   const email = inputValues["email"].value;
   const password = inputValues["password"].value;
 
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/login";
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  "/login";
   const options: RequestInit = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -143,7 +143,7 @@ export async function HandleLogin(inputValues: {
 }
 
 export async function HandleResetPasswordRequest(email: string) {
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/reset-password";
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  "/reset-password";
   const options: RequestInit = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -169,7 +169,7 @@ export async function HandleResetPassword(
   const code = inputValues["code"].value;
   const password = inputValues["password"].value;
 
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/reset-password/verification";
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  "/reset-password/verification";
   const options: RequestInit = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -189,7 +189,7 @@ export async function HandleResetPassword(
 }
 
 export async function HandleRefreshToken() {
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/refresh-token";
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  "/refresh-token";
 
   const refreshToken = Cookies.get("refreshToken");
 
@@ -534,7 +534,7 @@ export async function HandleGeocodeReverse(lat: number, long: number): Promise<I
 }
 
 export async function HandleGetPendingOrders() {
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/orders/pending`;
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  `/orders/pending`;
   const options: RequestInit = {
     method: "GET",
     headers: {
@@ -557,7 +557,7 @@ export async function HandleGetAllOrderPharmacies(
   orderStatusId: number,
   page: number
 ) {
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/orders?status_id=${orderStatusId}&page=${page}&limit=10`;
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  `/orders?status_id=${orderStatusId}&page=${page}&limit=10`;
   const options: RequestInit = {
     method: "GET",
     headers: {
@@ -577,7 +577,7 @@ export async function HandleGetAllOrderPharmacies(
 }
 
 export async function HandleGetOrderDetail(id: string) {
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/orders/${id}`;
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  `/orders/${id}`;
   const options: RequestInit = {
     method: "GET",
     headers: {
@@ -597,7 +597,7 @@ export async function HandleGetOrderDetail(id: string) {
 }
 
 export async function HandleGetOrderPharmacyDetail(id: string) {
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/orders/pharmacy/${id}`;
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  `/orders/pharmacy/${id}`;
   const options: RequestInit = {
     method: "GET",
     headers: {
@@ -624,7 +624,7 @@ export async function HandleUploadOrderPaymentProof(
 
   formData.append("file", file ?? "");
 
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/orders/${orderId}/payment-proof`;
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  `/orders/${orderId}/payment-proof`;
   const options: RequestInit = {
     method: "PATCH",
     headers: {
@@ -644,7 +644,7 @@ export async function HandleUploadOrderPaymentProof(
 }
 
 export async function HandleUserCancelOrder(orderId: number) {
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/orders/${orderId}/cancel-order`;
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  `/orders/${orderId}/cancel-order`;
   const options: RequestInit = {
     method: "PATCH",
     headers: {
@@ -664,7 +664,7 @@ export async function HandleUserCancelOrder(orderId: number) {
 }
 
 export async function HandleUserReceiveOrder(orderPharmacyId: number) {
-  const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/pharmacy-orders/${orderPharmacyId}/confirm-package`;
+  const url = import.meta.env.VITE_HTTP_BASE_URL +  `/pharmacy-orders/${orderPharmacyId}/confirm-package`;
   const options: RequestInit = {
     method: "PATCH",
     headers: {

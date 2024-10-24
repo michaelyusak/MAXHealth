@@ -43,7 +43,7 @@ const ModalAddUser = ({ onClose, onFetch }: modalProps): React.ReactElement => {
   const fileIsInvalid = didEdit.file && input.file === null;
 
   const sendEmail = () => {
-    const urlSendEmail = import.meta.env.VITE_DEPLOYMENT_URL + "/partners/access-details";
+    const urlSendEmail = import.meta.env.VITE_HTTP_BASE_URL + "/partners/access-details";
     const body = {
       email: input.email,
     };
@@ -64,7 +64,7 @@ const ModalAddUser = ({ onClose, onFetch }: modalProps): React.ReactElement => {
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/partners";
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  "/partners";
 
     const formData = new FormData();
 

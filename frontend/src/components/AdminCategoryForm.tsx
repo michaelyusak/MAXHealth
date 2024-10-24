@@ -101,7 +101,7 @@ const AdminCategoryForm = ({
   }
 
   function handleUpdateCategory() {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/categories/${inputValues["id"].value}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  `/categories/${inputValues["id"].value}`;
 
     const formData = new FormData();
 
@@ -137,7 +137,7 @@ const AdminCategoryForm = ({
   }
 
   function handleDeleteCategory() {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/categories/${inputValues["id"].value}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  `/categories/${inputValues["id"].value}`;
 
     setIsLoading(true);
     HandleDelete(url, true)
@@ -159,7 +159,7 @@ const AdminCategoryForm = ({
   }
 
   function handleAddCategory() {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/categories/";
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  "/categories/";
 
     const formData = new FormData();
 

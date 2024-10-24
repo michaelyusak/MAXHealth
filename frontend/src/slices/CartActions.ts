@@ -15,7 +15,7 @@ export const fetchCartData = createAsyncThunk(
     HandleGet<{
       carts: CartItemInter[];
       page_info: { page_count: number; item_count: number; page: number };
-    }>(import.meta.env.VITE_DEPLOYMENT_URL + "/cart/?limit=1000", true)
+    }>(import.meta.env.VITE_HTTP_BASE_URL + "/cart/?limit=1000", true)
       .then((responseData) => {
         dispatch(
           cartActions.replaceCart({
@@ -46,7 +46,7 @@ export const fetchCartDataWithPagination = createAsyncThunk(
       carts: CartItemInter[];
       page_info: { page_count: number; item_count: number; page: number };
     }>(
-      `${import.meta.env.VITE_DEPLOYMENT_URL}/cart/?${
+      `${import.meta.env.VITE_HTTP_BASE_URL}/cart/?${
         paginationRequest.page > 0 ? `page=${paginationRequest.page}` : ""
       }${
         paginationRequest.limit > 0 ? `&limit=${paginationRequest.limit}` : ""
@@ -84,7 +84,7 @@ export const sendCartPostData = createAsyncThunk(
     );
 
     HandleAddRaw(
-      import.meta.env.VITE_DEPLOYMENT_URL + "/cart/",
+      import.meta.env.VITE_HTTP_BASE_URL + "/cart/",
       JSON.stringify({
         pharmacy_drug_id: cart.pharmacyDrugId,
         quantity: cart.quantity,
@@ -132,7 +132,7 @@ export const sendCartUpdateData = createAsyncThunk(
 
     HandlePatchBodyRaw(
       JSON.stringify({ quantity: cart.quantity }),
-      import.meta.env.VITE_DEPLOYMENT_URL + `/cart/${cart.cart_item_id}`,
+      import.meta.env.VITE_HTTP_BASE_URL + `/cart/${cart.cart_item_id}`,
       true
     )
       .then(() => {
@@ -170,7 +170,7 @@ export const sendCartDeleteData = createAsyncThunk(
     );
 
     HandleDelete(
-      import.meta.env.VITE_DEPLOYMENT_URL + `/cart/${cart.cart_item_id}`,
+      import.meta.env.VITE_HTTP_BASE_URL + `/cart/${cart.cart_item_id}`,
       true
     )
       .then(() => {

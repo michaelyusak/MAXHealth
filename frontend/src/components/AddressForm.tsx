@@ -157,7 +157,7 @@ const AddressForm = ({
         const province = provinceOptions.find((opt) => opt.id == value);
         if (province)
           HandleGet<{ cities: IArea[] }>(
-            import.meta.env.VITE_DEPLOYMENT_URL +  `/cities?province_code=${province.code}`, true
+            import.meta.env.VITE_HTTP_BASE_URL +  `/cities?province_code=${province.code}`, true
           )
             .then((responseData) => {
               setCityOptions(responseData.cities);
@@ -189,7 +189,7 @@ const AddressForm = ({
 
         if (city)
           HandleGet<{ districts: IArea[] }>(
-            import.meta.env.VITE_DEPLOYMENT_URL +  `/districts?city_code=${city.code}`, true
+            import.meta.env.VITE_HTTP_BASE_URL +  `/districts?city_code=${city.code}`, true
           )
             .then((responseData) => {
               setDistrictOptions(responseData.districts);
@@ -220,7 +220,7 @@ const AddressForm = ({
 
         if (district)
           HandleGet<{ subdistricts: IArea[] }>(
-            import.meta.env.VITE_DEPLOYMENT_URL +  `/subdistricts?district_code=${district.code}`, true
+            import.meta.env.VITE_HTTP_BASE_URL +  `/subdistricts?district_code=${district.code}`, true
           )
             .then((responseData) => {
               setSubdistrictOptions(responseData.subdistricts);
@@ -270,7 +270,7 @@ const AddressForm = ({
 
   useEffect(() => {
     if (initialAddress) {
-      HandleGet<{ provinces: IArea[] }>(import.meta.env.VITE_DEPLOYMENT_URL +  "/provinces", true)
+      HandleGet<{ provinces: IArea[] }>(import.meta.env.VITE_HTTP_BASE_URL +  "/provinces", true)
         .then((responseData) => {
           setProvinceOptions(responseData.provinces);
         })
@@ -279,7 +279,7 @@ const AddressForm = ({
         });
       if (initialAddress.province?.code !== undefined)
         HandleGet<{ cities: IArea[] }>(
-          import.meta.env.VITE_DEPLOYMENT_URL +  `/cities?province_code=${initialAddress.province.code}`
+          import.meta.env.VITE_HTTP_BASE_URL +  `/cities?province_code=${initialAddress.province.code}`
         )
           .then((responseData) => {
             setCityOptions(responseData.cities);
@@ -289,7 +289,7 @@ const AddressForm = ({
           });
       if (initialAddress.city?.code !== undefined)
         HandleGet<{ districts: IArea[] }>(
-          import.meta.env.VITE_DEPLOYMENT_URL +  `/districts?city_code=${initialAddress.city.code}`
+          import.meta.env.VITE_HTTP_BASE_URL +  `/districts?city_code=${initialAddress.city.code}`
         )
           .then((responseData) => {
             setDistrictOptions(responseData.districts);
@@ -299,7 +299,7 @@ const AddressForm = ({
           });
       if (initialAddress.district?.code !== undefined)
         HandleGet<{ subdistricts: IArea[] }>(
-          import.meta.env.VITE_DEPLOYMENT_URL +  `/subdistricts?district_code=${initialAddress.district.code}`
+          import.meta.env.VITE_HTTP_BASE_URL +  `/subdistricts?district_code=${initialAddress.district.code}`
         )
           .then((responseData) => {
             setSubdistrictOptions(responseData.subdistricts);
@@ -310,7 +310,7 @@ const AddressForm = ({
       return;
     }
     if (!isFilled) {
-      HandleGet<{ provinces: IArea[] }>(import.meta.env.VITE_DEPLOYMENT_URL +  "/provinces", true)
+      HandleGet<{ provinces: IArea[] }>(import.meta.env.VITE_HTTP_BASE_URL +  "/provinces", true)
         .then((responseData) => {
           setProvinceOptions(responseData.provinces);
         })
@@ -340,7 +340,7 @@ const AddressForm = ({
 
   function handleAddAddress() {
     if (!isFilled) {
-      const url = import.meta.env.VITE_DEPLOYMENT_URL +  "/address";
+      const url = import.meta.env.VITE_HTTP_BASE_URL +  "/address";
 
       const provinceId = Number(inputValues["province"].value);
       const cityId = Number(inputValues["city"].value);
@@ -415,7 +415,7 @@ const AddressForm = ({
       is_main: isMain,
     });
 
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/address/${initialAddress?.id}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  `/address/${initialAddress?.id}`;
 
     HandlePutRaw(bodyRaw, url, true)
       .then(() => {

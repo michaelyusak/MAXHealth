@@ -40,7 +40,7 @@ const CreatePrescriptionModal = ({
   const [itemPerPage, setItemPerPage] = useState<number>(10);
 
   useEffect(() => {
-    const url = import.meta.env.VITE_DEPLOYMENT_URL +  `/admin/drugs?search=${searchParam}&page=${page}&limit=${itemPerPage}`;
+    const url = import.meta.env.VITE_HTTP_BASE_URL +  `/admin/drugs?search=${searchParam}&page=${page}&limit=${itemPerPage}`;
 
     HandleGet<{
       drugs: IGetDrugResponse[];
@@ -56,7 +56,7 @@ const CreatePrescriptionModal = ({
   }, [setToast, searchParam, page, itemPerPage]);
 
   useEffect(() => {
-    HandleGet<CategoryData[]>(import.meta.env.VITE_DEPLOYMENT_URL +  "/categories/")
+    HandleGet<CategoryData[]>(import.meta.env.VITE_HTTP_BASE_URL +  "/categories/")
       .then((responseData) => {
         setCategories(responseData);
 

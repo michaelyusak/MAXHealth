@@ -95,7 +95,7 @@ const ModalManagerAddDrug = ({
     event.preventDefault();
     if (drugsPharmacy) {
       const url =
-        import.meta.env.VITE_DEPLOYMENT_URL + `/managers/pharmacies/drugs`;
+        import.meta.env.VITE_HTTP_BASE_URL + `/managers/pharmacies/drugs`;
 
       const existingItem = drugsPharmacy.find(
         (item) => item.drug.id === addDataDrug?.Id
@@ -127,7 +127,7 @@ const ModalManagerAddDrug = ({
           });
       } else {
         const urlEdit = `${
-          import.meta.env.VITE_DEPLOYMENT_URL
+          import.meta.env.VITE_HTTP_BASE_URL
         }/managers/pharmacies/drugs/${drugsPharmacy[Index].pharmacy_drug_id}`;
         const bodyEdit = {
           stock: parseInt(input?.stock) + drugsPharmacy[Index].stock,
@@ -157,7 +157,7 @@ const ModalManagerAddDrug = ({
 
   const fetchDataDrug = useCallback(() => {
     const url =
-      import.meta.env.VITE_DEPLOYMENT_URL +
+      import.meta.env.VITE_HTTP_BASE_URL +
       `/admin/drugs?search=${searchInput}&page=${page}&limit=${itemPerPage}`;
 
     setIsLoading(true);
