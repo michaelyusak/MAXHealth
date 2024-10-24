@@ -30,12 +30,13 @@ type ChatRoom struct {
 }
 
 type WsChatRoom struct {
-	Id              int64
-	Hash            string
-	DoctorAccountId int64
-	UserAccountId   int64
-	ExpiredAt       *time.Time
-	Chats           []Chat
+	Id                   int64
+	Hash                 string
+	DoctorAccountId      int64
+	UserAccountId        int64
+	DoctorCertificateUrl string
+	ExpiredAt            *time.Time
+	Chats                []Chat
 }
 
 type ChatRoomPreview struct {

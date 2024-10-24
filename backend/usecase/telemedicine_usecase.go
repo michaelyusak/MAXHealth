@@ -3,13 +3,8 @@ package usecase
 import (
 	"context"
 	"math"
-	"mime/multipart"
-	"net/http"
 	"strconv"
-	"sync"
-	"time"
 
-	"max-health/appconstant"
 	"max-health/apperror"
 	"max-health/dto"
 	"max-health/entity"
@@ -20,15 +15,6 @@ import (
 )
 
 type TelemedicineUsecase interface {
-	PostOneMessage(ctx context.Context, accountId int64, postOneMessageRequest dto.PostOneMessageRequest, file multipart.File, fileHeader *multipart.FileHeader) (*dto.Chat, error)
-	Listen(ctx context.Context, accountId int64, roomId int64) (*dto.Chat, error)
-	findListenerBySender(sender entity.Participant) bool
-	findListener(listener entity.Participant) bool
-	addListener(listener entity.Participant)
-	removeListener(listener entity.Participant)
-	GetAllChat(ctx context.Context, accountId, roomId int64) (*dto.ChatRoom, error)
-	GetAllChatRoomPreview(ctx context.Context, accountId int64, role string) ([]dto.ChatRoomPreview, error)
-	DoctorGetChatRequest(ctx context.Context, accountId int64) ([]dto.ChatRoomPreview, error)
 	SavePrescription(ctx context.Context, accountId, prescriptionId int64) error
 	GetAllPrescriptions(ctx context.Context, accountId int64, limit, page string) (*dto.PrescriptionResponseList, error)
 	PrepareForCheckout(ctx context.Context, accountId, prescriptionId int64, addressIdString string) (*dto.PreapareForCheckoutResponse, error)
@@ -36,8 +22,6 @@ type TelemedicineUsecase interface {
 }
 
 type telemedicineUsecaseImpl struct {
-	chatRoomRepository         repository.ChatRoomRepository
-	chatRepository             repository.ChatRepository
 	userRepository             repository.UserRepository
 	doctorRepository           repository.DoctorRepository
 	pharmacyDrugRepository     repository.PharmacyDrugRepository
@@ -47,17 +31,11 @@ type telemedicineUsecaseImpl struct {
 	orderRepository            repository.OrderRepository
 	userAddressRepository      repository.UserAddressRepository
 	pharmacyRepository         repository.PharmacyRepository
-	chatChannel                map[int64]chan entity.Chat
-	listeners                  []entity.Participant
-	listenersLock              sync.Mutex
-	abortChannel               chan entity.Participant
 	transaction                repository.Transaction
 }
 
-func NewTelemedicineUsecaseImpl(chatRoomRepository repository.ChatRoomRepository, chatRepository repository.ChatRepository, userRepository repository.UserRepository, doctorRepository repository.DoctorRepository, pharmacyDrugRepository repository.PharmacyDrugRepository, prescriptionDrugRepository repository.PrescriptionDrugRepository, prescriptionRepository repository.PrescriptionRepository, cartRepository repository.CartRepository, orderRepository repository.OrderRepository, userAddressRepository repository.UserAddressRepository, pharmacyRepository repository.PharmacyRepository, transaction repository.Transaction) telemedicineUsecaseImpl {
+func NewTelemedicineUsecaseImpl(userRepository repository.UserRepository, doctorRepository repository.DoctorRepository, pharmacyDrugRepository repository.PharmacyDrugRepository, prescriptionDrugRepository repository.PrescriptionDrugRepository, prescriptionRepository repository.PrescriptionRepository, cartRepository repository.CartRepository, orderRepository repository.OrderRepository, userAddressRepository repository.UserAddressRepository, pharmacyRepository repository.PharmacyRepository, transaction repository.Transaction) telemedicineUsecaseImpl {
 	return telemedicineUsecaseImpl{
-		chatRoomRepository:         chatRoomRepository,
-		chatRepository:             chatRepository,
 		userRepository:             userRepository,
 		doctorRepository:           doctorRepository,
 		pharmacyDrugRepository:     pharmacyDrugRepository,
@@ -67,308 +45,8 @@ func NewTelemedicineUsecaseImpl(chatRoomRepository repository.ChatRoomRepository
 		orderRepository:            orderRepository,
 		userAddressRepository:      userAddressRepository,
 		pharmacyRepository:         pharmacyRepository,
-		chatChannel:                make(map[int64]chan entity.Chat),
-		listeners:                  make([]entity.Participant, 0),
-		listenersLock:              sync.Mutex{},
-		abortChannel:               make(chan entity.Participant),
 		transaction:                transaction,
 	}
-}
-
-func (u *telemedicineUsecaseImpl) PostOneMessage(ctx context.Context, accountId int64, postOneMessageRequest dto.PostOneMessageRequest, file multipart.File, fileHeader *multipart.FileHeader) (*dto.Chat, error) {
-	chat := dto.ConvertPostMessageRequestToChatEntity(postOneMessageRequest)
-	chat.SenderAccountId = accountId
-
-	chatRoom, err := u.chatRoomRepository.FindChatRoomById(ctx, chat.RoomId)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-	if chatRoom == nil {
-		return nil, apperror.ChatRoomNotFoundError()
-	}
-	if chatRoom.DoctorAccountId != accountId && chatRoom.UserAccountId != accountId {
-		return nil, apperror.ForbiddenAction()
-	}
-
-	if chatRoom.ExpiredAt != nil {
-		if chatRoom.ExpiredAt.Before(time.Now()) {
-			return nil, apperror.RoomIsNowExpiredError()
-		}
-	}
-
-	chat.RoomId = chatRoom.Id
-
-	tx, err := u.transaction.BeginTx()
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-			return
-		}
-
-		tx.Commit()
-	}()
-
-	prescriptionRepo := tx.PrescriptionRepository()
-	prescriptionDrugRepo := tx.PrescriptionDrugRepository()
-	chatRepo := tx.ChatRepository()
-
-	if len(postOneMessageRequest.PrescriptionDrugs) > 0 {
-		prescriptionId, err := prescriptionRepo.CreateOnePrescription(ctx, chatRoom.UserAccountId, chatRoom.DoctorAccountId)
-		if err != nil {
-			return nil, apperror.InternalServerError(err)
-		}
-
-		for _, prescriptionDrug := range chat.Prescription.PrescriptionDrugs {
-			err := prescriptionDrugRepo.PostOnePrescriptionDrug(ctx, *prescriptionId, prescriptionDrug)
-			if err != nil {
-				return nil, apperror.InternalServerError(err)
-			}
-		}
-
-		chat.Prescription.Id = prescriptionId
-	}
-
-	if file != nil {
-		filePath, format, err := util.ValidateFile(*fileHeader, appconstant.ChatAttachmentUrl, []string{"png", "jpg", "jpeg", "pdf"}, 2000000)
-		if err != nil {
-			return nil, apperror.NewAppError(http.StatusBadRequest, err, err.Error())
-		}
-
-		AttachmentUrlUrl, err := util.UploadToCloudinary(file, *filePath)
-		if err != nil {
-			return nil, apperror.InternalServerError(err)
-		}
-
-		chat.Attachment.Format = format
-		chat.Attachment.Url = &AttachmentUrlUrl
-	}
-
-	chatId, createdAt, err := chatRepo.PostOneChat(ctx, chat)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-
-	chat.CreatedAt = &createdAt
-	chat.Id = *chatId
-
-	isListenerReady := u.findListenerBySender(entity.Participant{AccountId: chat.SenderAccountId, RoomId: chat.RoomId})
-	if isListenerReady {
-		u.chatChannel[chat.RoomId] <- chat
-	}
-
-	postMessageResponse := dto.ConvertToChatDTO(chat)
-
-	return &postMessageResponse, nil
-}
-
-func (u *telemedicineUsecaseImpl) findListenerBySender(sender entity.Participant) bool {
-	u.listenersLock.Lock()
-	defer u.listenersLock.Unlock()
-
-	for _, listener := range u.listeners {
-		if sender.AccountId != listener.AccountId && sender.RoomId == listener.RoomId {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (u *telemedicineUsecaseImpl) findListener(listener entity.Participant) bool {
-	for _, l := range u.listeners {
-		if l.AccountId == listener.AccountId && l.RoomId == listener.RoomId {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (u *telemedicineUsecaseImpl) findListenerRoomIdByAccountId(listenerAccountId int64) *int64 {
-	for _, l := range u.listeners {
-		if l.AccountId == listenerAccountId {
-			return &l.RoomId
-		}
-	}
-
-	return nil
-}
-
-func (u *telemedicineUsecaseImpl) addListener(listener entity.Participant) {
-	u.listenersLock.Lock()
-	defer u.listenersLock.Unlock()
-
-	u.listeners = append(u.listeners, listener)
-}
-
-func (u *telemedicineUsecaseImpl) removeListener(listener entity.Participant) {
-	u.listenersLock.Lock()
-	defer u.listenersLock.Unlock()
-
-	for i, l := range u.listeners {
-		if l.AccountId == listener.AccountId && l.RoomId == listener.RoomId {
-			u.listeners = append(u.listeners[:i], u.listeners[i+1:]...)
-			return
-		}
-	}
-}
-
-func (u *telemedicineUsecaseImpl) Listen(ctx context.Context, accountId int64, roomId int64) (*dto.Chat, error) {
-	roomChat, err := u.chatRoomRepository.FindChatRoomById(ctx, roomId)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-	if roomChat.DoctorAccountId != accountId && roomChat.UserAccountId != accountId {
-		return nil, apperror.ForbiddenAction()
-	}
-
-	listener := entity.Participant{
-		AccountId: accountId,
-		RoomId:    roomChat.Id,
-	}
-
-	isAlreadyListen := u.findListener(listener)
-	if isAlreadyListen {
-		u.abortChannel <- listener
-	}
-
-	if u.chatChannel[listener.RoomId] == nil {
-		u.chatChannel[listener.RoomId] = make(chan entity.Chat)
-	}
-
-	u.addListener(listener)
-
-	resultChan := make(chan entity.Chat)
-	errorChan := make(chan error)
-
-	expiredAt := time.Now().Add(10 * time.Minute)
-
-	if roomChat.ExpiredAt != nil {
-		expiredAt = *roomChat.ExpiredAt
-	}
-
-	go func() {
-		for {
-			select {
-			case chat := <-u.chatChannel[listener.RoomId]:
-				if chat.Id == 0 {
-
-					continue
-				}
-
-				if chat.SenderAccountId != listener.AccountId {
-					resultChan <- chat
-
-					return
-				}
-
-				u.chatChannel[chat.RoomId] <- chat
-
-			case l := <-u.abortChannel:
-				if listener.AccountId == l.AccountId && listener.RoomId == l.RoomId {
-					errorChan <- apperror.AbortPreviousListenRequestError()
-
-					return
-				}
-
-				u.abortChannel <- l
-
-			case <-time.After(time.Until(expiredAt)):
-				errorChan <- apperror.AbortPreviousListenRequestError()
-				return
-			}
-		}
-	}()
-
-	select {
-	case chatReceived := <-resultChan:
-		chatResponse := dto.ConvertToChatDTO(chatReceived)
-		u.removeListener(listener)
-
-		return &chatResponse, nil
-	case err := <-errorChan:
-		u.removeListener(listener)
-
-		return nil, err
-	}
-}
-
-func (u *telemedicineUsecaseImpl) GetAllChat(ctx context.Context, accountId, roomId int64) (*dto.ChatRoom, error) {
-	chatRoom, err := u.chatRoomRepository.FindChatRoomById(ctx, roomId)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-
-	if chatRoom == nil {
-		return nil, apperror.ChatRoomNotFoundError()
-	}
-
-	previousRoomId := u.findListenerRoomIdByAccountId(accountId)
-	if previousRoomId != nil && *previousRoomId != roomId {
-		u.abortChannel <- entity.Participant{RoomId: *previousRoomId, AccountId: accountId}
-	}
-
-	if chatRoom.DoctorAccountId != accountId && chatRoom.UserAccountId != accountId {
-		return nil, apperror.ChatRoomNotFoundError()
-	}
-
-	doctorData, err := u.doctorRepository.FindDoctorByAccountId(ctx, chatRoom.DoctorAccountId)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-
-	chatRoom.DoctorCertificateUrl = doctorData.Certificate
-
-	chats, err := u.chatRepository.GetAllChat(ctx, chatRoom.Id)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-
-	var chatList []entity.Chat
-
-	for _, chat := range chats {
-		if chat.Prescription.Id != nil {
-			prescriptionDrugList, err := u.prescriptionDrugRepository.GetAllPrescriptionDrug(ctx, *chat.Prescription.Id)
-			if err != nil {
-				return nil, err
-			}
-
-			chat.Prescription.PrescriptionDrugs = prescriptionDrugList
-		}
-
-		chatList = append(chatList, chat)
-	}
-
-	chatRoom.Chats = chatList
-
-	chatRoomResponse := dto.ConvertToChatRoomDTO(*chatRoom)
-
-	return &chatRoomResponse, nil
-}
-
-func (u *telemedicineUsecaseImpl) GetAllChatRoomPreview(ctx context.Context, accountId int64, role string) ([]dto.ChatRoomPreview, error) {
-	chatRoomPreviewList, err := u.chatRoomRepository.GetAllChatRoomPreview(ctx, accountId, role)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-
-	chatRoomPreviewResponse := dto.ConvertToChatRoomPreviewList(chatRoomPreviewList)
-
-	return chatRoomPreviewResponse, nil
-}
-
-func (u *telemedicineUsecaseImpl) DoctorGetChatRequest(ctx context.Context, accountId int64) ([]dto.ChatRoomPreview, error) {
-	chatRoomPreviewList, err := u.chatRoomRepository.DoctorGetChatRequest(ctx, accountId)
-	if err != nil {
-		return nil, apperror.InternalServerError(err)
-	}
-
-	chatRoomPreviewResponse := dto.ConvertToChatRoomPreviewList(chatRoomPreviewList)
-
-	return chatRoomPreviewResponse, nil
 }
 
 func (u *telemedicineUsecaseImpl) SavePrescription(ctx context.Context, accountId, prescriptionId int64) error {

@@ -72,6 +72,7 @@ const ChatRoomV2 = ({
   }>();
   const [fileValue, setFileValue] = useState<File>();
   const [roomDetail, setRoomDetail] = useState<IChatRoomDetail>();
+  const [isExpired, setIsExpired] = useState<boolean>(true);
 
   const attachmentFile = useRef<HTMLInputElement>(null);
   const socketRef = useRef<WebSocket | null>(null);
@@ -124,7 +125,7 @@ const ChatRoomV2 = ({
 
   function handleEndChat() {
     const url =
-      import.meta.env.VITE_HTTP_BASE_URL + `v2/chat-room/${room.id}/close`;
+      import.meta.env.VITE_HTTP_BASE_URL + `/v2/chat-room/${room.id}/close`;
 
     // setRoomIsExpired();
 
@@ -257,6 +258,7 @@ const ChatRoomV2 = ({
     HandleGet<IChatRoomDetail>(url, true)
       .then((data) => {
         setRoomDetail(data);
+        setIsExpired(IsExpired(data.expired_at));
       })
       .catch((error: Error) => {
         HandleShowToast(setToast, false, error.message, 7);
@@ -383,12 +385,12 @@ const ChatRoomV2 = ({
       return;
     }
 
-    if (IsExpired(roomDetail.expired_at)) {
+    if (isExpired) {
       return;
     }
 
     if (remainingTime === "00:00") {
-      setDisabledSend(true)
+      setDisabledSend(true);
       //   setRoomIsExpired();
       return;
     }
@@ -397,7 +399,7 @@ const ChatRoomV2 = ({
       setRemainingTime(GetRemaining(roomDetail.expired_at));
     }, 1000);
     return () => clearInterval(interval);
-  }, [setRemainingTime, remainingTime, roomDetail]);
+  }, [setRemainingTime, remainingTime, isExpired, roomDetail]);
 
   return (
     <>
@@ -407,7 +409,7 @@ const ChatRoomV2 = ({
             className={`${height} justify-between relative  w-full lg:w-[69%] bg-gray-200 flex rounded-r-3xl flex-col`}
           >
             <div className="w-full h-[100px] bg-gradient-to-t from-[#E5E7EB] to-[#DFF1FD]"></div>
-            {roomDetail.expired_at !== "" && !IsExpired(room.expired_at) && (
+            {roomDetail.expired_at !== "" && !isExpired && (
               <div className="flex flex-col lg:flex-row gap-[20px] absolute top-[8px] right-[20px] justify-center lg:left-[50%] lg:translate-x-[-50%] items-center">
                 <p className="text-[20px] font-[600] text-gray-600">
                   Remaining
@@ -432,7 +434,7 @@ const ChatRoomV2 = ({
                     See Doctor Certificate
                   </button>
                 )}
-                {!IsExpired(roomDetail.expired_at) && (
+                {!isExpired && (
                   <button
                     onClick={() =>
                       setModal(
@@ -560,15 +562,16 @@ const ChatRoomV2 = ({
                     ))}
                   </div>
                 )}
+
                 {roomDetail.expired_at == "" && role == "doctor" ? (
-                  <div className="w-full bg-[#000D44] text-center absolute bottom-0 rounded-r-3xl py-[10px]">
+                  <div className="w-full bg-[#000D44] text-center mt-auto rounded-r-3xl py-[10px]">
                     <p className="text-[20px] font-[600] text-white">
                       Chat can only be started after you click the accept
                       button.
                     </p>
                   </div>
-                ) : IsExpired(roomDetail.expired_at) ? (
-                  <div className="w-full bg-[#000D44] text-center absolute bottom-0 rounded-r-3xl py-[10px]">
+                ) : isExpired ? (
+                  <div className="w-full bg-[#000D44] text-center mt-auto rounded-r-3xl py-[10px]">
                     <p className="text-[20px] text-white font-[600]">
                       Room is expired.{" "}
                       <a href="/telemedicine/" className="text-white">

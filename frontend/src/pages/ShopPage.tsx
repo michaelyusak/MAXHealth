@@ -89,8 +89,6 @@ const ShopPage = (): React.ReactElement => {
           maxPrice > minPrice ? `max-price=${maxPrice}&` : ""
         }limit=${itemPerPage}&page=${page}`;
 
-      console.log(url);
-
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -156,11 +154,7 @@ const ShopPage = (): React.ReactElement => {
   }, [setToast, dispatch, selectedAddress]);
 
   const getLocation = useCallback(
-    async (data: string) => {
-      const dataParsed = JSON.parse(data);
-      const mainLocation: { lat: string; long: string } =
-        dataParsed["location"];
-
+    async (mainLocation: { lat: string; long: string }) => {
       await getAddress();
 
       if (
@@ -172,21 +166,24 @@ const ShopPage = (): React.ReactElement => {
         return;
       }
 
-      if (mainLocation.lat !== "" && mainLocation.long !== "") {
-        fetchDrugList(mainLocation.lat, mainLocation.long);
-        return;
-      }
+      fetchDrugList(mainLocation.lat, mainLocation.long);
     },
     [fetchDrugList, selectedAddress, getAddress]
   );
 
   useEffect(() => {
     if (data) {
-      getLocation(data);
-      return;
+      const dataParsed = JSON.parse(data);
+      const mainLocation: { lat: string; long: string } =
+        dataParsed["location"];
+
+      if (mainLocation.lat !== "" && mainLocation.long !== "") {
+        getLocation(mainLocation);
+        return;
+      }
     }
 
-    fetchDrugList("-6.1934332", "106.8217253")
+    fetchDrugList("-6.1934332", "106.8217253");
   }, [fetchDrugList, selectedAddress, getLocation, data]);
 
   const token = Cookies.get("accessToken");
@@ -288,7 +285,7 @@ const ShopPage = (): React.ReactElement => {
               height="h-[50px]"
             ></ItemSelector>
           </div>
-          <div className="grid grid-cols-[repeat(auto-fit,_minmax(180px,_1fr))] md:grid-cols-[repeat(auto-fit,_minmax(200px,_1fr))] xl:grid-cols-[repeat(auto-fill,_minmax(240px,_1fr))] md:min-h-[650px] gap-x-[5px] gap-y-[10px] place-content-start justify-items-center md:justify-items-start">
+          <div className="grid grid-cols-[repeat(auto-fit,_minmax(180px,_1fr))] md:grid-cols-[repeat(auto-fit,_minmax(200px,_1fr))] xl:grid-cols-[repeat(auto-fill,_minmax(240px,_1fr))] md:min-h-[650px] gap-x-[5px] gap-y-[10px] place-content-start justify-items-center">
             {drugList ? (
               drugList.drug_list.map((pharmacyDrug) => (
                 <Link

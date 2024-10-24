@@ -53,10 +53,11 @@ const (
 	`
 
 	FindWsChatRoomByIdQuery = `
-		SELECT room_hash, user_account_id, doctor_account_id, expired_at
+		SELECT room_hash, user_account_id, doctor_account_id, doctors.certificate, expired_at
 		FROM ws_chat_rooms
+		LEFT JOIN doctors ON doctors.account_id = ws_chat_rooms.doctor_account_id
 		WHERE ws_chat_room_id = $1 
-		AND deleted_at IS NULL
+		AND ws_chat_rooms.deleted_at IS NULL
 	`
 
 	CloseWsChatRoomQuery = `

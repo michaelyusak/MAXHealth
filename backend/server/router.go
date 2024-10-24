@@ -66,7 +66,6 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	drugPharmacyRepository := repository.NewDrugPharmacyRepositoryPostgres(db)
 	categoryRepository := repository.NewCategoryRepositoryPostgres(db)
 	chatRepository := repository.NewChatRepositoryPostgres(db)
-	chatRoomRepository := repository.NewChatRoomRepositoryPostgres(db)
 	doctorSpecializationRepository := repository.NewDoctorSpecializationRepositoryPostgres(db)
 	prescriptionRepository := repository.NewPrescriptionRepositoryPostgres(db)
 	prescriptionDrugRepository := repository.NewPrescriptionDrugRepositoryPostgres(db)
@@ -122,8 +121,6 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	drugFormUsecase := usecase.NewdrugFormUsecaseImpl(&drugFormRepository)
 	drugClassificationUsecase := usecase.NewDrugClassificationUsecaseImpl(&drugClassificationRepository)
 	telemedicineUsecase := usecase.NewTelemedicineUsecaseImpl(
-		&chatRoomRepository,
-		&chatRepository,
 		&userRepository,
 		&doctorRepository,
 		&drugPharmacyRepository,
@@ -236,7 +233,7 @@ func newRouter(h routerOpts, u utilOpts, config *config.Config, log *logrus.Logg
 	pharmacyRouting(router, h.Pharmacy, authMiddleware, pharmacyManagerAuthorizationMiddleware, adminAuthorizationMiddleware)
 	categoryRouting(router, h.Category, authMiddleware, adminAuthorizationMiddleware)
 	cartRouting(router, h.Cart, authMiddleware, userAuthorizationMiddleware)
-	telemedicineRouting(router, h.Telemedicine, authMiddleware, userAuthorizationMiddleware, doctorAuthorizationMiddleware)
+	telemedicineRouting(router, h.Telemedicine, authMiddleware, userAuthorizationMiddleware)
 	orderRouting(router, h.Order, authMiddleware, userAuthorizationMiddleware, adminAuthorizationMiddleware)
 	orderPharmacyRouting(router, h.OrderPharmacy, authMiddleware, pharmacyManagerAuthorizationMiddleware, userAuthorizationMiddleware, adminAuthorizationMiddleware)
 	reportRouting(router, h.Report, authMiddleware, pharmacyManagerAuthorizationMiddleware, adminAuthorizationMiddleware)
@@ -330,12 +327,7 @@ func addressRouting(router *gin.Engine, handler *handler.AddressHandler) {
 	router.GET("/subdistricts", handler.GetAllSubdistrictsByDistrictCode)
 }
 
-func telemedicineRouting(router *gin.Engine, handler *handler.TelemedicineHandler, authMiddleware gin.HandlerFunc, userAuthorizationMiddleware gin.HandlerFunc, doctorAuthorizationMiddleware gin.HandlerFunc) {
-	router.POST("/chat-rooms/chats", authMiddleware, handler.PostOneMessage)
-	router.GET("/chat-rooms/chats/:room_id", authMiddleware, handler.Listen)
-	router.GET("/chat-rooms/:room_id", authMiddleware, handler.GetAllChat)
-	router.GET("/chat-rooms", authMiddleware, handler.GetAllChatRoomPreview)
-	router.GET("/chat-rooms/requests", authMiddleware, doctorAuthorizationMiddleware, handler.DoctorGetChatRequest)
+func telemedicineRouting(router *gin.Engine, handler *handler.TelemedicineHandler, authMiddleware gin.HandlerFunc, userAuthorizationMiddleware gin.HandlerFunc) {
 	router.PATCH("/prescriptions/:prescription_id", authMiddleware, userAuthorizationMiddleware, handler.SavePrescription)
 	router.GET("/prescriptions", authMiddleware, userAuthorizationMiddleware, handler.GetAllPrescriptions)
 	router.GET("/prescriptions/:prescription_id", authMiddleware, userAuthorizationMiddleware, handler.PreapereForCheckout)

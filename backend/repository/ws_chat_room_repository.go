@@ -116,7 +116,7 @@ func (r *wsChatRoomRepositoryPostgres) GetAllRooms(ctx context.Context, accountI
 func (r *wsChatRoomRepositoryPostgres) FindChatRoomById(ctx context.Context, chatRoomId int64) (*entity.WsChatRoom, error) {
 	var chatRoom entity.WsChatRoom
 
-	err := r.db.QueryRowContext(ctx, database.FindWsChatRoomByIdQuery, chatRoomId).Scan(&chatRoom.Hash, &chatRoom.UserAccountId, &chatRoom.DoctorAccountId, &chatRoom.ExpiredAt)
+	err := r.db.QueryRowContext(ctx, database.FindWsChatRoomByIdQuery, chatRoomId).Scan(&chatRoom.Hash, &chatRoom.UserAccountId, &chatRoom.DoctorAccountId, &chatRoom.DoctorCertificateUrl, &chatRoom.ExpiredAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

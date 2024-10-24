@@ -69,8 +69,8 @@ const ChatRoomPreviewCardV2 = ({
       {forRole == "doctor" && showDoctorConfirmationModal && (
         <>
           <div className="w-[100%] h-[100%] absolute z-[50] top-0 left-0 bg-black gradi opacity-[0.75]"></div>
-          <div className="w-[80%] lg:w-[30%] h-[40%] lg:h-[30%] absolute z-[50] top-[50%] left-[50%] justify-between items-center flex flex-col translate-x-[-50%] rounded-xl translate-y-[-50%] bg-white p-[30px]">
-            <p className="text-[20px] word-break text-center">
+          <div className="w-full md:w-[60%] xl:w-[50%] p-[1rem] md:p-[2rem] xl:p-[3rem] gap-[0.5rem] absolute z-[50] top-[50%] left-[50%] justify-between items-center flex flex-col translate-x-[-50%] rounded-xl translate-y-[-50%] bg-white">
+            <p className="text-[20px] word-break text-justify">
               Are you sure want to proceed? You are about to give{" "}
               <b className="font-[600]">30 minutes</b>. medical consultation
               session,{" "}
@@ -78,7 +78,7 @@ const ChatRoomPreviewCardV2 = ({
                 you can not accept other request during this period of time
               </b>
             </p>
-            <div className="flex w-[100%] justify-between">
+            <div className="flex w-[100%] justify-center gap-[1rem]">
               <button
                 onClick={() => handleCloseChatConfirmationModal()}
                 className="px-[20px] py-[3px] rounded-[8px] text-[20px] font-[600] text-white bg-[#FF0000]"

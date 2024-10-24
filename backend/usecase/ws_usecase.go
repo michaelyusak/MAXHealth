@@ -182,7 +182,7 @@ func (u *wsUsecaseImpl) handleChatMessage(ctx context.Context, chatData []byte) 
 	prescriptionDrugRepo := tx.PrescriptionDrugRepository()
 	chatRepo := tx.ChatRepository()
 
-	if len(chat.Prescription.PrescriptionDrugs) > 0 {
+	if len(chat.Prescription.PrescriptionDrugs) > 0 && side == 2 {
 		prescriptionId, err := prescriptionRepo.CreateOnePrescription(ctx, room.UserAccountId, room.DoctorAccountId)
 		if err != nil {
 			return nil, apperror.InternalServerError(err)

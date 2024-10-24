@@ -206,12 +206,13 @@ func ConvertPrepareForCheckoutToResponse(checkoutItemList []entity.PrepareForChe
 }
 
 type WsChatRoomRes struct {
-	Id              int64  `json:"room_id"`
-	Hash            string `json:"room_hash"`
-	DoctorAccountId int64  `json:"doctor_account_id"`
-	UserAccountId   int64  `json:"user_account_id"`
-	ExpiredAt       string `json:"expired_at"`
-	Chats           []Chat `json:"chats"`
+	Id                   int64  `json:"room_id"`
+	Hash                 string `json:"room_hash"`
+	DoctorAccountId      int64  `json:"doctor_account_id"`
+	UserAccountId        int64  `json:"user_account_id"`
+	DoctorCertificateUrl string `json:"doctor_certificate_url"`
+	ExpiredAt            string `json:"expired_at"`
+	Chats                []Chat `json:"chats"`
 }
 
 func ToWsChatRoomRes(wsChatRoom entity.WsChatRoom) WsChatRoomRes {
@@ -222,12 +223,13 @@ func ToWsChatRoomRes(wsChatRoom entity.WsChatRoom) WsChatRoomRes {
 	}
 
 	return WsChatRoomRes{
-		Id:              wsChatRoom.Id,
-		Hash:            wsChatRoom.Hash,
-		DoctorAccountId: wsChatRoom.DoctorAccountId,
-		UserAccountId:   wsChatRoom.UserAccountId,
-		ExpiredAt:       expiredAt,
-		Chats:           ConvertToChatListDTO(wsChatRoom.Chats),
+		Id:                   wsChatRoom.Id,
+		Hash:                 wsChatRoom.Hash,
+		DoctorAccountId:      wsChatRoom.DoctorAccountId,
+		UserAccountId:        wsChatRoom.UserAccountId,
+		DoctorCertificateUrl: wsChatRoom.DoctorCertificateUrl,
+		ExpiredAt:            expiredAt,
+		Chats:                ConvertToChatListDTO(wsChatRoom.Chats),
 	}
 }
 
