@@ -451,12 +451,12 @@ const ChatRoomV2 = ({
               </div>
             )}
 
-            <div className="h-full flex pt-[100px] lg:pt-0 justify-between flex-col relative">
+            <div className="h-full flex pt-[60px] justify-between flex-col relative">
               <>
                 {roomDetail.chats && (
                   <div
                     id="scrollable-div"
-                    className="flex flex-col pt-[20px] px-[20px] pb-[60px] gap-[10px] h-[655px] overflow-y-auto"
+                    className="flex flex-col px-[20px] pb-[10px] gap-[10px] h-[655px] overflow-y-auto"
                     style={{ scrollbarWidth: "none" }}
                   >
                     {roomDetail.chats.map((chat, i) => (
