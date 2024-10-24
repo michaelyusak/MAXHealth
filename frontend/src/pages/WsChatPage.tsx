@@ -18,6 +18,8 @@ const WsChatPage = (): React.ReactElement => {
   const [onGoingRooms, setOnGoingRooms] = useState<IChatRoomPreviewV2[]>([]);
   const [expiredRooms, setExpiredRooms] = useState<IChatRoomPreviewV2[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<IChatRoomPreviewV2>();
+  const [modal, setModal] = useState<React.ReactElement>();
+  const [screenHeight, setScreenHeight] = useState<number>(window.innerHeight);
 
   const handleGetRoomList = useCallback(() => {
     const url = import.meta.env.VITE_HTTP_BASE_URL + "/v2/chat-room";
@@ -31,7 +33,21 @@ const WsChatPage = (): React.ReactElement => {
       .catch((error: Error) => {
         console.log(error.message);
       });
-  }, []) 
+  }, []);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      setScreenHeight(window.innerHeight);
+    };
+
+    updateHeight();
+
+    window.addEventListener("resize", updateHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, []);
 
   useEffect(() => {
     const data = Cookies.get("data");
@@ -49,12 +65,13 @@ const WsChatPage = (): React.ReactElement => {
   }, [navigate, setAccountId, setToast]);
 
   useEffect(() => {
-    handleGetRoomList()
+    handleGetRoomList();
   }, [handleGetRoomList]);
 
   return (
     <>
-      <div className="hidden lg:flex w-full items-center justify-center drop-shadow-[0px_0px_10px_rgba(0,0,0,0.25)]">
+      {modal && modal}
+      <div className="hidden lg:flex w-full h-[100vh] items-start pt-[5%] px-[3%] justify-center drop-shadow-[0px_0px_10px_rgba(0,0,0,0.25)]">
         <ChatRoomPreviewListV2
           onGoingChatRoomPreviewList={onGoingRooms}
           expiredChatRoomPreviewList={expiredRooms}
@@ -62,17 +79,39 @@ const WsChatPage = (): React.ReactElement => {
           selectedRoomId={selectedRoom?.id}
           setSelectedRoom={(room) => setSelectedRoom(room)}
           refetchRoomList={() => handleGetRoomList()}
+          height={
+            screenHeight > 800
+              ? "h-[600px]"
+              : screenHeight > 700
+              ? "h-[500px]"
+              : "h-[400px]"
+          }
         ></ChatRoomPreviewListV2>
 
         {selectedRoom && accountId && role ? (
           <ChatRoomV2
-            setModal={() => {}}
+            setModal={(element) => setModal(element)}
             room={selectedRoom}
             accountId={accountId}
             role={role}
+            height={
+              screenHeight > 800
+                ? "h-[600px]"
+                : screenHeight > 700
+                ? "h-[500px]"
+                : "h-[400px]"
+            }
           ></ChatRoomV2>
         ) : (
-          <div className="h-[800px] bg-gray-200 w-[70%]"></div>
+          <div
+            className={`${
+              screenHeight > 800
+                ? "h-[600px]"
+                : screenHeight > 700
+                ? "h-[500px]"
+                : "h-[400px]"
+            } bg-gray-200 w-[70%]`}
+          ></div>
         )}
       </div>
       {/* <div className="lg:hidden relative">

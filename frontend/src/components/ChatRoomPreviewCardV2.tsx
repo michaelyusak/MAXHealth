@@ -29,9 +29,8 @@ const ChatRoomPreviewCardV2 = ({
   const { setToast } = useContext(ToastContext);
 
   function handleAcceptChatRequest() {
-    const url = import.meta.env.VITE_HTTP_BASE_URL + "/chat-rooms";
-    const bodyRaw = JSON.stringify({ room_id: selectedRoomId });
-    HandlePatchBodyRaw(bodyRaw, url, true)
+    const url = import.meta.env.VITE_HTTP_BASE_URL + "/v2/chat-room/"+chatRoomPreview.id.toString()+"/join";
+    HandlePatchBodyRaw("", url, true)
       .then(() => {
         setSelectedRoomId(selectedRoomId);
         setShowDoctorConfirmationModal(false);

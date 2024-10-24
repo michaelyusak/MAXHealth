@@ -206,7 +206,7 @@ func (u *wsUsecaseImpl) handleChatMessage(ctx context.Context, chatData []byte) 
 	chat.Id = *chatId
 	chat.CreatedAt = &createdAt
 
-	res, err := json.Marshal(chat)
+	res, err := json.Marshal(dto.ConvertToChatDTO(chat))
 	if err != nil {
 		return nil, apperror.InternalServerError(err)
 	}

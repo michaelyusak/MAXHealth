@@ -333,6 +333,10 @@ const router = createBrowserRouter(
               element: <ChatPage></ChatPage>,
             },
             {
+              path: "/doctors/telemedicine/chats/ws",
+              element: <WsChatPage></WsChatPage>,
+            },
+            {
               path: "/doctors/profile/",
               element: <DoctorProfileTemplate></DoctorProfileTemplate>,
               children: [

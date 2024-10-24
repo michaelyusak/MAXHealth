@@ -11,8 +11,6 @@ import (
 	"time"
 )
 
-// to do: move CreateWsRoom here
-
 type ChatRoomUsecasae interface {
 	GetAllRooms(ctx context.Context, accountId int64) ([]entity.WsChatRoomPreview, error)
 	UserCreateRoom(ctx context.Context, userAccountId, doctorAccountId int64) (*entity.WsChatRoom, error)
@@ -26,14 +24,16 @@ type chatRoomUsecaseImpl struct {
 	doctorRepository     repository.DoctorRepository
 	wsChatRoomRepository repository.WsChatRoomRepository
 	accountRepository    repository.AccountRepository
+	chatRepository       repository.ChatRepository
 }
 
-func NewChatRoomUsecaseImpl(userRepository repository.UserRepository, doctorRepository repository.DoctorRepository, wsChatRoomRepository repository.WsChatRoomRepository, accountRepository repository.AccountRepository) *chatRoomUsecaseImpl {
+func NewChatRoomUsecaseImpl(userRepository repository.UserRepository, doctorRepository repository.DoctorRepository, wsChatRoomRepository repository.WsChatRoomRepository, accountRepository repository.AccountRepository, chatRepository repository.ChatRepository) *chatRoomUsecaseImpl {
 	return &chatRoomUsecaseImpl{
 		userRepository:       userRepository,
 		doctorRepository:     doctorRepository,
 		wsChatRoomRepository: wsChatRoomRepository,
 		accountRepository:    accountRepository,
+		chatRepository:       chatRepository,
 	}
 }
 
@@ -76,12 +76,8 @@ func (u *chatRoomUsecaseImpl) UserCreateRoom(ctx context.Context, userAccountId,
 		return nil, apperror.InternalServerError(err)
 	}
 	if chatRoom != nil {
-		if chatRoom.ExpiredAt == nil {
-			return chatRoom, nil
-		}
-
 		if chatRoom.ExpiredAt.After(time.Now()) {
-			return chatRoom, nil
+			return nil, apperror.OnGoingChatExistError()
 		}
 	}
 
@@ -175,6 +171,13 @@ func (u *chatRoomUsecaseImpl) GetRoomDetail(ctx context.Context, accountId, room
 	if account.Id != room.DoctorAccountId && account.Id != room.UserAccountId {
 		return nil, apperror.UnauthorizedError()
 	}
+
+	chats, err := u.chatRepository.GetAllChat(ctx, room.Id)
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+
+	room.Chats = chats
 
 	return room, nil
 }

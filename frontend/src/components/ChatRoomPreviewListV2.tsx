@@ -17,6 +17,7 @@ type chatRoomPreviewListV2Props = {
   expiredChatRoomPreviewList: IChatRoomPreviewV2[];
   requestedChatRoomPreviewList: IChatRoomPreviewV2[];
   refetchRoomList: () => void;
+  height: string;
 };
 
 const ChatRoomPreviewListV2 = ({
@@ -25,7 +26,8 @@ const ChatRoomPreviewListV2 = ({
   onGoingChatRoomPreviewList,
   expiredChatRoomPreviewList,
   requestedChatRoomPreviewList,
-  refetchRoomList
+  refetchRoomList,
+  height
 }: chatRoomPreviewListV2Props): React.ReactElement => {
   const navigate = useNavigate();
 
@@ -39,9 +41,9 @@ const ChatRoomPreviewListV2 = ({
 
   return (
     <div
-      className={`lg:h-[800px] h-[750px] lg:w-[30%] flex flex-col border-r-[1px] border-black`}
+      className={`${height} lg:w-[30%] flex flex-col border-r-[1px] border-black`}
     >
-      <div className="w-[100%] h-[70px] bg-[#000d44] px-[20px] hidden lg:flex items-center justify-start">
+      <div className="w-[100%] h-[10%] bg-[#000d44] px-[20px] hidden lg:flex items-center justify-start">
         <button
           onClick={() => {
             if (pathname.includes("doctors")) {
@@ -58,7 +60,7 @@ const ChatRoomPreviewListV2 = ({
       </div>
       <div
         dir="rtl"
-        className="h-[800px] overflow-y-auto"
+        className={`${height} overflow-y-auto`}
         style={{ scrollbarWidth: "none" }}
       >
         <div className="flex flex-col h-full bg-gray-200" dir="ltr">

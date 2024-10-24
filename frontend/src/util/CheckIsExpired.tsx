@@ -9,7 +9,7 @@ export function IsExpired(timeStr: string): boolean {
   const clientTimezoneOffset = now.getTimezoneOffset() * 60000;
 
   const expiredAtClientTimezone = new Date(
-    expiredAtUTC.getTime() + clientTimezoneOffset
+    expiredAtUTC.getTime() - clientTimezoneOffset
   );
 
   return expiredAtClientTimezone < now;
@@ -26,7 +26,7 @@ export function GetRemaining(timeStr?: string): string {
   const clientTimezoneOffset = now.getTimezoneOffset() * 60000;
 
   const expiredAtClientTimezone = new Date(
-    expiredAtUTC.getTime() + clientTimezoneOffset
+    expiredAtUTC.getTime() - clientTimezoneOffset
   );
 
   const remaining = expiredAtClientTimezone.getTime() - now.getTime();
