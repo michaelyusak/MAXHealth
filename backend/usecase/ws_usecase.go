@@ -90,8 +90,8 @@ func (u *wsUsecaseImpl) HandleCentrifugo(ctx context.Context, wsToken entity.WsT
 		return apperror.ChatRoomNotFoundError()
 	}
 	if room.ExpiredAt != nil {
-		if room.ExpiredAt.Before(time.Now()) {
-			return apperror.ChatRoomAlreadyClosedError()
+		if *room.ExpiredAt < time.Now().UnixMicro() {
+			return nil
 		}
 	}
 
@@ -182,7 +182,7 @@ func (u *wsUsecaseImpl) handleChatMessage(ctx context.Context, chatData []byte) 
 	prescriptionDrugRepo := tx.PrescriptionDrugRepository()
 	chatRepo := tx.ChatRepository()
 
-	if len(chat.Prescription.PrescriptionDrugs) > 0 {
+	if len(chat.Prescription.PrescriptionDrugs) > 0 && side == 2 {
 		prescriptionId, err := prescriptionRepo.CreateOnePrescription(ctx, room.UserAccountId, room.DoctorAccountId)
 		if err != nil {
 			return nil, apperror.InternalServerError(err)

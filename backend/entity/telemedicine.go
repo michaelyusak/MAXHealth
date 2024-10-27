@@ -30,12 +30,13 @@ type ChatRoom struct {
 }
 
 type WsChatRoom struct {
-	Id              int64
-	Hash            string
-	DoctorAccountId int64
-	UserAccountId   int64
-	ExpiredAt       *time.Time
-	Chats           []Chat
+	Id                   int64
+	Hash                 string
+	DoctorAccountId      int64
+	UserAccountId        int64
+	DoctorCertificateUrl string
+	ExpiredAt            *int64
+	Chats                []Chat
 }
 
 type ChatRoomPreview struct {
@@ -51,7 +52,7 @@ type WsChatRoomPreview struct {
 	Hash                  string
 	ParticipantName       string
 	ParticipantPictureUrl string
-	ExpiredAt             *time.Time
+	ExpiredAt             *int64
 	LastChat              Chat
 }
 

@@ -13,7 +13,7 @@ const Toast = ({
 }: toastProps): React.ReactElement => {
   return (
     <div
-      className={`w-[200px] md:w-[300px] xl:w-[500px] flex justify-center gap-[10px] text-center fixed z-[1000] border-2 left-[50%] translate-x-[-50%] top-[50px] ${
+      className={`w-[80%] md:w-[70%] xl:w-[60%] flex justify-center gap-[10px] text-center fixed z-[1000] border-2 left-[50%] translate-x-[-50%] top-[50px] ${
         isSuccess
           ? "bg-[#EAFCEF] border-[#33A720] text-[#33A720]"
           : "bg-[#FFDDCA] border-[#F60707] text-[#F60707]"

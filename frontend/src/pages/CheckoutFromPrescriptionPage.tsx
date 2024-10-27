@@ -5,7 +5,6 @@ import AddressForm from "../components/AddressForm";
 import Dialog from "../components/Dialog";
 import AddressMap from "../components/AddressMap";
 import AddAddressCard from "../components/AddAddressCard";
-import Button from "../components/Button";
 import chevronLeftIcon from "../assets/img/chevron-left-icon.png";
 import chevronRightIcon from "../assets/img/chevron-right-icon.png";
 import pinIcon from "../assets/img/pin-icon.png";
@@ -103,7 +102,9 @@ const CheckoutFromPrescriptionPage = (): React.ReactElement => {
       return;
     }
 
-    const url = import.meta.env.VITE_HTTP_BASE_URL + `/prescriptions/${prescription_id}?address_id=${selectedAddress.id}`;
+    const url =
+      import.meta.env.VITE_HTTP_BASE_URL +
+      `/prescriptions/${prescription_id}?address_id=${selectedAddress.id}`;
 
     setIsLoading(true);
     window.scrollTo({
@@ -259,7 +260,7 @@ const CheckoutFromPrescriptionPage = (): React.ReactElement => {
       )}
       {showAddressOptions && (
         <Dialog
-          cardWidth="w-[700px]"
+          cardWidth="xl:w-[60%] md:w-[70%] w-[90%]"
           content={
             <div className="flex flex-col gap-[1rem]">
               <div className="flex flex-row gap-[1rem] itms-center">
@@ -274,7 +275,10 @@ const CheckoutFromPrescriptionPage = (): React.ReactElement => {
                 />
                 <p className="font-bold text-[20px]">Choose your address</p>
               </div>
-              <div className="flex flex-col gap-[0.5rem]">
+              <div
+                className="flex flex-col gap-[0.5rem] overflow-y-auto max-h-[500px]"
+                style={{ scrollbarWidth: "thin" }}
+              >
                 {addressOptions?.map((address) => (
                   <div
                     key={address.id}
@@ -302,30 +306,34 @@ const CheckoutFromPrescriptionPage = (): React.ReactElement => {
                   </div>
                 ))}
               </div>
-              <button
-                onClick={() => {
-                  setShowAddressOptions(false);
-                  setShowAddAddressDialog(true);
-                }}
-              >
-                Add address
-              </button>
-              <Button
-                type="button"
-                buttonStyle="blue"
-                onClick={() => {
-                  if (
-                    selectedAddress !== selectedAddressOption &&
-                    selectedAddressOption
-                  ) {
-                    setIsLoading(true);
-                    setSelectedAddress(selectedAddressOption);
-                  }
-                  setShowAddressOptions(false);
-                }}
-              >
-                Save
-              </Button>
+
+              <div className="flex justify-end gap-[10px]">
+                <button
+                  onClick={() => {
+                    setShowAddressOptions(false);
+                    setShowAddAddressDialog(true);
+                  }}
+                  className="py-[5px] bg-[#13C57A] text-white cursor-pointer rounded-[8px] w-[120px] self-center"
+                >
+                  Add Address
+                </button>
+
+                <button
+                  className="py-[5px] bg-[#3B81F6] text-white cursor-pointer rounded-[8px] w-[120px] self-center"
+                  onClick={() => {
+                    if (
+                      selectedAddress !== selectedAddressOption &&
+                      selectedAddressOption
+                    ) {
+                      setIsLoading(true);
+                      setSelectedAddress(selectedAddressOption);
+                    }
+                    setShowAddressOptions(false);
+                  }}
+                >
+                  Save
+                </button>
+              </div>
             </div>
           }
           onClose={() => {
@@ -442,7 +450,7 @@ const CheckoutFromPrescriptionPage = (): React.ReactElement => {
       )}
       <div className="flex flex-col gap-[20px]">
         <div
-          className="flex flex-row gap-[0.75rem] justify-between items-center border-[1px] p-4 w-[40%] cursor-pointer"
+          className="flex flex-row gap-[0.75rem] w-fit items-center border-[1px] px-[10px] py-[5px] cursor-pointer"
           onClick={() => {
             setShowAddressOptions(true);
             if (selectedAddress) setSelectedAddressOption(selectedAddress);
@@ -469,10 +477,10 @@ const CheckoutFromPrescriptionPage = (): React.ReactElement => {
           />
         </div>
         {showNoDrugNearbyDiv && (
-          <div className="mx-auto my-[30px] flex flex-col gap-[50px] items-center justify-center p-[20px] border-2 border-slate-400 rounded-2xl">
+          <div className="w-[90%] md:w-[70%] xl:w-[50%] mx-auto my-[30px] flex flex-col gap-[50px] items-center justify-center p-[20px] border-2 border-slate-400 rounded-2xl">
             <VscError className="text-[200px] text-[#000D44]" />
             <div>
-              <p className="w-[500px] text-center text-[20px]">
+              <p className="text-center text-[20px]">
                 Sorry, This drug is not available in your area. Please ask your
                 doctor for alternatives. If your consultation session is over,
                 please contact our customer service.

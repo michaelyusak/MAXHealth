@@ -23,7 +23,6 @@ import { AdminTemplate } from "../templates/AdminTemplate";
 import AdminDashboardPage from "../pages/AdminDashboardPage";
 import ProfileTemplate from "../templates/ProfileTemplate";
 import ProfilePage from "../pages/ProfilePage";
-import ChatPage from "../pages/ChatPage";
 import AdminPaymentProofPage from "../pages/AdminPaymentProofPage";
 import CheckoutPage from "../pages/CheckoutPage";
 import UserOrdersPage from "../pages/UserOrdersPage";
@@ -152,6 +151,23 @@ const router = createBrowserRouter(
                 <TelemedicineLandingUserPage></TelemedicineLandingUserPage>
               ),
             },
+            // {
+            //   path: "/telemedicine/chats/",
+            //   element: (
+            //     <ProtectedRoute
+            //       acceptedRoles={["user"]}
+            //       roleBasedOnFailRedirectTo={{
+            //         ["user"]: { to: "/telemedicine/" },
+            //       }}
+            //     ></ProtectedRoute>
+            //   ),
+            //   children: [
+            //     {
+            //       path: "/telemedicine/chats/",
+            //       element: <ChatPage></ChatPage>,
+            //     },
+            //   ],
+            // },
             {
               path: "/telemedicine/chats/",
               element: (
@@ -165,23 +181,6 @@ const router = createBrowserRouter(
               children: [
                 {
                   path: "/telemedicine/chats/",
-                  element: <ChatPage></ChatPage>,
-                },
-              ],
-            },
-            {
-              path: "/telemedicine/chats/ws",
-              element: (
-                <ProtectedRoute
-                  acceptedRoles={["user"]}
-                  roleBasedOnFailRedirectTo={{
-                    ["user"]: { to: "/telemedicine/" },
-                  }}
-                ></ProtectedRoute>
-              ),
-              children: [
-                {
-                  path: "/telemedicine/chats/ws",
                   element: <WsChatPage></WsChatPage>,
                 },
               ],
@@ -328,12 +327,12 @@ const router = createBrowserRouter(
               path: "/doctors/telemedicine",
               element: <Navigate to="/doctors/telemedicine/chats/"></Navigate>,
             },
+            // {
+            //   path: "/doctors/telemedicine/chats",
+            //   element: <ChatPage></ChatPage>,
+            // },
             {
               path: "/doctors/telemedicine/chats",
-              element: <ChatPage></ChatPage>,
-            },
-            {
-              path: "/doctors/telemedicine/chats/ws",
               element: <WsChatPage></WsChatPage>,
             },
             {

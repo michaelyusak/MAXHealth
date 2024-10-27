@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"max-health/appconstant"
 	"max-health/apperror"
 	"max-health/entity"
 	"max-health/repository"
@@ -20,20 +19,22 @@ type ChatRoomUsecasae interface {
 }
 
 type chatRoomUsecaseImpl struct {
-	userRepository       repository.UserRepository
-	doctorRepository     repository.DoctorRepository
-	wsChatRoomRepository repository.WsChatRoomRepository
-	accountRepository    repository.AccountRepository
-	chatRepository       repository.ChatRepository
+	userRepository             repository.UserRepository
+	doctorRepository           repository.DoctorRepository
+	wsChatRoomRepository       repository.WsChatRoomRepository
+	accountRepository          repository.AccountRepository
+	chatRepository             repository.ChatRepository
+	prescriptionDrugRepository repository.PrescriptionDrugRepository
 }
 
-func NewChatRoomUsecaseImpl(userRepository repository.UserRepository, doctorRepository repository.DoctorRepository, wsChatRoomRepository repository.WsChatRoomRepository, accountRepository repository.AccountRepository, chatRepository repository.ChatRepository) *chatRoomUsecaseImpl {
+func NewChatRoomUsecaseImpl(userRepository repository.UserRepository, doctorRepository repository.DoctorRepository, wsChatRoomRepository repository.WsChatRoomRepository, accountRepository repository.AccountRepository, chatRepository repository.ChatRepository, prescriptionDrugRepository repository.PrescriptionDrugRepository) *chatRoomUsecaseImpl {
 	return &chatRoomUsecaseImpl{
-		userRepository:       userRepository,
-		doctorRepository:     doctorRepository,
-		wsChatRoomRepository: wsChatRoomRepository,
-		accountRepository:    accountRepository,
-		chatRepository:       chatRepository,
+		userRepository:             userRepository,
+		doctorRepository:           doctorRepository,
+		wsChatRoomRepository:       wsChatRoomRepository,
+		accountRepository:          accountRepository,
+		chatRepository:             chatRepository,
+		prescriptionDrugRepository: prescriptionDrugRepository,
 	}
 }
 
@@ -76,7 +77,7 @@ func (u *chatRoomUsecaseImpl) UserCreateRoom(ctx context.Context, userAccountId,
 		return nil, apperror.InternalServerError(err)
 	}
 	if chatRoom != nil {
-		if chatRoom.ExpiredAt.After(time.Now()) {
+		if *chatRoom.ExpiredAt > time.Now().UnixMicro() {
 			return nil, apperror.OnGoingChatExistError()
 		}
 	}
@@ -117,7 +118,7 @@ func (u *chatRoomUsecaseImpl) CloseChatRoom(ctx context.Context, userAccountId, 
 		return apperror.ForbiddenAction()
 	}
 
-	if chatRoom.ExpiredAt != nil && chatRoom.ExpiredAt.Before(time.Now()) {
+	if chatRoom.ExpiredAt != nil && *chatRoom.ExpiredAt < time.Now().UnixMicro() {
 		return apperror.ChatRoomAlreadyClosedError()
 	}
 
@@ -141,9 +142,7 @@ func (u *chatRoomUsecaseImpl) DoctorJoinRoom(ctx context.Context, doctorAccountI
 		return apperror.ForbiddenAction()
 	}
 
-	expiredAt := time.Now().Add(appconstant.ChatRoomDuration).UTC()
-
-	err = u.wsChatRoomRepository.StartWsChat(ctx, roomId, expiredAt)
+	err = u.wsChatRoomRepository.StartWsChat(ctx, roomId)
 	if err != nil {
 		return apperror.InternalServerError(err)
 	}
@@ -177,7 +176,22 @@ func (u *chatRoomUsecaseImpl) GetRoomDetail(ctx context.Context, accountId, room
 		return nil, apperror.InternalServerError(err)
 	}
 
-	room.Chats = chats
+	var chatList []entity.Chat
+
+	for _, chat := range chats {
+		if chat.Prescription.Id != nil {
+			prescriptionDrugList, err := u.prescriptionDrugRepository.GetAllPrescriptionDrug(ctx, *chat.Prescription.Id)
+			if err != nil {
+				return nil, err
+			}
+
+			chat.Prescription.PrescriptionDrugs = prescriptionDrugList
+		}
+
+		chatList = append(chatList, chat)
+	}
+
+	room.Chats = chatList
 
 	return room, nil
 }

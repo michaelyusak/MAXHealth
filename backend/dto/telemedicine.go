@@ -3,7 +3,6 @@ package dto
 import (
 	"time"
 
-	"max-health/appconstant"
 	"max-health/entity"
 
 	"github.com/shopspring/decimal"
@@ -206,28 +205,24 @@ func ConvertPrepareForCheckoutToResponse(checkoutItemList []entity.PrepareForChe
 }
 
 type WsChatRoomRes struct {
-	Id              int64  `json:"room_id"`
-	Hash            string `json:"room_hash"`
-	DoctorAccountId int64  `json:"doctor_account_id"`
-	UserAccountId   int64  `json:"user_account_id"`
-	ExpiredAt       string `json:"expired_at"`
-	Chats           []Chat `json:"chats"`
+	Id                   int64  `json:"room_id"`
+	Hash                 string `json:"room_hash"`
+	DoctorAccountId      int64  `json:"doctor_account_id"`
+	UserAccountId        int64  `json:"user_account_id"`
+	DoctorCertificateUrl string `json:"doctor_certificate_url"`
+	ExpiredAt            *int64 `json:"expired_at"`
+	Chats                []Chat `json:"chats"`
 }
 
 func ToWsChatRoomRes(wsChatRoom entity.WsChatRoom) WsChatRoomRes {
-	var expiredAt string
-
-	if wsChatRoom.ExpiredAt != nil {
-		expiredAt = wsChatRoom.ExpiredAt.Format(appconstant.ChatTimeFormat)
-	}
-
 	return WsChatRoomRes{
-		Id:              wsChatRoom.Id,
-		Hash:            wsChatRoom.Hash,
-		DoctorAccountId: wsChatRoom.DoctorAccountId,
-		UserAccountId:   wsChatRoom.UserAccountId,
-		ExpiredAt:       expiredAt,
-		Chats:           ConvertToChatListDTO(wsChatRoom.Chats),
+		Id:                   wsChatRoom.Id,
+		Hash:                 wsChatRoom.Hash,
+		DoctorAccountId:      wsChatRoom.DoctorAccountId,
+		UserAccountId:        wsChatRoom.UserAccountId,
+		DoctorCertificateUrl: wsChatRoom.DoctorCertificateUrl,
+		ExpiredAt:            wsChatRoom.ExpiredAt,
+		Chats:                ConvertToChatListDTO(wsChatRoom.Chats),
 	}
 }
 
