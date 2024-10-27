@@ -20,6 +20,7 @@ const WsChatPage = (): React.ReactElement => {
   const [selectedRoom, setSelectedRoom] = useState<IChatRoomPreviewV2>();
   const [modal, setModal] = useState<React.ReactElement>();
   const [screenHeight, setScreenHeight] = useState<number>(window.innerHeight);
+  const [isHideChatRoomList, setIsHideChatRoomList] = useState<boolean>(false);
 
   const handleGetRoomList = useCallback(() => {
     const url = import.meta.env.VITE_HTTP_BASE_URL + "/v2/chat-room";
@@ -38,6 +39,8 @@ const WsChatPage = (): React.ReactElement => {
   useEffect(() => {
     const updateHeight = () => {
       setScreenHeight(window.innerHeight);
+      setIsHideChatRoomList(false)
+      setSelectedRoom(undefined)
     };
 
     updateHeight();
@@ -71,22 +74,29 @@ const WsChatPage = (): React.ReactElement => {
   return (
     <>
       {modal && modal}
-      <div className="hidden lg:flex w-full h-[100vh] items-start pt-[5%] px-[3%] justify-center drop-shadow-[0px_0px_10px_rgba(0,0,0,0.25)]">
-        <ChatRoomPreviewListV2
-          onGoingChatRoomPreviewList={onGoingRooms}
-          expiredChatRoomPreviewList={expiredRooms}
-          requestedChatRoomPreviewList={pendingRooms}
-          selectedRoomId={selectedRoom?.id}
-          setSelectedRoom={(room) => setSelectedRoom(room)}
-          refetchRoomList={() => handleGetRoomList()}
-          height={
-            screenHeight > 800
-              ? "h-[600px]"
-              : screenHeight > 700
-              ? "h-[500px]"
-              : "h-[400px]"
-          }
-        ></ChatRoomPreviewListV2>
+      <div className="flex w-full h-[100vh] items-start pt-[5%] px-[3%] justify-center drop-shadow-[0px_0px_10px_rgba(0,0,0,0.25)]">
+        {!isHideChatRoomList && (
+          <ChatRoomPreviewListV2
+            onGoingChatRoomPreviewList={onGoingRooms}
+            expiredChatRoomPreviewList={expiredRooms}
+            requestedChatRoomPreviewList={pendingRooms}
+            selectedRoomId={selectedRoom?.id}
+            setSelectedRoom={(room) => {
+              setSelectedRoom(room);
+              if (window.innerWidth < 640) {
+                setIsHideChatRoomList(true);
+              }
+            }}
+            refetchRoomList={() => handleGetRoomList()}
+            height={
+              screenHeight > 800
+                ? "h-[600px]"
+                : screenHeight > 700
+                ? "h-[500px]"
+                : "h-[400px]"
+            }
+          ></ChatRoomPreviewListV2>
+        )}
 
         {selectedRoom && accountId && role ? (
           <ChatRoomV2
@@ -101,6 +111,10 @@ const WsChatPage = (): React.ReactElement => {
                 ? "h-[500px]"
                 : "h-[400px]"
             }
+            closeChatRoom={() => {
+              setSelectedRoom(undefined);
+              setIsHideChatRoomList(false);
+            }}
           ></ChatRoomV2>
         ) : (
           <div
@@ -110,81 +124,10 @@ const WsChatPage = (): React.ReactElement => {
                 : screenHeight > 700
                 ? "h-[500px]"
                 : "h-[400px]"
-            } bg-gray-200 w-[70%]`}
+            } bg-gray-200 hidden sm:block w-[70%]`}
           ></div>
         )}
       </div>
-      {/* <div className="lg:hidden relative">
-        {showRoomList && (
-          <button
-            onClick={() => {
-              if (role == "user") navigate("/telemedicine/");
-
-              if (role == "doctor") navigate("/doctors/telemedicine");
-            }}
-            className="h-fit p-[10px]"
-          >
-            <FaArrowLeft className="text-[28px]" />
-          </button>
-        )}
-        {showChatRoom && (
-          <button
-            onClick={() => {
-              setShowRoomList(true);
-              setShowChatRoom(false);
-              setSelectedRoomId(undefined);
-            }}
-            className="h-fit p-[10px]"
-          >
-            <FaArrowLeft className="text-[28px]" />
-          </button>
-        )}
-
-        {showRoomList && (
-          <ChatRoomPreview
-            refetchRoomList={() => fetchRoomList()}
-            onGoingChatRoomPreviewList={onGoingchatRoomPreviewList}
-            expiredChatRoomPreviewList={expiredchatRoomPreviewList}
-            requestedChatRoomPreviewList={requestedchatRoomPreviewList}
-            selectedRoomId={selectedRoomId}
-            setSelectedRoomId={(isExpired, roomId) => {
-              setIsRoomExpired(isExpired);
-              setShowChatRoom(true);
-              setShowRoomList(false);
-              setSelectedRoomId(roomId);
-            }}
-            newMessage={newMessage}
-          ></ChatRoomPreview>
-        )}
-        {showChatRoom && selectedRoomId && id && role && (
-          <ChatRoom
-            onNewMessage={(value) => setNewMessage(value)}
-            chats={chats}
-            expiredAt={roomExpiredAt}
-            setModal={(element) => setModal(element)}
-            doctorCertifcateUrl={
-              role == "user" ? doctorCertificateUrl : undefined
-            }
-            appendChat={(chat) =>
-              setChats((prevVal) => {
-                if (prevVal) {
-                  return [...prevVal, chat];
-                }
-
-                return [chat];
-              })
-            }
-            isRoomExpired={isRoomExpired}
-            roomId={selectedRoomId}
-            accountId={id}
-            setRoomIsExpired={() => {
-              setIsRoomExpired(true);
-              fetchRoomList();
-            }}
-            role={role}
-          ></ChatRoom>
-        )}
-      </div> */}
     </>
   );
 };

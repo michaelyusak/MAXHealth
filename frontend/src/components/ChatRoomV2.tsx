@@ -15,7 +15,6 @@ import {
 import { HandleShowToast } from "../util/ShowToast";
 import { ToastContext } from "../contexts/ToastData";
 import { FormatTimeChat } from "../util/DateFormatter";
-import { BiSolidMessageSquareError } from "react-icons/bi";
 import { BsFillSendFill } from "react-icons/bs";
 import { FaPills } from "react-icons/fa";
 import CreatePrescriptionModal from "./CreatePrescriptionModal";
@@ -34,6 +33,9 @@ import {
   IChat,
   IPrescriptionDrug,
 } from "../interfaces/Telemedicine";
+import { FaArrowLeft } from "react-icons/fa6";
+import { IconContext } from "react-icons";
+import { IoMdMore } from "react-icons/io";
 
 type chatRoomV2Props = {
   accountId: number;
@@ -41,6 +43,7 @@ type chatRoomV2Props = {
   setModal: (element: React.ReactElement | undefined) => void;
   room: IChatRoomPreviewV2;
   height: string;
+  closeChatRoom: () => void;
 };
 
 const ChatRoomV2 = ({
@@ -49,9 +52,9 @@ const ChatRoomV2 = ({
   setModal,
   room,
   height,
+  closeChatRoom,
 }: chatRoomV2Props): React.ReactElement => {
   const { setToast } = useContext(ToastContext);
-  //   const navigate = useNavigate();
 
   const [message, setMessage] = useState<string>("");
   const [isFirstRender, setIsFirstRender] = useState<boolean>(true);
@@ -73,6 +76,8 @@ const ChatRoomV2 = ({
   const [fileValue, setFileValue] = useState<File>();
   const [roomDetail, setRoomDetail] = useState<IChatRoomDetail>();
   const [isExpired, setIsExpired] = useState<boolean>(true);
+  const [isShowButtonWhenMobile, setIsShowButtonWhenMobile] =
+    useState<boolean>(false);
 
   const attachmentFile = useRef<HTMLInputElement>(null);
   const socketRef = useRef<WebSocket | null>(null);
@@ -403,10 +408,10 @@ const ChatRoomV2 = ({
 
   return (
     <>
-      {roomDetail && accountId ? (
+      {roomDetail && (
         <>
           <div
-            className={`${height} justify-between relative  w-full lg:w-[69%] bg-gray-200 flex rounded-r-3xl flex-col`}
+            className={`${height} justify-between relative w-full lg:w-[69%] bg-gray-200 flex rounded-r-3xl flex-col`}
           >
             <div className="w-full h-[100px] bg-gradient-to-t from-[#E5E7EB] to-[#DFF1FD]"></div>
             {roomDetail.expired_at !== "" && !isExpired && (
@@ -419,8 +424,72 @@ const ChatRoomV2 = ({
                 </p>
               </div>
             )}
+            <button
+              onClick={() => {
+                closeChatRoom();
+              }}
+              disabled={false}
+              className="absolute z-[100] block sm:hidden top-[8px] left-[7%] md:left-[5%] xl:left-[2%] bg-white p-[10px] rounded-[8px] shadow-lg"
+            >
+              <IconContext.Provider value={{ size: "20px", color: "#374151" }}>
+                <FaArrowLeft></FaArrowLeft>
+              </IconContext.Provider>
+            </button>
+
+            {isShowButtonWhenMobile ? (
+              <div className="absolute z-[100] flex flex-col top-[8px] right-[7%] gap-[5px]">
+                <div
+                  onClick={() => {
+                    setIsShowButtonWhenMobile(false);
+                  }}
+                  className="fixed inset-0 z-[-1]"
+                ></div>
+
+                <button
+                  onClick={() => {
+                    if (roomDetail.doctor_certificate_url) {
+                      window.open(roomDetail.doctor_certificate_url);
+                      return;
+                    }
+                  }}
+                  className="w-[160px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] left-[20px] bg-gray-600 py-[6px] rounded-[5px] text-[14px] text-white font-[600]"
+                >
+                  See Doctor Certificate
+                </button>
+
+                <button
+                  onClick={() =>
+                    setModal(
+                      <EndChatConfirmationModal
+                        onClose={() => setModal(undefined)}
+                        onCancel={() => setModal(undefined)}
+                        onConfirm={() => handleEndChat()}
+                      ></EndChatConfirmationModal>
+                    )
+                  }
+                  className="w-[160px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] bg-[#E01A52] py-[6px] rounded-[5px] text-[14px] text-white font-[600]"
+                >
+                  End Consultation
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setIsShowButtonWhenMobile(true);
+                }}
+                disabled={false}
+                className="absolute z-[100] block sm:hidden top-[8px] right-[7%] bg-white p-[10px] rounded-[8px] shadow-lg"
+              >
+                <IconContext.Provider
+                  value={{ size: "20px", color: "#374151" }}
+                >
+                  <IoMdMore></IoMdMore>
+                </IconContext.Provider>
+              </button>
+            )}
+
             {role == "user" && (
-              <div>
+              <div className="hidden sm:block">
                 {room && (
                   <button
                     onClick={() => {
@@ -429,7 +498,7 @@ const ChatRoomV2 = ({
                         return;
                       }
                     }}
-                    className="absolute lg:top-[8px] z-[20] lg:w-fit w-[200px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] opacity-70 hover:opacity-100 lg:left-[20px] bg-gray-600 px-[20px] py-[8px] rounded-[8px] text-white font-[600]"
+                    className="absolute top-[8px] z-[20] lg:w-fit w-[200px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] opacity-70 hover:opacity-100 left-[20px] bg-gray-600 px-[20px] py-[8px] rounded-[8px] text-white font-[600]"
                   >
                     See Doctor Certificate
                   </button>
@@ -445,7 +514,7 @@ const ChatRoomV2 = ({
                         ></EndChatConfirmationModal>
                       )
                     }
-                    className="absolute top-[65px] z-20 w-[200px] lg:top-[8px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] opacity-70 hover:opacity-100 lg:right-[20px] bg-[#E01A52] lg:w-fit px-[20px] py-[8px] rounded-[8px] text-white font-[600]"
+                    className="absolute z-20 w-[200px] top-[8px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] opacity-70 hover:opacity-100 right-[20px] bg-[#E01A52] lg:w-fit px-[20px] py-[8px] rounded-[8px] text-white font-[600]"
                   >
                     End Consultation
                   </button>
@@ -580,7 +649,7 @@ const ChatRoomV2 = ({
                     </p>
                   </div>
                 ) : (
-                  <div className="bg-[#000D44] mt-auto w-full flex flex-col gap-[20px] rounded-r-3xl px-[20px] py-[20px]">
+                  <div className="bg-[#000D44] mt-auto w-full flex flex-col gap-[20px] rounded-b-3xl sm:rounded-r-3xl px-[20px] py-[20px]">
                     {attachment && (
                       <div className="flex flex-col gap-[10px]">
                         <div className="flex w-full justify-between">
@@ -672,27 +741,6 @@ const ChatRoomV2 = ({
                   </div>
                 )}
               </>
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="h-[800px] justify-between w-full lg:w-[70%] bg-gray-200 rounded-r-3xl flex flex-col pt-[65px]">
-            <div className="bg-black opacity-85 absolute z-20 w-[100vw] h-[100vh] top-0 left-0"></div>
-            <div className="bg-white w-[30vw] h-[50vh] flex flex-col justify-center gap-[50px] items-center py-[100px] px-[50px] rounded-3xl z-[21] top-[50%] left-[50%] absolute translate-x-[-50%] translate-y-[-50%]">
-              <BiSolidMessageSquareError className="text-[150px]" />
-              <div className="text-center">
-                <p className="text-[18px] font-[600]">
-                  We are having trouble to get your credential
-                </p>
-                <p className="text-[18px] font-[600]">
-                  Please try to{" "}
-                  <a href="/auth/login" className="underline">
-                    login
-                  </a>{" "}
-                  again
-                </p>
-              </div>
             </div>
           </div>
         </>
