@@ -3,7 +3,6 @@ package dto
 import (
 	"time"
 
-	"max-health/appconstant"
 	"max-health/entity"
 
 	"github.com/shopspring/decimal"
@@ -211,24 +210,18 @@ type WsChatRoomRes struct {
 	DoctorAccountId      int64  `json:"doctor_account_id"`
 	UserAccountId        int64  `json:"user_account_id"`
 	DoctorCertificateUrl string `json:"doctor_certificate_url"`
-	ExpiredAt            string `json:"expired_at"`
+	ExpiredAt            *int64 `json:"expired_at"`
 	Chats                []Chat `json:"chats"`
 }
 
 func ToWsChatRoomRes(wsChatRoom entity.WsChatRoom) WsChatRoomRes {
-	var expiredAt string
-
-	if wsChatRoom.ExpiredAt != nil {
-		expiredAt = wsChatRoom.ExpiredAt.Format(appconstant.ChatTimeFormat)
-	}
-
 	return WsChatRoomRes{
 		Id:                   wsChatRoom.Id,
 		Hash:                 wsChatRoom.Hash,
 		DoctorAccountId:      wsChatRoom.DoctorAccountId,
 		UserAccountId:        wsChatRoom.UserAccountId,
 		DoctorCertificateUrl: wsChatRoom.DoctorCertificateUrl,
-		ExpiredAt:            expiredAt,
+		ExpiredAt:            wsChatRoom.ExpiredAt,
 		Chats:                ConvertToChatListDTO(wsChatRoom.Chats),
 	}
 }

@@ -2,7 +2,7 @@ export interface IChatRoomPreview {
   id: number;
   participant_name: string;
   participant_picture_url: string;
-  expired_at: string;
+  expired_at: number;
   last_chat: IChat;
 }
 
@@ -38,6 +38,6 @@ export interface IChatRoom {
   doctor_account_id: number;
   user_account_id: number;
   doctor_certificate_url: string;
-  expired_at: string;
+  expired_at: number;
   chats: IChat[];
 }

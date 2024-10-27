@@ -62,8 +62,8 @@ const (
 
 	CloseWsChatRoomQuery = `
 		UPDATE ws_chat_rooms
-		SET expired_at = NOW(), updated_at = NOW()
-		WHERE chat_room_id = $1
+		SET expired_at = $2, updated_at = NOW()
+		WHERE ws_chat_room_id = $1
 	`
 
 	StartWsChatQuery = `

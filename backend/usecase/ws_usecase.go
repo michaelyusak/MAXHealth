@@ -90,8 +90,8 @@ func (u *wsUsecaseImpl) HandleCentrifugo(ctx context.Context, wsToken entity.WsT
 		return apperror.ChatRoomNotFoundError()
 	}
 	if room.ExpiredAt != nil {
-		if room.ExpiredAt.Before(time.Now()) {
-			return apperror.ChatRoomAlreadyClosedError()
+		if *room.ExpiredAt < time.Now().UnixMicro() {
+			return nil
 		}
 	}
 

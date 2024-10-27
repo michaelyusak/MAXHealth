@@ -44,6 +44,7 @@ type chatRoomV2Props = {
   room: IChatRoomPreviewV2;
   height: string;
   closeChatRoom: () => void;
+  setRoomIsExpired: () => void;
 };
 
 const ChatRoomV2 = ({
@@ -53,6 +54,7 @@ const ChatRoomV2 = ({
   room,
   height,
   closeChatRoom,
+  setRoomIsExpired,
 }: chatRoomV2Props): React.ReactElement => {
   const { setToast } = useContext(ToastContext);
 
@@ -81,6 +83,11 @@ const ChatRoomV2 = ({
 
   const attachmentFile = useRef<HTMLInputElement>(null);
   const socketRef = useRef<WebSocket | null>(null);
+
+  const handleSetRoomIsExpired = useCallback(() => {
+    setRoomIsExpired();
+    setIsExpired(true);
+  }, [setRoomIsExpired, setIsExpired]);
 
   function handleRemoveAttachment() {
     if (attachmentFile.current) {
@@ -132,12 +139,10 @@ const ChatRoomV2 = ({
     const url =
       import.meta.env.VITE_HTTP_BASE_URL + `/v2/chat-room/${room.id}/close`;
 
-    // setRoomIsExpired();
-
     HandlePatchBodyRaw("", url, true)
       .then(() => {
         HandleShowToast(setToast, true, "Consultation Has Ended", 5);
-        // setRoomIsExpired();
+        handleSetRoomIsExpired();
         setModal(undefined);
       })
       .catch((error: Error) => {
@@ -250,6 +255,8 @@ const ChatRoomV2 = ({
 
       setMessage("");
       handleRemoveAttachment();
+      setKeys(undefined);
+      setValues(undefined);
     }
     setDisabledSend(false);
   }
@@ -286,8 +293,6 @@ const ChatRoomV2 = ({
     if (!socket) {
       return;
     }
-
-    console.log("channel", token.channel);
 
     socket.onopen = () => {
       if (!socketRef.current) {
@@ -360,8 +365,12 @@ const ChatRoomV2 = ({
       return;
     }
 
+    if (isExpired) {
+      return;
+    }
+
     handleWebSocket();
-  }, [handleWebSocket, roomDetail]);
+  }, [handleWebSocket, isExpired, roomDetail]);
 
   useEffect(() => {
     setIsFirstRender(true);
@@ -396,7 +405,7 @@ const ChatRoomV2 = ({
 
     if (remainingTime === "00:00") {
       setDisabledSend(true);
-      //   setRoomIsExpired();
+      handleSetRoomIsExpired();
       return;
     }
 
@@ -404,7 +413,13 @@ const ChatRoomV2 = ({
       setRemainingTime(GetRemaining(roomDetail.expired_at));
     }, 1000);
     return () => clearInterval(interval);
-  }, [setRemainingTime, remainingTime, isExpired, roomDetail]);
+  }, [
+    setRemainingTime,
+    handleSetRoomIsExpired,
+    remainingTime,
+    isExpired,
+    roomDetail,
+  ]);
 
   return (
     <>
@@ -414,16 +429,19 @@ const ChatRoomV2 = ({
             className={`${height} justify-between relative w-full lg:w-[69%] bg-gray-200 flex rounded-r-3xl flex-col`}
           >
             <div className="w-full h-[100px] bg-gradient-to-t from-[#E5E7EB] to-[#DFF1FD]"></div>
-            {roomDetail.expired_at !== "" && !isExpired && (
-              <div className="flex flex-col lg:flex-row gap-[20px] absolute top-[8px] right-[20px] justify-center lg:left-[50%] lg:translate-x-[-50%] items-center">
-                <p className="text-[20px] font-[600] text-gray-600">
+
+            {roomDetail.expired_at && !isExpired && (
+              <div className="flex flex-col lg:flex-row gap-[5px] lg:gap-[20px] absolute top-[8px] justify-center left-[50%] translate-x-[-50%] items-center">
+                <p className="text-[16px] md:text-[18px] xl:text-[20px] font-[600] text-gray-600">
                   Remaining
                 </p>
-                <p className="font-[400] text-[#E01A52] text-[24px]">
+
+                <p className="font-[400] text-[#E01A52] text-[16px] md:text-[20px] xl:text-[24px]">
                   {remainingTime}
                 </p>
               </div>
             )}
+
             <button
               onClick={() => {
                 closeChatRoom();
@@ -457,20 +475,22 @@ const ChatRoomV2 = ({
                   See Doctor Certificate
                 </button>
 
-                <button
-                  onClick={() =>
-                    setModal(
-                      <EndChatConfirmationModal
-                        onClose={() => setModal(undefined)}
-                        onCancel={() => setModal(undefined)}
-                        onConfirm={() => handleEndChat()}
-                      ></EndChatConfirmationModal>
-                    )
-                  }
-                  className="w-[160px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] bg-[#E01A52] py-[6px] rounded-[5px] text-[14px] text-white font-[600]"
-                >
-                  End Consultation
-                </button>
+                {!isExpired && (
+                  <button
+                    onClick={() =>
+                      setModal(
+                        <EndChatConfirmationModal
+                          onClose={() => setModal(undefined)}
+                          onCancel={() => setModal(undefined)}
+                          onConfirm={() => handleEndChat()}
+                        ></EndChatConfirmationModal>
+                      )
+                    }
+                    className="w-[160px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] bg-[#E01A52] py-[6px] rounded-[5px] text-[14px] text-white font-[600]"
+                  >
+                    End Consultation
+                  </button>
+                )}
               </div>
             ) : (
               <button
@@ -498,7 +518,7 @@ const ChatRoomV2 = ({
                         return;
                       }
                     }}
-                    className="absolute top-[8px] z-[20] lg:w-fit w-[200px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] opacity-70 hover:opacity-100 left-[20px] bg-gray-600 px-[20px] py-[8px] rounded-[8px] text-white font-[600]"
+                    className="absolute top-[8px] z-[20] w-[160px] xl:w-[200px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] left-[20px] bg-gray-600 py-[4px] md:py-[6px] xl:py-[8px] xl:text-[16px] text-[14px] rounded-[8px] text-white font-[600]"
                   >
                     See Doctor Certificate
                   </button>
@@ -514,7 +534,7 @@ const ChatRoomV2 = ({
                         ></EndChatConfirmationModal>
                       )
                     }
-                    className="absolute z-20 w-[200px] top-[8px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] opacity-70 hover:opacity-100 right-[20px] bg-[#E01A52] lg:w-fit px-[20px] py-[8px] rounded-[8px] text-white font-[600]"
+                    className="absolute z-20 w-[160px] xl:w-[200px] top-[8px] shadow-[0px_0px_20px_10px_rgba(0,0,0,0.3)] right-[20px] bg-[#E01A52] py-[4px] md:py-[6px] xl:py-[8px] xl:text-[16px] text-[14px] rounded-[8px] text-white font-[600]"
                   >
                     End Consultation
                   </button>
@@ -580,22 +600,22 @@ const ChatRoomV2 = ({
                             </>
                           )}
                           {chat.prescription.id && (
-                            <div className="relative flex flex-col gap-[5px] h-[245px] overflow-y-hidden bg-gray-200 rounded-xl p-[10px]">
+                            <div className="relative flex flex-col gap-[5px] h-[200px] md:h-[245px] overflow-y-hidden bg-gray-200 rounded-xl p-[10px]">
                               {chat.prescription.prescription_drugs?.map(
                                 (drug) => (
-                                  <div className="flex items-center gap-[10px] bg-white p-[5px] rounded-xl">
+                                  <div className="flex items-start gap-[10px] w-[300px] md:w-[400px] xl:w-[600px] bg-white p-[5px] rounded-xl">
                                     <img
                                       alt=""
                                       src={drug.drug.image}
-                                      className="h-[100px] aspect-square object-cover"
+                                      className="h-[25%] aspect-square object-cover"
                                     ></img>
-                                    <p className="text-center w-[200px] line-clamp-3">
+                                    <p className="text-center w-[35%] line-clamp-3">
                                       {drug.drug.name}
                                     </p>
-                                    <p className="text-center w-[100px]">
+                                    <p className="text-center w-[25%]">
                                       {drug.quantity}
                                     </p>
-                                    <p className="text-center w-[200px]">
+                                    <p className="text-center w-[15%]">
                                       {drug.note == "" ? "-" : drug.note}
                                     </p>
                                   </div>
@@ -632,7 +652,7 @@ const ChatRoomV2 = ({
                   </div>
                 )}
 
-                {roomDetail.expired_at == "" && role == "doctor" ? (
+                {roomDetail.expired_at == 0 && role == "doctor" ? (
                   <div className="w-full bg-[#000D44] text-center mt-auto rounded-r-3xl py-[10px]">
                     <p className="text-[20px] font-[600] text-white">
                       Chat can only be started after you click the accept
@@ -649,7 +669,7 @@ const ChatRoomV2 = ({
                     </p>
                   </div>
                 ) : (
-                  <div className="bg-[#000D44] mt-auto w-full flex flex-col gap-[20px] rounded-b-3xl sm:rounded-r-3xl px-[20px] py-[20px]">
+                  <div className="bg-[#000D44] mt-auto w-full flex flex-col gap-[20px] sm:rounded-r-3xl px-[20px] py-[20px]">
                     {attachment && (
                       <div className="flex flex-col gap-[10px]">
                         <div className="flex w-full justify-between">
@@ -675,7 +695,7 @@ const ChatRoomV2 = ({
                       </div>
                     )}
                     {keys && values && (
-                      <div className="bg-white w-fit rounded-xl px-[20px] py-[5px] text-[16px] font-[600]">
+                      <div className="bg-white w-fit rounded-xl px-[20px] py-[5px] text-[14px] md:text-[16px] font-[600]">
                         Send this message with a prescription. ({keys.length}{" "}
                         drugs are prescripted)
                       </div>
