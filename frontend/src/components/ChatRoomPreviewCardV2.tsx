@@ -1,14 +1,15 @@
 import React, { useContext, useState } from "react";
-import { IChat, IChatRoomPreview } from "../interfaces/Telemedicine";
+import { IChat } from "../interfaces/Telemedicine";
 import { FormatTimeChat } from "../util/DateFormatter";
 import { HandlePatchBodyRaw } from "../util/API";
 import { MsgRefreshTokenNotFound } from "../appconstants/appconstants";
 import { HandleShowToast } from "../util/ShowToast";
 import { ToastContext } from "../contexts/ToastData";
 import { IsExpired } from "../util/CheckIsExpired";
+import { IChatRoomPreviewV2 } from "../interfaces/ChatRoom";
 
 type chatRoomPreviewCardV2Props = {
-  chatRoomPreview: IChatRoomPreview;
+  chatRoomPreview: IChatRoomPreviewV2;
   handleRoomChatOnClick: (isExpired: boolean) => void;
   status: "expired" | "pending" | "on-going";
   selectedRoomChat?: number;
@@ -122,11 +123,11 @@ const ChatRoomPreviewCardV2 = ({
           <img
             alt=""
             src={chatRoomPreview.participant_picture_url}
-            className="h-[100px] object-cover aspect-square rounded-[100%]"
+            className="h-[60px] md:h-[80px] xl:h-[100px] object-cover aspect-square rounded-[100%]"
           ></img>
           <div className="flex-1">
             <div className="flex justify-between">
-              <p className="text-[20px] font-[600]">
+              <p className="text-[18px] md:text-[20px] font-[600]">
                 {chatRoomPreview.participant_name}
               </p>
 
@@ -170,11 +171,12 @@ const ChatRoomPreviewCardV2 = ({
           <img
             alt=""
             src={chatRoomPreview.participant_picture_url}
-            className="h-[100px] object-cover aspect-square rounded-[100%]"
+            className="h-[60px] md:h-[80px] xl:h-[100px] object-cover aspect-square rounded-[100%]"
           ></img>
+
           <div className="flex-1 flex flex-col justify-between h-full gap-[5px]">
             <div className="flex justify-between">
-              <p className="text-[20px] font-[600]">
+              <p className="text-[18px] md:text-[20px] font-[600]">
                 {chatRoomPreview.participant_name}
               </p>
 
@@ -197,7 +199,7 @@ const ChatRoomPreviewCardV2 = ({
                     onClick={() =>
                       handleOpenChatConfirmationModal(chatRoomPreview.id)
                     }
-                    className="bg-[#14C57B] px-[20px] py-[10px] rounded-xl text-[18px] text-white"
+                    className="bg-[#14C57B] p-[5px] md:px-[10px] xl:px-[20px] md:py-[10px] rounded-xl text-[14px] md:text-[16px] xl:text-[18px] text-white"
                   >
                     Accept
                   </button>

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"max-health/appconstant"
 	"max-health/database"
 	"max-health/entity"
 	"time"
@@ -15,7 +16,7 @@ type WsChatRoomRepository interface {
 	GetAllRooms(ctx context.Context, accountId int64) ([]entity.WsChatRoomPreview, error)
 	FindChatRoomById(ctx context.Context, chatRoomId int64) (*entity.WsChatRoom, error)
 	CloseWsChatRoom(ctx context.Context, roomId int64) error
-	StartWsChat(ctx context.Context, roomId int64, expiredAt time.Time) error
+	StartWsChat(ctx context.Context, roomId int64) error
 }
 
 type wsChatRoomRepositoryPostgres struct {
@@ -131,7 +132,9 @@ func (r *wsChatRoomRepositoryPostgres) FindChatRoomById(ctx context.Context, cha
 }
 
 func (r *wsChatRoomRepositoryPostgres) CloseWsChatRoom(ctx context.Context, roomId int64) error {
-	_, err := r.db.ExecContext(ctx, database.CloseWsChatRoomQuery, roomId)
+	expiredAt := time.Now().UnixMicro()
+
+	_, err := r.db.ExecContext(ctx, database.CloseWsChatRoomQuery, roomId, expiredAt)
 	if err != nil {
 		return err
 	}
@@ -139,7 +142,9 @@ func (r *wsChatRoomRepositoryPostgres) CloseWsChatRoom(ctx context.Context, room
 	return nil
 }
 
-func (r *wsChatRoomRepositoryPostgres) StartWsChat(ctx context.Context, roomId int64, expiredAt time.Time) error {
+func (r *wsChatRoomRepositoryPostgres) StartWsChat(ctx context.Context, roomId int64) error {
+	expiredAt := time.Now().Add(appconstant.ChatRoomDuration).UnixMicro()
+
 	_, err := r.db.ExecContext(ctx, database.StartWsChatQuery, roomId, expiredAt)
 	if err != nil {
 		return err

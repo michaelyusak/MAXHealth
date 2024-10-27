@@ -35,7 +35,7 @@ type WsChatRoom struct {
 	DoctorAccountId      int64
 	UserAccountId        int64
 	DoctorCertificateUrl string
-	ExpiredAt            *time.Time
+	ExpiredAt            *int64
 	Chats                []Chat
 }
 
@@ -52,7 +52,7 @@ type WsChatRoomPreview struct {
 	Hash                  string
 	ParticipantName       string
 	ParticipantPictureUrl string
-	ExpiredAt             *time.Time
+	ExpiredAt             *int64
 	LastChat              Chat
 }
 

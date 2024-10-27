@@ -83,6 +83,7 @@ const WsChatPage = (): React.ReactElement => {
             selectedRoomId={selectedRoom?.id}
             setSelectedRoom={(room) => {
               setSelectedRoom(room);
+              setIsHideChatRoomList(false)
               if (window.innerWidth < 640) {
                 setIsHideChatRoomList(true);
               }
@@ -115,6 +116,7 @@ const WsChatPage = (): React.ReactElement => {
               setSelectedRoom(undefined);
               setIsHideChatRoomList(false);
             }}
+            setRoomIsExpired={() => handleGetRoomList()}
           ></ChatRoomV2>
         ) : (
           <div

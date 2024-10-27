@@ -6,12 +6,12 @@ import (
 )
 
 type RoomPreviewResponse struct {
-	Id                    int64      `json:"id"`
-	Hash                  string     `json:"hash"`
-	ParticipantName       string     `json:"participant_name"`
-	ParticipantPictureUrl string     `json:"participant_picture_url"`
-	ExpiredAt             *time.Time `json:"expired_at,omitempty"`
-	LastChat              Chat       `json:"last_chat"`
+	Id                    int64  `json:"id"`
+	Hash                  string `json:"hash"`
+	ParticipantName       string `json:"participant_name"`
+	ParticipantPictureUrl string `json:"participant_picture_url"`
+	ExpiredAt             *int64 `json:"expired_at,omitempty"`
+	LastChat              Chat   `json:"last_chat"`
 }
 
 type RoomListResponse struct {
@@ -39,12 +39,14 @@ func ToRoomListResponse(roomList []entity.WsChatRoomPreview) RoomListResponse {
 	for _, room := range roomList {
 		roomResponse := ToRoomPreviewResponse(room)
 
+		now := time.Now().UnixMicro()
+
 		if roomResponse.ExpiredAt == nil {
 			pending = append(pending, roomResponse)
 			continue
 		}
 
-		if roomResponse.ExpiredAt.After(time.Now()) {
+		if *roomResponse.ExpiredAt > now {
 			onGoing = append(onGoing, roomResponse)
 			continue
 		}

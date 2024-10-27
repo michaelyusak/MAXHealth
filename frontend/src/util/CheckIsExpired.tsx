@@ -1,47 +1,42 @@
-export function IsExpired(timeStr: string): boolean {
-  if (timeStr == "") {
+export function IsExpired(epoch?: number): boolean {
+  if (!epoch) {
     return false;
   }
 
-  const expiredAtUTC = new Date(timeStr);
+  epoch = epoch / 1000;
+
+  const expiredAt = new Date(epoch);
   const now = new Date();
 
-  const clientTimezoneOffset = now.getTimezoneOffset() * 60000;
-
-  const expiredAtClientTimezone = new Date(
-    expiredAtUTC.getTime() - clientTimezoneOffset
-  );
-
-  return expiredAtClientTimezone < now;
+  return expiredAt < now;
 }
 
-export function GetRemaining(timeStr?: string): string {
-  if (!timeStr) {
+export function GetRemaining(epoch?: number): string {
+  if (!epoch) {
     return "";
   }
 
-  const expiredAtUTC = new Date(timeStr);
+  epoch = epoch / 1000;
+
+  const expiredAt = new Date(epoch);
   const now = new Date();
 
-  const clientTimezoneOffset = now.getTimezoneOffset() * 60000;
-
-  const expiredAtClientTimezone = new Date(
-    expiredAtUTC.getTime() - clientTimezoneOffset
-  );
-
-  const remaining = expiredAtClientTimezone.getTime() - now.getTime();
-
-  const options: Intl.DateTimeFormatOptions = {
-    minute: "2-digit",
-    second: "2-digit",
-    hourCycle: "h23",
-  };
+  const remaining = expiredAt.getTime() - now.getTime();
 
   if (remaining <= 0) {
     return "00:00";
   }
 
-  const formatter = new Intl.DateTimeFormat("en-US", options);
+  const remainingMinutes = Math.floor(remaining / 1000 / 60);
+  const remainingHours = Math.floor(remainingMinutes / 60);
 
-  return formatter.format(remaining);
+  const minutes =
+    Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60)) +
+    remainingHours * 60;
+  const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+  const formattedSeconds = seconds.toString().padStart(2, "0");
+
+  return `${formattedMinutes}:${formattedSeconds}`;
 }
