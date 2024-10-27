@@ -212,7 +212,7 @@ export async function HandleRefreshToken() {
       throw new Error(MsgRefreshTokenNotFound);
     }
 
-    alert(response.status);
+    console.log(response.status);
 
     throw new Error(`failed to refresh token, ${responseData.message}`);
   }
