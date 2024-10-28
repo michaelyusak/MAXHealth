@@ -11,7 +11,7 @@ import (
 )
 
 type JwtCustomClaims struct {
-	UserId        int64  `json:"user_id"`
+	AccountId     int64  `json:"account_id"`
 	Email         string `json:"email"`
 	Role          string `json:"role"`
 	TokenDuration int    `json:"token_duration"`

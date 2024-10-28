@@ -30,7 +30,7 @@ func AuthMiddleware(tokenAuth util.TokenAuthentication, config *config.Config) g
 			return
 		}
 
-		c.Set(appconstant.AccountId, claims.UserId)
+		c.Set(appconstant.AccountId, claims.AccountId)
 		c.Set(appconstant.Role, claims.Role)
 		c.Next()
 	}

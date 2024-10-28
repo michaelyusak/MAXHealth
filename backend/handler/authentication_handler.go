@@ -199,3 +199,23 @@ func (h *AuthenticationHandler) ResetPasswordOneAccount(ctx *gin.Context) {
 
 	util.ResponseOK(ctx, nil)
 }
+
+func (h *AuthenticationHandler) VerifyToken(ctx *gin.Context) {
+	ctx.Header("Content-Type", "application/json")
+
+	var verifyReq dto.VerifyTokenReq
+
+	err := ctx.ShouldBindJSON(&verifyReq)
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+
+	data, err := h.authenticationUsecase.VerifyToken(ctx.Request.Context(), verifyReq.AccessToken)
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+
+	util.ResponseOK(ctx, dto.ToTokenDataDTO(*data))
+}
