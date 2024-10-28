@@ -18,7 +18,6 @@ const WsChatPage = (): React.ReactElement => {
   const [expiredRooms, setExpiredRooms] = useState<IChatRoomPreviewV2[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<IChatRoomPreviewV2>();
   const [modal, setModal] = useState<React.ReactElement>();
-  const [screenHeight, setScreenHeight] = useState<number>(window.innerHeight);
   const [isHideChatRoomList, setIsHideChatRoomList] = useState<boolean>(false);
 
   const handleGetRoomList = useCallback(() => {
@@ -37,8 +36,12 @@ const WsChatPage = (): React.ReactElement => {
 
   useEffect(() => {
     const handleResize = () => {
-      setScreenHeight(window.innerHeight);
-      window.innerWidth < 640 ? setIsHideChatRoomList(true) : setIsHideChatRoomList(false);
+      if (window.innerWidth < 640 && selectedRoom !== undefined) {
+        setIsHideChatRoomList(true);
+        return;
+      }
+
+      setIsHideChatRoomList(false);
     };
 
     handleResize();
@@ -48,7 +51,7 @@ const WsChatPage = (): React.ReactElement => {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [selectedRoom]);
 
   useEffect(() => {
     const roleSessionStorage = sessionStorage.getItem("role");
@@ -75,7 +78,7 @@ const WsChatPage = (): React.ReactElement => {
   return (
     <>
       {modal && modal}
-      <div className="flex w-full h-[100vh] items-start pt-[5%] px-[3%] justify-center drop-shadow-[0px_0px_10px_rgba(0,0,0,0.25)]">
+      <div className="flex w-full h-[80vh] items-start pt-[5%] px-[3%] justify-center drop-shadow-[0px_0px_10px_rgba(0,0,0,0.25)]">
         {!isHideChatRoomList && (
           <ChatRoomPreviewListV2
             onGoingChatRoomPreviewList={onGoingRooms}
@@ -90,13 +93,6 @@ const WsChatPage = (): React.ReactElement => {
               }
             }}
             refetchRoomList={() => handleGetRoomList()}
-            height={
-              screenHeight > 800
-                ? "h-[600px]"
-                : screenHeight > 700
-                ? "h-[500px]"
-                : "h-[400px]"
-            }
           ></ChatRoomPreviewListV2>
         )}
 
@@ -106,13 +102,6 @@ const WsChatPage = (): React.ReactElement => {
             room={selectedRoom}
             accountId={accountId}
             role={role}
-            height={
-              screenHeight > 800
-                ? "h-[600px]"
-                : screenHeight > 700
-                ? "h-[500px]"
-                : "h-[400px]"
-            }
             closeChatRoom={() => {
               setSelectedRoom(undefined);
               setIsHideChatRoomList(false);
@@ -120,15 +109,7 @@ const WsChatPage = (): React.ReactElement => {
             setRoomIsExpired={() => handleGetRoomList()}
           ></ChatRoomV2>
         ) : (
-          <div
-            className={`${
-              screenHeight > 800
-                ? "h-[600px]"
-                : screenHeight > 700
-                ? "h-[500px]"
-                : "h-[400px]"
-            } bg-gray-200 hidden sm:block w-[70%]`}
-          ></div>
+          <div className={`h-full bg-gray-200 hidden sm:block w-[70%]`}></div>
         )}
       </div>
     </>
