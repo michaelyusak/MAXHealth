@@ -43,6 +43,15 @@ type UpdateAccountRequest struct {
 	Name string `json:"name" validate:"required"`
 }
 
+type VerifyTokenReq struct {
+	AccessToken string `json:"access_token" binding:"required"`
+}
+
+type TokenDataRes struct {
+	AccountId int64  `json:"account_id"`
+	Role      string `json:"role"`
+}
+
 func RegisterRequestToAccount(RegisterRquest RegisterRequest) entity.Account {
 	return entity.Account{
 		Email: RegisterRquest.Email,
@@ -68,4 +77,8 @@ func UpdateAccountRequestToAccount(updateAccountRequest UpdateAccountRequest) en
 	return entity.Account{
 		Name: updateAccountRequest.Name,
 	}
+}
+
+func ToTokenDataDTO(tokenData entity.TokenData) TokenDataRes {
+	return TokenDataRes(tokenData)
 }

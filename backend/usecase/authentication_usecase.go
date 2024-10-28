@@ -29,6 +29,7 @@ type AuthenticationUsecase interface {
 	VerifyOneAccount(ctx context.Context, verificationPasswordRequest dto.VerificationPasswordRequest) error
 	SendResetPasswordToken(ctx context.Context, sendEmailRequest dto.SendEmailRequest) error
 	ResetPassword(ctx context.Context, resetPasswordTokenVerificationRequest dto.ResetPasswordVerificationRequest) error
+	VerifyToken(ctx context.Context, accessToken string) (*entity.TokenData, error)
 }
 
 type authenticationUsecaseImpl struct {
@@ -218,7 +219,7 @@ func (u *authenticationUsecaseImpl) SendVerificationEmail(ctx context.Context, s
 	u.emailHelper.AddRequest([]string{sendEmailRequest.Email}, appconstant.VerificationEmailSubject)
 
 	verificationToken, err := u.jwtHelper.CreateAndSign(util.JwtCustomClaims{
-		UserId:        acc.Id,
+		AccountId:     acc.Id,
 		Email:         sendEmailRequest.Email,
 		TokenDuration: 60,
 	}, u.jwtHelper.Config.VerifSecret)
@@ -295,7 +296,7 @@ func (u *authenticationUsecaseImpl) Login(ctx context.Context, account entity.Ac
 		return nil, apperror.WrongPasswordError(err)
 	}
 
-	customClaims := util.JwtCustomClaims{UserId: userCredential.Id, Email: userCredential.Email, Role: userCredential.RoleName, TokenDuration: 15}
+	customClaims := util.JwtCustomClaims{AccountId: userCredential.Id, Email: userCredential.Email, Role: userCredential.RoleName, TokenDuration: 15}
 	accessToken, err := u.jwtHelper.CreateAndSign(customClaims, u.jwtHelper.Config.AccessSecret)
 	if err != nil {
 		return nil, apperror.InternalServerError(err)
@@ -406,4 +407,23 @@ func (u *authenticationUsecaseImpl) VerifyOneAccount(ctx context.Context, verifi
 	}
 
 	return nil
+}
+
+func (s *authenticationUsecaseImpl) VerifyToken(ctx context.Context, accessToken string) (*entity.TokenData, error) {
+	if accessToken == "" {
+		return nil, apperror.InvalidTokenError()
+	}
+
+	claims, err := s.jwtHelper.ParseAndVerify(accessToken, s.jwtHelper.Config.AccessSecret)
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+	if claims == nil {
+		return nil, apperror.InvalidTokenError()
+	}
+
+	return &entity.TokenData{
+		AccountId: claims.AccountId,
+		Role:      claims.Role,
+	}, nil
 }

@@ -32,7 +32,7 @@ func (u *authenticationUsecaseImpl) SendResetPasswordToken(ctx context.Context, 
 	u.emailHelper.AddRequest([]string{sendEmailRequest.Email}, appconstant.ResetPasswordEmailSubject)
 
 	resetPasswordToken, err := u.jwtHelper.CreateAndSign(util.JwtCustomClaims{
-		UserId:        acc.Id,
+		AccountId:     acc.Id,
 		Email:         sendEmailRequest.Email,
 		TokenDuration: 60,
 	}, u.jwtHelper.Config.ResetPasswordSecret)
