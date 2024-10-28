@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import { IToken } from "../interfaces/Token";
+import { IToken, ITokenDataV2 } from "../interfaces/Token";
 import { jwtDecode } from "jwt-decode";
 import {
   MsgRefreshTokenNotFound,
@@ -222,6 +222,46 @@ export async function HandleRefreshToken() {
   Cookies.set("accessToken", responseData.data.access_token, {
     expires: new Date(accessTokenClaims.exp * 1000),
   });
+}
+
+export async function VerifyToken(): Promise<ITokenDataV2> {
+  const url = import.meta.env.VITE_HTTP_BASE_URL + "/verify";
+
+  let accessToken = Cookies.get("accessToken");
+
+  if (!accessToken) {
+    await HandleRefreshToken();
+
+    accessToken = Cookies.get("accessToken");
+  }
+
+  const options: RequestInit = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      access_token: accessToken,
+    }),
+  };
+
+  let response: Response;
+
+  try {
+    response = await fetch(url, options);
+  } catch (error) {
+    throw new Error("server is offline");
+  }
+
+  const responseData = await response.json();
+
+  if (!response.ok) {
+    if (response.status == 401) {
+      Cookies.remove("accessToken");
+    }
+
+    throw new Error(responseData.message);
+  }
+
+  return responseData.data;
 }
 
 export async function HandlePatchBodyRaw(

@@ -39,7 +39,7 @@ import { IoMdMore } from "react-icons/io";
 
 type chatRoomV2Props = {
   accountId: number;
-  role: "doctor" | "user";
+  role: string;
   setModal: (element: React.ReactElement | undefined) => void;
   room: IChatRoomPreviewV2;
   height: string;

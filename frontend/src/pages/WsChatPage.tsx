@@ -1,9 +1,8 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { ToastContext } from "../contexts/ToastData";
 import { HandleShowToast } from "../util/ShowToast";
-import { MsgRefreshTokenNotFound } from "../appconstants/appconstants";
+import { MsgTokenExpired } from "../appconstants/appconstants";
 import { HandleGet } from "../util/API";
 import { IChatRoomList, IChatRoomPreviewV2 } from "../interfaces/ChatRoom";
 import ChatRoomPreviewListV2 from "../components/ChatRoomPreviewListV2";
@@ -12,7 +11,7 @@ import ChatRoomV2 from "../components/ChatRoomV2";
 const WsChatPage = (): React.ReactElement => {
   const navigate = useNavigate();
   const { setToast } = useContext(ToastContext);
-  const [role, setRole] = useState<"user" | "doctor">();
+  const [role, setRole] = useState<string>();
   const [accountId, setAccountId] = useState<number>();
   const [pendingRooms, setPendingRooms] = useState<IChatRoomPreviewV2[]>([]);
   const [onGoingRooms, setOnGoingRooms] = useState<IChatRoomPreviewV2[]>([]);
@@ -39,8 +38,8 @@ const WsChatPage = (): React.ReactElement => {
   useEffect(() => {
     const updateHeight = () => {
       setScreenHeight(window.innerHeight);
-      setIsHideChatRoomList(false)
-      setSelectedRoom(undefined)
+      setIsHideChatRoomList(false);
+      setSelectedRoom(undefined);
     };
 
     updateHeight();
@@ -53,18 +52,21 @@ const WsChatPage = (): React.ReactElement => {
   }, []);
 
   useEffect(() => {
-    const data = Cookies.get("data");
+    const roleSessionStorage = sessionStorage.getItem("role");
+    const accountIdSessionStorage = sessionStorage.getItem("accountId");
 
-    if (!data) {
+    if (
+      !roleSessionStorage ||
+      !accountIdSessionStorage ||
+      isNaN(+accountIdSessionStorage)
+    ) {
+      HandleShowToast(setToast, false, MsgTokenExpired, 5);
       navigate("/auth/login");
-
-      HandleShowToast(setToast, false, MsgRefreshTokenNotFound, 5);
-    } else {
-      const dataParsed = JSON.parse(data);
-
-      setAccountId(dataParsed.user_id);
-      setRole(dataParsed.role);
+      return;
     }
+
+    setAccountId(+accountIdSessionStorage);
+    setRole(roleSessionStorage);
   }, [navigate, setAccountId, setToast]);
 
   useEffect(() => {
@@ -83,7 +85,7 @@ const WsChatPage = (): React.ReactElement => {
             selectedRoomId={selectedRoom?.id}
             setSelectedRoom={(room) => {
               setSelectedRoom(room);
-              setIsHideChatRoomList(false)
+              setIsHideChatRoomList(false);
               if (window.innerWidth < 640) {
                 setIsHideChatRoomList(true);
               }

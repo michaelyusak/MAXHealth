@@ -29,7 +29,6 @@ import UserOrdersPage from "../pages/UserOrdersPage";
 import UploadPaymentProofPage from "../pages/UploadPaymentProofPage";
 import UserOrderPharmacyDetailPage from "../pages/UserOrderPharmacyDetailPage";
 import AdminManageUserPage from "../pages/AdminManageUserPage";
-import ProtectedRoute from "./ProtectedRoute";
 import TelemedicineLandingUserPage from "../pages/TelemedicineLandingUserPage";
 import DoctorTemplate from "../templates/DoctorTemplate";
 import AdminOrdersPage from "../pages/AdminOrdersPage";
@@ -43,6 +42,7 @@ import ManagerReportPage from "../pages/ManagerReportPage";
 import ManagerStockChangesPage from "../pages/ManagerStockChangesPage";
 import AdminReportPage from "../pages/AdminReportPage";
 import WsChatPage from "../pages/WsChatPage";
+import ProtectedRouteV2 from "./ProtectedRouteV2";
 
 const router = createBrowserRouter(
   [
@@ -104,7 +104,7 @@ const router = createBrowserRouter(
         },
         {
           path: path.users,
-          element: <ProtectedRoute acceptedRoles={["user"]}></ProtectedRoute>,
+          element: <ProtectedRouteV2 acceptedRoles={["user"]}></ProtectedRouteV2>,
           children: [
             {
               path: path.users,
@@ -128,7 +128,7 @@ const router = createBrowserRouter(
         },
         {
           path: "/prescriptions/",
-          element: <ProtectedRoute acceptedRoles={["user"]}></ProtectedRoute>,
+          element: <ProtectedRouteV2 acceptedRoles={["user"]}></ProtectedRouteV2>,
           children: [
             {
               path: "/prescriptions/",
@@ -151,32 +151,15 @@ const router = createBrowserRouter(
                 <TelemedicineLandingUserPage></TelemedicineLandingUserPage>
               ),
             },
-            // {
-            //   path: "/telemedicine/chats/",
-            //   element: (
-            //     <ProtectedRoute
-            //       acceptedRoles={["user"]}
-            //       roleBasedOnFailRedirectTo={{
-            //         ["user"]: { to: "/telemedicine/" },
-            //       }}
-            //     ></ProtectedRoute>
-            //   ),
-            //   children: [
-            //     {
-            //       path: "/telemedicine/chats/",
-            //       element: <ChatPage></ChatPage>,
-            //     },
-            //   ],
-            // },
             {
               path: "/telemedicine/chats/",
               element: (
-                <ProtectedRoute
+                <ProtectedRouteV2
                   acceptedRoles={["user"]}
                   roleBasedOnFailRedirectTo={{
                     ["user"]: { to: "/telemedicine/" },
                   }}
-                ></ProtectedRoute>
+                ></ProtectedRouteV2>
               ),
               children: [
                 {
@@ -202,7 +185,7 @@ const router = createBrowserRouter(
         },
         {
           path: "/cart/",
-          element: <ProtectedRoute acceptedRoles={["user"]}></ProtectedRoute>,
+          element: <ProtectedRouteV2 acceptedRoles={["user"]}></ProtectedRouteV2>,
           children: [
             {
               path: "/cart/",
@@ -236,7 +219,7 @@ const router = createBrowserRouter(
     {
       path: "/manager/",
       element: (
-        <ProtectedRoute acceptedRoles={["pharmacy manager"]}></ProtectedRoute>
+        <ProtectedRouteV2 acceptedRoles={["pharmacy manager"]}></ProtectedRouteV2>
       ),
       children: [
         {
@@ -277,7 +260,7 @@ const router = createBrowserRouter(
     },
     {
       path: "/admin",
-      element: <ProtectedRoute acceptedRoles={["admin"]}></ProtectedRoute>,
+      element: <ProtectedRouteV2 acceptedRoles={["admin"]}></ProtectedRouteV2>,
       children: [
         {
           path: "/admin",
@@ -313,7 +296,7 @@ const router = createBrowserRouter(
     },
     {
       path: "/doctors/",
-      element: <ProtectedRoute acceptedRoles={["doctor"]}></ProtectedRoute>,
+      element: <ProtectedRouteV2 acceptedRoles={["doctor"]}></ProtectedRouteV2>,
       children: [
         {
           path: "/doctors/",
@@ -327,10 +310,6 @@ const router = createBrowserRouter(
               path: "/doctors/telemedicine",
               element: <Navigate to="/doctors/telemedicine/chats/"></Navigate>,
             },
-            // {
-            //   path: "/doctors/telemedicine/chats",
-            //   element: <ChatPage></ChatPage>,
-            // },
             {
               path: "/doctors/telemedicine/chats",
               element: <WsChatPage></WsChatPage>,
