@@ -1,9 +1,8 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { ToastContext } from "../contexts/ToastData";
 import { HandleShowToast } from "../util/ShowToast";
-import { MsgRefreshTokenNotFound } from "../appconstants/appconstants";
+import { MsgTokenExpired } from "../appconstants/appconstants";
 import { HandleGet } from "../util/API";
 import { IChatRoomList, IChatRoomPreviewV2 } from "../interfaces/ChatRoom";
 import ChatRoomPreviewListV2 from "../components/ChatRoomPreviewListV2";
@@ -12,14 +11,13 @@ import ChatRoomV2 from "../components/ChatRoomV2";
 const WsChatPage = (): React.ReactElement => {
   const navigate = useNavigate();
   const { setToast } = useContext(ToastContext);
-  const [role, setRole] = useState<"user" | "doctor">();
+  const [role, setRole] = useState<string>();
   const [accountId, setAccountId] = useState<number>();
   const [pendingRooms, setPendingRooms] = useState<IChatRoomPreviewV2[]>([]);
   const [onGoingRooms, setOnGoingRooms] = useState<IChatRoomPreviewV2[]>([]);
   const [expiredRooms, setExpiredRooms] = useState<IChatRoomPreviewV2[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<IChatRoomPreviewV2>();
   const [modal, setModal] = useState<React.ReactElement>();
-  const [screenHeight, setScreenHeight] = useState<number>(window.innerHeight);
   const [isHideChatRoomList, setIsHideChatRoomList] = useState<boolean>(false);
 
   const handleGetRoomList = useCallback(() => {
@@ -37,34 +35,40 @@ const WsChatPage = (): React.ReactElement => {
   }, []);
 
   useEffect(() => {
-    const updateHeight = () => {
-      setScreenHeight(window.innerHeight);
-      setIsHideChatRoomList(false)
-      setSelectedRoom(undefined)
+    const handleResize = () => {
+      if (window.innerWidth < 640 && selectedRoom !== undefined) {
+        setIsHideChatRoomList(true);
+        return;
+      }
+
+      setIsHideChatRoomList(false);
     };
 
-    updateHeight();
+    handleResize();
 
-    window.addEventListener("resize", updateHeight);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener("resize", updateHeight);
+      window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [selectedRoom]);
 
   useEffect(() => {
-    const data = Cookies.get("data");
+    const roleSessionStorage = sessionStorage.getItem("role");
+    const accountIdSessionStorage = sessionStorage.getItem("accountId");
 
-    if (!data) {
+    if (
+      !roleSessionStorage ||
+      !accountIdSessionStorage ||
+      isNaN(+accountIdSessionStorage)
+    ) {
+      HandleShowToast(setToast, false, MsgTokenExpired, 5);
       navigate("/auth/login");
-
-      HandleShowToast(setToast, false, MsgRefreshTokenNotFound, 5);
-    } else {
-      const dataParsed = JSON.parse(data);
-
-      setAccountId(dataParsed.user_id);
-      setRole(dataParsed.role);
+      return;
     }
+
+    setAccountId(+accountIdSessionStorage);
+    setRole(roleSessionStorage);
   }, [navigate, setAccountId, setToast]);
 
   useEffect(() => {
@@ -74,7 +78,7 @@ const WsChatPage = (): React.ReactElement => {
   return (
     <>
       {modal && modal}
-      <div className="flex w-full h-[100vh] items-start pt-[5%] px-[3%] justify-center drop-shadow-[0px_0px_10px_rgba(0,0,0,0.25)]">
+      <div className="flex w-full h-[80vh] items-start pt-[5%] px-[3%] justify-center drop-shadow-[0px_0px_10px_rgba(0,0,0,0.25)]">
         {!isHideChatRoomList && (
           <ChatRoomPreviewListV2
             onGoingChatRoomPreviewList={onGoingRooms}
@@ -83,19 +87,12 @@ const WsChatPage = (): React.ReactElement => {
             selectedRoomId={selectedRoom?.id}
             setSelectedRoom={(room) => {
               setSelectedRoom(room);
-              setIsHideChatRoomList(false)
+              setIsHideChatRoomList(false);
               if (window.innerWidth < 640) {
                 setIsHideChatRoomList(true);
               }
             }}
             refetchRoomList={() => handleGetRoomList()}
-            height={
-              screenHeight > 800
-                ? "h-[600px]"
-                : screenHeight > 700
-                ? "h-[500px]"
-                : "h-[400px]"
-            }
           ></ChatRoomPreviewListV2>
         )}
 
@@ -105,13 +102,6 @@ const WsChatPage = (): React.ReactElement => {
             room={selectedRoom}
             accountId={accountId}
             role={role}
-            height={
-              screenHeight > 800
-                ? "h-[600px]"
-                : screenHeight > 700
-                ? "h-[500px]"
-                : "h-[400px]"
-            }
             closeChatRoom={() => {
               setSelectedRoom(undefined);
               setIsHideChatRoomList(false);
@@ -119,15 +109,7 @@ const WsChatPage = (): React.ReactElement => {
             setRoomIsExpired={() => handleGetRoomList()}
           ></ChatRoomV2>
         ) : (
-          <div
-            className={`${
-              screenHeight > 800
-                ? "h-[600px]"
-                : screenHeight > 700
-                ? "h-[500px]"
-                : "h-[400px]"
-            } bg-gray-200 hidden sm:block w-[70%]`}
-          ></div>
+          <div className={`h-full bg-gray-200 hidden sm:block w-[70%]`}></div>
         )}
       </div>
     </>

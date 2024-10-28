@@ -17,7 +17,6 @@ type chatRoomPreviewListV2Props = {
   expiredChatRoomPreviewList: IChatRoomPreviewV2[];
   requestedChatRoomPreviewList: IChatRoomPreviewV2[];
   refetchRoomList: () => void;
-  height: string;
 };
 
 const ChatRoomPreviewListV2 = ({
@@ -27,7 +26,6 @@ const ChatRoomPreviewListV2 = ({
   expiredChatRoomPreviewList,
   requestedChatRoomPreviewList,
   refetchRoomList,
-  height
 }: chatRoomPreviewListV2Props): React.ReactElement => {
   const navigate = useNavigate();
 
@@ -41,7 +39,7 @@ const ChatRoomPreviewListV2 = ({
 
   return (
     <div
-      className={`${height} w-full sm:w-[45%] md:w-[35%] flex flex-col sm:border-r-[1px] border-black`}
+      className={`h-full w-full sm:w-[45%] md:w-[35%] flex flex-col sm:border-r-[1px] border-black`}
     >
       <div className="w-[100%] h-[10%] bg-[#000d44] px-[20px] flex items-center justify-start">
         <button
@@ -60,7 +58,7 @@ const ChatRoomPreviewListV2 = ({
       </div>
       <div
         dir="rtl"
-        className={`${height} overflow-y-auto`}
+        className={`h-full overflow-y-auto`}
         style={{ scrollbarWidth: "none" }}
       >
         <div className="flex flex-col h-full bg-gray-200" dir="ltr">

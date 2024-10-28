@@ -39,10 +39,9 @@ import { IoMdMore } from "react-icons/io";
 
 type chatRoomV2Props = {
   accountId: number;
-  role: "doctor" | "user";
+  role: string;
   setModal: (element: React.ReactElement | undefined) => void;
   room: IChatRoomPreviewV2;
-  height: string;
   closeChatRoom: () => void;
   setRoomIsExpired: () => void;
 };
@@ -52,7 +51,6 @@ const ChatRoomV2 = ({
   role,
   setModal,
   room,
-  height,
   closeChatRoom,
   setRoomIsExpired,
 }: chatRoomV2Props): React.ReactElement => {
@@ -426,7 +424,7 @@ const ChatRoomV2 = ({
       {roomDetail && (
         <>
           <div
-            className={`${height} justify-between relative w-full lg:w-[69%] bg-gray-200 flex rounded-r-3xl flex-col`}
+            className={`h-full justify-between relative w-full lg:w-[69%] bg-gray-200 flex rounded-r-3xl flex-col`}
           >
             <div className="w-full h-[100px] bg-gradient-to-t from-[#E5E7EB] to-[#DFF1FD]"></div>
 

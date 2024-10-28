@@ -373,6 +373,7 @@ func authenticationRouting(router *gin.Engine, handler *handler.AuthenticationHa
 	router.POST("/refresh-token", handler.GetNewAccessToken)
 	router.POST("/reset-password", handler.SendResetPasswordToken)
 	router.POST("/reset-password/verification", handler.ResetPasswordOneAccount)
+	router.POST("/verify", handler.VerifyToken)
 }
 
 func categoryRouting(router *gin.Engine, handler *handler.CategoryHandler, authMiddleware gin.HandlerFunc, adminAuthorizationMiddleware gin.HandlerFunc) {
