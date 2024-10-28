@@ -36,18 +36,17 @@ const WsChatPage = (): React.ReactElement => {
   }, []);
 
   useEffect(() => {
-    const updateHeight = () => {
+    const handleResize = () => {
       setScreenHeight(window.innerHeight);
-      setIsHideChatRoomList(false);
-      setSelectedRoom(undefined);
+      window.innerWidth < 640 ? setIsHideChatRoomList(true) : setIsHideChatRoomList(false);
     };
 
-    updateHeight();
+    handleResize();
 
-    window.addEventListener("resize", updateHeight);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener("resize", updateHeight);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
