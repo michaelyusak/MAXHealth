@@ -16,3 +16,6 @@ Credentials:
 - Doctor
     - Email: doctor@example.com	
     - Password: `abcD1234`
+- Admin
+    - Email: admin@example.com
+    - Password: `abcD1234`
