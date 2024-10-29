@@ -96,21 +96,27 @@ const WsChatPage = (): React.ReactElement => {
           ></ChatRoomPreviewListV2>
         )}
 
-        {selectedRoom && accountId && role ? (
-          <ChatRoomV2
-            setModal={(element) => setModal(element)}
-            room={selectedRoom}
-            accountId={accountId}
-            role={role}
-            closeChatRoom={() => {
-              setSelectedRoom(undefined);
-              setIsHideChatRoomList(false);
-            }}
-            setRoomIsExpired={() => handleGetRoomList()}
-          ></ChatRoomV2>
-        ) : (
-          <div className={`h-full bg-gray-200 hidden sm:block w-[70%]`}></div>
-        )}
+        <div
+          className={`${
+            selectedRoom && accountId && role ? "w-full" : "w-auto"
+          } sm:w-[70%] h-full`}
+        >
+          {selectedRoom && accountId && role ? (
+            <ChatRoomV2
+              setModal={(element) => setModal(element)}
+              room={selectedRoom}
+              accountId={accountId}
+              role={role}
+              closeChatRoom={() => {
+                setSelectedRoom(undefined);
+                setIsHideChatRoomList(false);
+              }}
+              setRoomIsExpired={() => handleGetRoomList()}
+            ></ChatRoomV2>
+          ) : (
+            <div className={`h-full bg-gray-200 hidden sm:block w-full`}></div>
+          )}
+        </div>
       </div>
     </>
   );
