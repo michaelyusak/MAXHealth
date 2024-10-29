@@ -8,6 +8,8 @@ import { IconButton } from "@material-tailwind/react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
 import { IconContext } from "react-icons";
 import { HandleGet } from "../util/API";
+import DoctorLandingPageLoadingCard from "./DoctorLandingPageLoadingCard";
+import { VscDebugDisconnect } from "react-icons/vsc";
 
 const Doctor = (): React.ReactElement => {
   const [doctorData, setDoctorData] = useState<{
@@ -19,12 +21,14 @@ const Doctor = (): React.ReactElement => {
   );
   const [page, setPage] = useState<number>(1);
   const [carouselPage, setCarouselPage] = useState<number>(1);
-  const [maxPage, setMaxPage] = useState<number>(1)
+  const [maxPage, setMaxPage] = useState<number>(1);
 
   const handleGetDoctors = useCallback(() => {
     const url =
       import.meta.env.VITE_HTTP_BASE_URL +
       `/doctors?page=${page}&limit=${doctorPerPage}&sort=desc&sortBy=experience`;
+
+    setLoading(true);
 
     HandleGet<DoctorData>(url)
       .then((data) => {
@@ -34,7 +38,7 @@ const Doctor = (): React.ReactElement => {
         }));
 
         setCarouselPage(page);
-        setMaxPage(data.page_info.page_count)
+        setMaxPage(data.page_info.page_count);
       })
       .catch((error: Error) => {
         console.log(error.message);
@@ -64,9 +68,6 @@ const Doctor = (): React.ReactElement => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
-  if (isLoading) return <p>Loading...</p>;
-  if (!doctorData) return <p>No data</p>;
 
   return (
     <>
@@ -100,7 +101,7 @@ const Doctor = (): React.ReactElement => {
         Discover our doctors
       </h1>
 
-      {doctorData && doctorData[carouselPage] && (
+      {doctorData && doctorData[carouselPage] ? (
         <div className="flex justify-center gap-[10px] w-full px-[10px] md:px-[20px] xl:px-[50px] items-center">
           <IconButton
             placeholder={""}
@@ -136,6 +137,54 @@ const Doctor = (): React.ReactElement => {
               <FaArrowRight></FaArrowRight>
             </IconContext.Provider>
           </IconButton>
+        </div>
+      ) : isLoading ? (
+        <div className="flex justify-center gap-[10px] w-full px-[10px] md:px-[20px] xl:px-[50px] items-center">
+          <IconButton
+            placeholder={""}
+            onPointerEnterCapture={() => {}}
+            onPointerLeaveCapture={() => {}}
+            size="md"
+            disabled
+            onClick={() => setPage((prevVal) => prevVal - 1)}
+          >
+            <IconContext.Provider value={{ size: "20px", color: "#374151" }}>
+              <FaArrowLeft></FaArrowLeft>
+            </IconContext.Provider>
+          </IconButton>
+
+          <div className="grid grid-cols-2 xl:grid-cols-4 w-full justify-items-center">
+            {Array.from({ length: doctorPerPage }).map((_, i) => (
+              <DoctorLandingPageLoadingCard
+                key={i}
+              ></DoctorLandingPageLoadingCard>
+            ))}
+          </div>
+
+          <IconButton
+            placeholder={""}
+            onPointerEnterCapture={() => {}}
+            onPointerLeaveCapture={() => {}}
+            size="md"
+            disabled
+            onClick={() => setPage((prevVal) => prevVal + 1)}
+          >
+            <IconContext.Provider value={{ size: "20px", color: "#374151" }}>
+              <FaArrowRight></FaArrowRight>
+            </IconContext.Provider>
+          </IconButton>
+        </div>
+      ) : (
+        <div className="flex justify-center h-[400px] w-full items-center">
+          <div className="flex flex-col gap-[10px] items-center border-[1px] border-[#000E44] px-[20px] py-[5px] rounded-xl md:rounded-2xl xl:rounded-3xl">
+            <IconContext.Provider value={{ size: "250px", color: "#000E44" }}>
+              <VscDebugDisconnect></VscDebugDisconnect>
+            </IconContext.Provider>
+
+            <p className="text-center text-[20px] md:text-[24px] font-[600] capitalize">
+              something went wrong on our side
+            </p>
+          </div>
         </div>
       )}
     </>

@@ -41,7 +41,7 @@ const ChatRoomPreviewListV2 = ({
     <div
       className={`h-full w-full sm:w-[45%] md:w-[35%] flex flex-col sm:border-r-[1px] border-black`}
     >
-      <div className="w-[100%] h-[10%] bg-[#000d44] px-[20px] flex items-center justify-start">
+      <div className="w-full h-[10%] bg-[#000d44] px-[20px] flex items-center justify-start">
         <button
           onClick={() => {
             if (pathname.includes("doctors")) {

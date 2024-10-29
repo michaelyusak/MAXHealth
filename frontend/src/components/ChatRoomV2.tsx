@@ -421,10 +421,10 @@ const ChatRoomV2 = ({
 
   return (
     <>
-      {roomDetail && (
+      {roomDetail ? (
         <>
           <div
-            className={`h-full justify-between relative w-full lg:w-[69%] bg-gray-200 flex rounded-r-3xl flex-col`}
+            className={`h-full justify-between relative w-full bg-gray-200 flex rounded-r-3xl flex-col`}
           >
             <div className="w-full h-[100px] bg-gradient-to-t from-[#E5E7EB] to-[#DFF1FD]"></div>
 
@@ -761,6 +761,12 @@ const ChatRoomV2 = ({
               </>
             </div>
           </div>
+        </>
+      ) : (
+        <>
+          <div
+            className={`h-full w-full bg-gray-200 rounded-r-3xl`}
+          ></div>
         </>
       )}
     </>
