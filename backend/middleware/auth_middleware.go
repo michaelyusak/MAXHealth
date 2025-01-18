@@ -71,3 +71,26 @@ func AdminAuthorizationMiddleware(c *gin.Context) {
 	}
 	c.AbortWithStatusJSON(http.StatusUnauthorized, dto.ErrorResponse{Message: appconstant.MsgUnauthorized})
 }
+
+func PersonalAuthMiddleware(config *config.Config) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		secret := ctx.Request.Header.Get("secret")
+		if secret == "" {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+				"detail": "personal password is not present",
+			})
+			return
+		}
+	
+		if secret != config.PersonalPassword {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+				"detail": "wrong password",
+			})
+			return
+		}
+
+		ctx.Next()
+	}
+}

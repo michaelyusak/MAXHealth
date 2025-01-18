@@ -7,4 +7,5 @@ const (
 	DrugPicturesUrl       = "drugs/"
 	ChatAttachmentUrl     = "chat_attachments/"
 	OrderPaymentProofsUrl = "order_payment_proofs/"
+	PersonalUrl           = "personal/"
 )
