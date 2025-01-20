@@ -20,7 +20,7 @@ func NewPersonalUsecaseImpl() *personalUsecaseImpl {
 }
 
 func (u *personalUsecaseImpl) UploadFile(ctx context.Context, file multipart.File, fileHeader multipart.FileHeader) (string, error) {
-	filePath, _, err := util.ValidateFile(fileHeader, appconstant.PersonalUrl, []string{}, 100000)
+	filePath, _, err := util.ValidateFile(fileHeader, appconstant.PersonalUrl, []string{}, 0)
 	if err != nil {
 		return "", apperror.InternalServerError(fmt.Errorf("failed to validate file for personal folder: %w", err))
 	}
