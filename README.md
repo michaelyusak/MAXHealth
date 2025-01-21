@@ -4,7 +4,8 @@ MAXHealth is a telemedicine web application designed to connect patients, doctor
 
 The backend is built using `Go` with the `Gin Gonic` framework, while the frontend is developed with `React` and `TypeScript`. The application is deployed using `Docker`, with `Nginx` serving as the reverse proxy. WebSocket messaging is handled through `Centrifugo`.
 
-Deployed on: http://103.150.116.78 *Open in chrome for a better experience
+Deployed on: http://maxhealth.my.id
+*Open in chrome for a better experience
 
 Credentials:
 - User
