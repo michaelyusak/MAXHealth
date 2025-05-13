@@ -41,6 +41,7 @@ type routerOpts struct {
 	Ws                 *handler.WsHandler
 	ChatRoom           *handler.ChatRoomHandler
 	Media              *handler.MediaHandler
+	Personal           *handler.PersonalHandler
 }
 
 type utilOpts struct {
@@ -141,6 +142,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	wsUsecase := usecase.NewWsUsecaseImpl(wsChatRoomRepository, &prescriptionRepository, &prescriptionDrugRepository, &chatRepository, jwtAuthentication, transaction)
 	chatRoomUsecase := usecase.NewChatRoomUsecaseImpl(&userRepository, &doctorRepository, wsChatRoomRepository, &accountRepository, &chatRepository, &prescriptionDrugRepository)
 	mediaUsecase := usecase.NewMediaUsecaseImpl()
+	personalUsecase := usecase.NewPersonalUsecaseImpl()
 
 	pingHandler := handler.NewPingHandler(handler.PingHandlerOpts{})
 	authenticationHandler := handler.NewAuthenticationHandler(&authenticationUsecase)
@@ -163,6 +165,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 	wsHandler := handler.NewWsHandler(wsUsecase, upgrader, log)
 	mediaHandler := handler.NewMediaHandler(mediaUsecase)
 	chatRoomHandler := handler.NewChatRoomHandler(chatRoomUsecase)
+	personalHandler := handler.NewPersonalHandler(personalUsecase)
 
 	return newRouter(
 		routerOpts{
@@ -187,6 +190,7 @@ func createRouter(log *logrus.Logger, config *config.Config) *gin.Engine {
 			Ws:                 wsHandler,
 			ChatRoom:           chatRoomHandler,
 			Media:              mediaHandler,
+			Personal:           personalHandler,
 		},
 		utilOpts{
 			JwtHelper: jwtAuthentication,
@@ -219,6 +223,8 @@ func newRouter(h routerOpts, u utilOpts, config *config.Config, log *logrus.Logg
 	pharmacyManagerAuthorizationMiddleware := middleware.PharmacyManagerAuthorizationMiddleware
 	adminAuthorizationMiddleware := middleware.AdminAuthorizationMiddleware
 
+	personalAuthMiddleware := middleware.PersonalAuthMiddleware(config)
+
 	corsRouting(router, corsConfig)
 	router.NoRoute(handler.NotFoundHandler)
 	authenticationRouting(router, h.Authentication)
@@ -241,6 +247,7 @@ func newRouter(h routerOpts, u utilOpts, config *config.Config, log *logrus.Logg
 	wsRouting(router, h.Ws, authMiddleware)
 	chatRoomRouting(router, h.ChatRoom, authMiddleware, userAuthorizationMiddleware, doctorAuthorizationMiddleware)
 	mediaRouting(router, h.Media, authMiddleware)
+	personalRouting(router, h.Personal, personalAuthMiddleware)
 	pingRouting(router, h.Ping, authMiddleware, userAuthorizationMiddleware, doctorAuthorizationMiddleware, pharmacyManagerAuthorizationMiddleware, adminAuthorizationMiddleware)
 	pprofRouting(router)
 
@@ -447,4 +454,10 @@ func pprofRouting(router *gin.Engine) {
 	pprofRouter.GET("/heap", gin.WrapH(http.HandlerFunc(pprof.Handler("heap").ServeHTTP)))
 	pprofRouter.GET("/block", gin.WrapH(http.HandlerFunc(pprof.Handler("block").ServeHTTP)))
 	pprofRouter.GET("/goroutine", gin.WrapH(http.HandlerFunc(pprof.Handler("goroutine").ServeHTTP)))
+}
+
+func personalRouting(router *gin.Engine, handler *handler.PersonalHandler, personalAuthMiddleware gin.HandlerFunc) {
+	personalRouter := router.Group("/personal")
+
+	personalRouter.POST("/upload", personalAuthMiddleware, handler.UploadFile)
 }

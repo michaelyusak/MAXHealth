@@ -68,7 +68,7 @@ func (h *DrugHandler) GetAllDrugsForListing(ctx *gin.Context) {
 		return
 	}
 
-	productList, pageInfo, err := h.drugUsecase.GetAllDrugsForListing(ctx, resQuery)
+	productList, pageInfo, err := h.drugUsecase.GetAllDrugsForListing(ctx.Request.Context(), resQuery)
 	if err != nil {
 		ctx.Error(err)
 		return

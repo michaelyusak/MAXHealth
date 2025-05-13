@@ -26,6 +26,7 @@ type Config struct {
 	RajaOngkirApiKey    string
 	HashCost            int
 	GracefulPeriod      int
+	PersonalPassword    string
 }
 
 var (
@@ -74,5 +75,6 @@ func Init(log *logrus.Logger) *Config {
 		RajaOngkirApiKey:    os.Getenv("RAJA_ONGKIR_API_KEY"),
 		HashCost:            hashCost,
 		GracefulPeriod:      gracefulPeriod,
+		PersonalPassword:    os.Getenv("PERSONAL_PASSWORD"),
 	}
 }

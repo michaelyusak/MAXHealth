@@ -21,14 +21,21 @@ func ValidateFile(fileHeader multipart.FileHeader, prefixPath string, formatOpti
 	}
 
 	if fileHeader.Size > maxSize {
-		return nil, nil, errors.New(appconstant.MsgTooLargeFile)
+		if maxSize != 0 {
+			return nil, nil, errors.New(appconstant.MsgTooLargeFile)
+		}
 	}
 
 	filePath := fmt.Sprintf("%s%s", prefixPath, uuid.NewString())
+	
 	return &filePath, &format, nil
 }
 
 func isFileValidFormat(formatOptions []string, format string) bool {
+	if len(formatOptions) == 0 {
+		return true
+	}
+
 	for _, opt := range formatOptions {
 		if opt == format {
 			return true

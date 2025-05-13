@@ -42,11 +42,11 @@ func Init() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.GracefulPeriod)*time.Second)
 	defer cancel()
 
+	<-ctx.Done()
+
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatalf("Server shutdown: %s", err.Error())
 	}
-
-	<-ctx.Done()
 
 	log.Infof("Timeout of " + strconv.Itoa(config.GracefulPeriod) + " seconds")
 	log.Info("Server exiting")

@@ -15,16 +15,16 @@ function App() {
 
   return (
     <>
-        <ToastContext.Provider value={{ toastData, setToast }}>
-          <RouterProvider router={router}></RouterProvider>
-          {toastData.isVisible && (
-            <Toast
-              message={toastData.message}
-              isSuccess={toastData.isSuccess ?? false}
-              withLoginButton={toastData.withLoginRedirection}
-            ></Toast>
-          )}
-        </ToastContext.Provider>
+      <ToastContext.Provider value={{ toastData, setToast }}>
+        <RouterProvider router={router}></RouterProvider>
+        {toastData.isVisible && (
+          <Toast
+            message={toastData.message}
+            isSuccess={toastData.isSuccess ?? false}
+            withLoginButton={toastData.withLoginRedirection}
+          ></Toast>
+        )}
+      </ToastContext.Provider>
     </>
   );
 }

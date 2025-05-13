@@ -51,8 +51,6 @@ const Category = (): React.ReactElement => {
   };
 
   function handleCategoryPerPage(): number {
-    console.log("handle");
-
     const width = window.innerWidth;
 
     return width >= 1391
