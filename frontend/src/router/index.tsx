@@ -355,7 +355,7 @@ const router = createBrowserRouter(
     },
   ],
   {
-    basename: "/",
+    basename: import.meta.env.VITE_BASE_NAME,
   }
 );
 
