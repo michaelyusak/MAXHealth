@@ -126,7 +126,7 @@ func (r *pharmacyDrugRepositoryPostgres) GetProductListing(ctx context.Context, 
 
 	sql2 += database.GetProductCountQuery
 
-	c2, cancel := context.WithDeadline(ctx, time.Now().Add(time.Duration(10)*time.Second))
+	c2, cancel := context.WithDeadline(ctx, time.Now().Add(time.Duration(120)*time.Second))
 	defer cancel()
 
 	rows2, err := r.db.QueryContext(c2, sql2, args...)
@@ -163,7 +163,7 @@ func (r *pharmacyDrugRepositoryPostgres) GetProductListing(ctx context.Context, 
 	sql1 += ` OFFSET $` + strconv.Itoa(len(args)+1)
 	args = append(args, (query.Limit * (query.Page - 1)))
 
-	c1, cancel := context.WithDeadline(ctx, time.Now().Add(time.Duration(10)*time.Second))
+	c1, cancel := context.WithDeadline(ctx, time.Now().Add(time.Duration(120)*time.Second))
 	defer cancel()
 
 	rows1, err := r.db.QueryContext(c1, sql1, args...)

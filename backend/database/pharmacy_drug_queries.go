@@ -25,10 +25,16 @@ const (
 	`
 
 	GetPharmacyInRangeQuery = `
-		WITH in_range_pharmacy AS (
-			SELECT pharmacy_id, CAST((ST_DistanceSphere((ST_SetSRID(ST_MakePoint($1, $2), 4326)), pharmacies.geom)) AS NUMERIC) AS distance
-			FROM pharmacies
-			WHERE deleted_at IS NULL AND (ST_DistanceSphere((ST_SetSRID(ST_MakePoint($1, $2), 4326)), pharmacies.geom)) <= 25000
+		WITH input_points AS (
+			SELECT ST_SetSRID(ST_MakePoint($1, $2), 4326) AS geom
+		), in_range_pharmacy AS (
+			SELECT p.pharmacy_id, ST_DistanceSphere(ip.geom, p.geom) AS distance
+			FROM pharmacies p, input_points ip
+			WHERE 
+				p.deleted_at IS NULL 
+				AND p.geom && ST_Expand(ip.geom, 0.25)
+	  			AND ST_DWithin(p.geom, ip.geom, 25000)
+			LIMIT 10000
 	`
 
 	GetDrugListQuery = `
