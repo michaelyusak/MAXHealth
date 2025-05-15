@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"time"
 
 	"max-health/database"
 	"max-health/entity"
@@ -136,7 +137,10 @@ func (r *pharmacyDrugRepositoryPostgres) GetProductListing(ctx context.Context, 
 	sql += ` OFFSET $` + strconv.Itoa(len(args)+1)
 	args = append(args, (query.Limit * (query.Page - 1)))
 
-	rows, err := r.db.QueryContext(ctx, sql, args...)
+	c, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	rows, err := r.db.QueryContext(c, sql, args...)
 	if err != nil {
 		return nil, nil, fmt.Errorf("[pharmacy_drug_repository][GetProductListing][db.QueryContext] Error: %w", err)
 	}
