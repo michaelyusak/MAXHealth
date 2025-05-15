@@ -117,6 +117,7 @@ func (r *pharmacyDrugRepositoryPostgres) GetProductListing(ctx context.Context, 
 		sql += ` AND price <= $` + strconv.Itoa(len(args)+1)
 		args = append(args, *query.MaxPrice)
 	}
+	sql += database.GetDrugListFilterQuery
 	sql += `), ` + database.GetPriceRangeQuery
 
 	sql += database.GetProductListingQuery + ` ORDER BY min_price`

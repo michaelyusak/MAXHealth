@@ -45,7 +45,11 @@ const (
 			ON pd.pharmacy_id = ip.pharmacy_id
 			JOIN drugs d
 			ON pd.drug_id = d.drug_id
-			WHERE pd.deleted_at IS NULL AND d.deleted_at IS NULL AND pd.stock > 0 AND d.is_active AND d.drug_name ILIKE 
+			WHERE d.drug_name ILIKE 
+	`
+
+	GetDrugListFilterQuery = `
+		AND pd.stock > 0 AND d.is_active AND pd.deleted_at IS NULL AND d.deleted_at IS NULL
 	`
 
 	GetPriceRangeQuery = `
