@@ -49,25 +49,35 @@ const (
 	`
 
 	GetPriceRangeQuery = `
-		prices AS(
-			SELECT dl.drug_id, MIN(dl.price) AS min_price, MAX(dl.price) AS max_price
-			FROM drug_list dl
-			GROUP BY dl.drug_id),
 		closest_drug AS(
-			SELECT dl.pharmacy_drug_id, dl.drug_id, dl.drug_name, dl.price, dl.image, dl.is_prescription_required 
-			FROM drug_list dl
-			JOIN
-				(SELECT drug_id, MIN(distance) AS min_distance
-				FROM drug_list GROUP BY drug_id
-				) dl2
-			ON dl.distance = dl2.min_distance AND dl.drug_id = dl2.drug_id)
+			SELECT DISTINCT ON (drug_id)
+				dl.pharmacy_drug_id,
+				dl.drug_id,
+				dl.drug_name,
+				dl.price,
+				dl.image,
+				dl.is_prescription_required,
+				dl.distance,
+				min(dl.price) OVER (PARTITION BY dl.drug_id) AS min_price,
+				max(dl.price) OVER (PARTITION BY dl.drug_id) AS max_price
+  			FROM drug_list dl
+  			ORDER BY dl.drug_id, dl.distance
+		), paging AS (
+			SELECT COUNT(*) AS total_count FROM closest_drug
+		)
 	`
 
 	GetProductListingQuery = `
-		SELECT cd.pharmacy_drug_id, cd.drug_id, cd.drug_name, p.min_price, p.max_price, cd.image, cd.is_prescription_required 
-		FROM closest_drug cd
-		JOIN prices p 
-		ON cd.drug_id = p.drug_id
+		SELECT 
+			total_count,
+			pharmacy_drug_id,
+			drug_id,
+			drug_name,
+			min_price,
+			max_price,
+			image,
+			is_prescription_required
+		FROM closest_drug, paging
 	`
 
 	GetProductCountQuery = `

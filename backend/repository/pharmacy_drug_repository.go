@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strconv"
-	"time"
 
 	"max-health/database"
 	"max-health/entity"
@@ -89,8 +89,6 @@ func (r *pharmacyDrugRepositoryPostgres) GetPharmacyDrugById(ctx context.Context
 }
 
 func (r *pharmacyDrugRepositoryPostgres) GetProductListing(ctx context.Context, query *util.ValidatedGetProductQuery) ([]entity.DrugListing, *entity.PageInfo, error) {
-	drugListing := []entity.DrugListing{}
-	var pageInfo entity.PageInfo
 	sql := database.GetPharmacyInRangeQuery
 	args := []interface{}{}
 	args = append(args, query.Longitude)
@@ -111,74 +109,62 @@ func (r *pharmacyDrugRepositoryPostgres) GetProductListing(ctx context.Context, 
 	}
 
 	if query.MinPrice != nil {
-		sql += ` AND pd.price >= $` + strconv.Itoa(len(args)+1)
+		sql += ` AND price >= $` + strconv.Itoa(len(args)+1)
 		args = append(args, *query.MinPrice)
 	}
 
 	if query.MaxPrice != nil {
-		sql += ` AND pd.price <= $` + strconv.Itoa(len(args)+1)
+		sql += ` AND price <= $` + strconv.Itoa(len(args)+1)
 		args = append(args, *query.MaxPrice)
 	}
 	sql += `), ` + database.GetPriceRangeQuery
 
-	sql1 := sql
-	sql2 := sql
+	sql += database.GetProductListingQuery + ` ORDER BY min_price`
 
-	sql2 += database.GetProductCountQuery
-
-	c2, cancel := context.WithDeadline(ctx, time.Now().Add(time.Duration(120)*time.Second))
-	defer cancel()
-
-	rows2, err := r.db.QueryContext(c2, sql2, args...)
-	if err != nil {
-		return nil, nil, err
-	}
-	defer rows2.Close()
-
-	for rows2.Next() {
-		err := rows2.Scan(&pageInfo.ItemCount)
-		if err != nil {
-			return nil, nil, err
+	if query.Sort != nil {
+		if *query.Sort == "desc" {
+			sql += ` DESC`
+		} else {
+			sql += ` ASC`
 		}
+	} else {
+		sql += ` ASC`
+	}
+	sql += ` LIMIT $` + strconv.Itoa(len(args)+1)
+	args = append(args, query.Limit)
+	sql += ` OFFSET $` + strconv.Itoa(len(args)+1)
+	args = append(args, (query.Limit * (query.Page - 1)))
+
+	rows, err := r.db.QueryContext(ctx, sql, args...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("[pharmacy_drug_repository][GetProductListing][db.QueryContext] Error: %w", err)
+	}
+	defer rows.Close()
+
+	pageInfo := entity.PageInfo{}
+	drugListing := []entity.DrugListing{}
+
+	for rows.Next() {
+		drug := entity.DrugListing{}
+		err := rows.Scan(
+			&pageInfo.ItemCount,
+			&drug.PharmacyDrugId,
+			&drug.DrugId,
+			&drug.Name,
+			&drug.MinPrice,
+			&drug.MaxPrice,
+			&drug.Image,
+			&drug.IsPrescriptionRequired)
+		if err != nil {
+			return nil, nil, fmt.Errorf("[pharmacy_drug_repository][GetProductListing][rows.Scan] Error: %w", err)
+		}
+		drugListing = append(drugListing, drug)
 	}
 
 	pageInfo.Page = query.Page
 	pageInfo.PageCount = pageInfo.ItemCount / query.Limit
 	if pageInfo.ItemCount%query.Limit != 0 {
 		pageInfo.PageCount += 1
-	}
-
-	sql1 += database.GetProductListingQuery + ` ORDER BY p.min_price`
-	if query.Sort != nil {
-		if *query.Sort == "desc" {
-			sql1 += ` DESC`
-		} else {
-			sql1 += ` ASC`
-		}
-	} else {
-		sql1 += ` ASC`
-	}
-	sql1 += ` LIMIT $` + strconv.Itoa(len(args)+1)
-	args = append(args, query.Limit)
-	sql1 += ` OFFSET $` + strconv.Itoa(len(args)+1)
-	args = append(args, (query.Limit * (query.Page - 1)))
-
-	c1, cancel := context.WithDeadline(ctx, time.Now().Add(time.Duration(120)*time.Second))
-	defer cancel()
-
-	rows1, err := r.db.QueryContext(c1, sql1, args...)
-	if err != nil {
-		return nil, nil, err
-	}
-	defer rows1.Close()
-
-	for rows1.Next() {
-		drug := entity.DrugListing{}
-		err := rows1.Scan(&drug.PharmacyDrugId, &drug.DrugId, &drug.Name, &drug.MinPrice, &drug.MaxPrice, &drug.Image, &drug.IsPrescriptionRequired)
-		if err != nil {
-			return nil, nil, err
-		}
-		drugListing = append(drugListing, drug)
 	}
 
 	return drugListing, &pageInfo, nil

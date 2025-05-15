@@ -1,5 +1,17 @@
 \c max_health_db
 
+CREATE INDEX idx_pharmacies_geom ON pharmacies USING GIST (geom);
+
+CREATE INDEX idx_pharmacy_drugs_pharmacy_id ON pharmacy_drugs (pharmacy_id);
+CREATE INDEX idx_pharmacy_drugs_drug_id ON pharmacy_drugs (drug_id);
+CREATE INDEX idx_pharmacy_drugs_deleted_at_stock_price ON pharmacy_drugs (deleted_at, stock, price);
+
+CREATE INDEX idx_drugs_drug_id ON drugs (drug_id);
+CREATE INDEX idx_drugs_deleted_active_name ON drugs (deleted_at, is_active, drug_name);
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX idx_drugs_drug_name_trgm ON drugs USING gin (drug_name gin_trgm_ops);
+
 INSERT INTO accounts(email, password, role_id, account_name, verified_at)
 VALUES
 ('admin@example.com', '$2a$10$Ui58s.1ppver3xUPuEsoo.xwiTwk3StevmFpXpxB9P.wOkJiiuL46', 4, 'admin', NOW()),

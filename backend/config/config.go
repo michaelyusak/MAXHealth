@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
@@ -27,6 +28,7 @@ type Config struct {
 	HashCost            int
 	GracefulPeriod      int
 	PersonalPassword    string
+	AllowOrigins        []string
 }
 
 var (
@@ -57,6 +59,10 @@ func Init(log *logrus.Logger) *Config {
 		}).Fatal("error loading .env file")
 	}
 
+	allowOriginsStr := os.Getenv("ALLOW_ORIGINS")
+
+	allowOrigins := strings.Split(allowOriginsStr, ",")
+
 	return &Config{
 		Port:                os.Getenv("BE_PORT"),
 		FEPort:              os.Getenv("FE_PORT"),
@@ -76,5 +82,6 @@ func Init(log *logrus.Logger) *Config {
 		HashCost:            hashCost,
 		GracefulPeriod:      gracefulPeriod,
 		PersonalPassword:    os.Getenv("PERSONAL_PASSWORD"),
+		AllowOrigins:        allowOrigins,
 	}
 }
