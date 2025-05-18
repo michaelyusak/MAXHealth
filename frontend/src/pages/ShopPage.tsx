@@ -173,6 +173,14 @@ const ShopPage = (): React.ReactElement => {
       }
     };
 
+    if (!token) {
+      const loc = getLoc()
+
+      fetchDrugList(loc.lat, loc.long);
+
+      return;
+    }
+
     loadAddress();
   }, []);
 
