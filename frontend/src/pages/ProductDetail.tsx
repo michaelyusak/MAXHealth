@@ -38,6 +38,10 @@ const ProductDetail = (): React.ReactElement => {
   const [accountId, setAccountId] = useState<number>(0);
   const [isTokenValid, setIsTokenValid] = useState<boolean>(false);
 
+  const [isAddressLoading, setIsAddressLoading] = useState<boolean>(false);
+  const [isDrugLoading, setIsDrugloading] = useState<boolean>(false);
+  const [isAddrLoaded, setIsAddrLoaded] = useState<boolean>(false);
+
   const [selectedAddress, setSelectedAddress] = useState<IAddress | undefined>(
     orderStateData.address &&
       orderStateData.address.id &&
@@ -139,6 +143,7 @@ const ProductDetail = (): React.ReactElement => {
         import.meta.env.VITE_HTTP_BASE_URL +
         `/drugs/${id}?lat=${latitude}&long=${longitude}&page=&limit=`;
 
+      setIsDrugloading(true)
       HandleGet<IDrugDetailResponse>(url)
         .then((data) => {
           setDrugDetail(data);
@@ -161,81 +166,82 @@ const ProductDetail = (): React.ReactElement => {
           }
 
           HandleShowToast(setToast, false, error.message, 5);
+        }).finally(() => {
+          setIsDrugloading(false)
         });
     },
     [id, setToast]
   );
 
-  const getLocation = useCallback(
-    (data: string) => {
-      const dataParsed = JSON.parse(data);
-      const mainLocation: { lat: string; long: string } =
-        dataParsed["location"];
+  function getLoc(): { lat: string, long: string } {
+    let lat: string | undefined;
+    let long: string | undefined;
 
-      if (
-        selectedAddress &&
-        selectedAddress.latitude &&
-        selectedAddress.longitude
-      ) {
-        fetchProductDetail(selectedAddress.latitude, selectedAddress.longitude);
-      }
+    if (selectedAddress?.latitude && selectedAddress?.longitude) {
+      lat = selectedAddress.latitude;
+      long = selectedAddress.longitude;
+    }
 
-      if (mainLocation.lat !== "" && mainLocation.long !== "") {
-        fetchProductDetail(mainLocation.lat, mainLocation.long);
-        return;
+    else if (data) {
+      const parsedData = JSON.parse(data);
+      if (parsedData?.location?.lat && parsedData?.location?.long) {
+        lat = parsedData.location.lat;
+        long = parsedData.location.long;
       }
-    },
-    [fetchProductDetail, selectedAddress]
-  );
+    }
+
+    if (!lat || !long) {
+      lat = "-6.1934332";
+      long = "106.8217253";
+    }
+
+    return {
+      lat: lat,
+      long: long
+    }
+  }
 
   useEffect(() => {
-    if (id) {
-      const data = Cookies.get("data");
+    const loadAddress = async () => {
+      setIsAddressLoading(true);
+      const url = import.meta.env.VITE_HTTP_BASE_URL + "/address";
 
-      if (data) {
-        getLocation(data);
-      }
-
-      fetchProductDetail("-6.1934332", "106.8217253");
-    }
-  }, [fetchProductDetail, selectedAddress, id, getLocation]);
-
-  const getAddress = useCallback(() => {
-    const url = import.meta.env.VITE_HTTP_BASE_URL + "/address";
-
-    setIsLoading(true);
-    HandleGet<{ address: IAddress[] }>(url, true)
-      .then((responseData) => {
+      try {
+        const responseData = await HandleGet<{ address: IAddress[] }>(url, true);
         setAddressOptions(responseData.address);
 
         if (responseData.address.length > 0) {
-          let mainAddress: IAddress | undefined = undefined;
-          responseData.address.forEach((address) => {
-            if (address.is_main) {
-              mainAddress = address;
-            }
-          });
+          let mainAddress = responseData.address.find(addr => addr.is_main) ?? responseData.address[0];
 
-          if (!mainAddress) {
-            mainAddress = responseData.address[0];
-          }
-
-          if (
-            !selectedAddress ||
-            (selectedAddress && selectedAddress.id === 0)
-          ) {
+          if (!selectedAddress || selectedAddress.id === 0) {
             setSelectedAddress(mainAddress);
             dispatch(updateAddress(mainAddress));
           }
         }
-      })
-      .catch((error: Error) => {
-        if (error.message != MsgRefreshTokenNotFound) {
+      } catch (error: any) {
+        if (error.message !== MsgRefreshTokenNotFound) {
           HandleShowToast(setToast, false, error.message, 5);
         }
-      })
-      .finally(() => setIsLoading(false));
-  }, [setToast, dispatch, selectedAddress]);
+      } finally {
+        setIsAddressLoading(false);
+        setIsAddrLoaded(true);
+      }
+    };
+
+    loadAddress();
+  }, []);
+
+  useEffect(() => {
+    if (!isAddrLoaded || (isAddressLoading || isDrugLoading)) return;
+
+    const loc = getLoc()
+
+    fetchProductDetail(loc.lat, loc.long);
+  }, [selectedAddress, data, isAddressLoading]);
+
+  useEffect(() => {
+    setIsLoading(isAddressLoading || isDrugLoading)
+  }, [isAddressLoading, isDrugLoading])
 
   useEffect(() => {
     const scrollToTop = () => {
@@ -245,8 +251,7 @@ const ProductDetail = (): React.ReactElement => {
       });
     };
     scrollToTop();
-    getAddress();
-  }, [id, getAddress]);
+  }, [id]);
 
   const [drugDetail, setDrugDetail] = useState<IDrugDetailResponse>();
 
@@ -309,20 +314,18 @@ const ProductDetail = (): React.ReactElement => {
                     }}
                   >
                     <div
-                      className={`h-[19px] w-[23px] p-[2px] border-[2px] ${
-                        selectedAddressOption &&
+                      className={`h-[19px] w-[23px] p-[2px] border-[2px] ${selectedAddressOption &&
                         selectedAddressOption.id === address.id
-                          ? "border-brightBlue"
-                          : "border-[#7b7c7c]"
-                      } rounded-full`}
+                        ? "border-brightBlue"
+                        : "border-[#7b7c7c]"
+                        } rounded-full`}
                     >
                       <div
-                        className={`h-[11px] w-[11px] ${
-                          selectedAddressOption &&
+                        className={`h-[11px] w-[11px] ${selectedAddressOption &&
                           selectedAddressOption.id === address.id
-                            ? "bg-brightBlue"
-                            : ""
-                        } rounded-full`}
+                          ? "bg-brightBlue"
+                          : ""
+                          } rounded-full`}
                       ></div>
                     </div>
                     <div className="flex flex-col gap-[0.5rem]">
@@ -640,6 +643,7 @@ const ProductDetail = (): React.ReactElement => {
         <ProductRelated
           isTokenValid={isTokenValid}
           categoryId={drugDetail.category.id}
+          loc={getLoc()}
         />
       )}
     </>
