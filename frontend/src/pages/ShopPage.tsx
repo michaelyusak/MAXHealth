@@ -173,6 +173,10 @@ const ShopPage = (): React.ReactElement => {
       }
     };
 
+    if (!token) {
+      setIsAddrLoaded(true)
+    }
+
     loadAddress();
   }, []);
 
