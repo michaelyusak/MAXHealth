@@ -25,5 +25,8 @@ func ConnectDB(config *config.Config, log *logrus.Logger) *sql.DB {
 		return nil
 	}
 
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(5)
+
 	return db
 }

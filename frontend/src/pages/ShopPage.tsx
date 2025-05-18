@@ -50,6 +50,10 @@ const ShopPage = (): React.ReactElement => {
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(0);
 
+  const [isAddressLoading, setIsAddressLoading] = useState<boolean>(false);
+  const [isDrugLoading, setIsDrugloading] = useState<boolean>(false);
+  const [isAddrLoaded, setIsAddrLoaded] = useState<boolean>(false);
+
   const [selectedAddress, setSelectedAddress] = useState<IAddress | undefined>(
     orderStateData.address &&
       orderStateData.address.id &&
@@ -77,16 +81,12 @@ const ShopPage = (): React.ReactElement => {
 
       const url =
         import.meta.env.VITE_HTTP_BASE_URL +
-        `/drugs?lat=${latitude}&long=${longitude}&search=${searchDrugs}&${
-          sortByCol != "" ? `sort-by=${sortByCol}&` : ""
-        }${
-          sortByOrd != ""
-            ? `sort=${sortByOrd == "from low to high" ? "asc" : "desc"}&`
-            : ""
-        }${
-          categoryId == "" ? "" : `category=${categoryId}&`
-        }min-price=${minPrice}&${
-          maxPrice > minPrice ? `max-price=${maxPrice}&` : ""
+        `/drugs?lat=${latitude}&long=${longitude}&search=${searchDrugs}&${sortByCol != "" ? `sort-by=${sortByCol}&` : ""
+        }${sortByOrd != ""
+          ? `sort=${sortByOrd == "from low to high" ? "asc" : "desc"}&`
+          : ""
+        }${categoryId == "" ? "" : `category=${categoryId}&`
+        }min-price=${minPrice}&${maxPrice > minPrice ? `max-price=${maxPrice}&` : ""
         }limit=${itemPerPage}&page=${page}`;
 
       window.scrollTo({
@@ -94,7 +94,7 @@ const ShopPage = (): React.ReactElement => {
         behavior: "smooth",
       });
 
-      setIsLoading(true);
+      setIsDrugloading(true)
       HandleGet<IDrugListResponse>(url)
         .then((responseData) => {
           setDrugList(responseData);
@@ -102,7 +102,9 @@ const ShopPage = (): React.ReactElement => {
         .catch((error: Error) => {
           HandleShowToast(setToast, false, error.message, 5);
         })
-        .finally(() => setIsLoading(false));
+        .finally(() => {
+          setIsDrugloading(false)
+        });
     },
     [
       categoryId,
@@ -116,75 +118,75 @@ const ShopPage = (): React.ReactElement => {
     ]
   );
 
-  const getAddress = useCallback(async () => {
-    const url = import.meta.env.VITE_HTTP_BASE_URL + "/address";
+  function getLoc(): { lat: string, long: string } {
+    let lat: string | undefined;
+    let long: string | undefined;
 
-    setIsLoading(true);
-    HandleGet<{ address: IAddress[] }>(url, true)
-      .then((responseData) => {
+    if (selectedAddress?.latitude && selectedAddress?.longitude) {
+      lat = selectedAddress.latitude;
+      long = selectedAddress.longitude;
+    }
+
+    else if (data) {
+      const parsedData = JSON.parse(data);
+      if (parsedData?.location?.lat && parsedData?.location?.long) {
+        lat = parsedData.location.lat;
+        long = parsedData.location.long;
+      }
+    }
+
+    if (!lat || !long) {
+      lat = "-6.1934332";
+      long = "106.8217253";
+    }
+
+    return {
+      lat: lat,
+      long: long
+    }
+  }
+
+  useEffect(() => {
+    const loadAddress = async () => {
+      setIsAddressLoading(true);
+      const url = import.meta.env.VITE_HTTP_BASE_URL + "/address";
+
+      try {
+        const responseData = await HandleGet<{ address: IAddress[] }>(url, true);
         setAddressOptions(responseData.address);
 
         if (responseData.address.length > 0) {
-          let mainAddress: IAddress | undefined = undefined;
-          responseData.address.forEach((address) => {
-            if (address.is_main) {
-              mainAddress = address;
-            }
-          });
+          let mainAddress = responseData.address.find(addr => addr.is_main) ?? responseData.address[0];
 
-          if (!mainAddress) {
-            mainAddress = responseData.address[0];
-          }
-
-          if (
-            !selectedAddress ||
-            (selectedAddress && selectedAddress.id === 0)
-          ) {
+          if (!selectedAddress || selectedAddress.id === 0) {
             setSelectedAddress(mainAddress);
             dispatch(updateAddress(mainAddress));
           }
         }
-      })
-      .catch((error: Error) => {
-        if (error.message != MsgRefreshTokenNotFound) {
+      } catch (error: any) {
+        if (error.message !== MsgRefreshTokenNotFound) {
           HandleShowToast(setToast, false, error.message, 5);
         }
-      })
-      .finally(() => setIsLoading(false));
-  }, [setToast, dispatch, selectedAddress]);
-
-  const getLocation = useCallback(
-    async (mainLocation: { lat: string; long: string }) => {
-      await getAddress();
-
-      if (
-        selectedAddress &&
-        selectedAddress.latitude &&
-        selectedAddress.longitude
-      ) {
-        fetchDrugList(selectedAddress.latitude, selectedAddress.longitude);
-        return;
+      } finally {
+        setIsAddressLoading(false);
+        setIsAddrLoaded(true);
       }
+    };
 
-      fetchDrugList(mainLocation.lat, mainLocation.long);
-    },
-    [fetchDrugList, selectedAddress, getAddress]
-  );
+    loadAddress();
+  }, []);
 
   useEffect(() => {
-    if (data) {
-      const dataParsed = JSON.parse(data);
-      const mainLocation: { lat: string; long: string } =
-        dataParsed["location"];
+    if (!isAddrLoaded || (isAddressLoading || isDrugLoading)) return;
 
-      if (mainLocation.lat !== "" && mainLocation.long !== "") {
-        getLocation(mainLocation);
-        return;
-      }
-    }
+    const loc = getLoc()
 
-    fetchDrugList("-6.1934332", "106.8217253");
-  }, [fetchDrugList, selectedAddress, getLocation, data]);
+    fetchDrugList(loc.lat, loc.long);
+  }, [selectedAddress, data, isAddressLoading]);
+
+  useEffect(() => {
+    setIsLoading(isAddressLoading || isDrugLoading)
+  }, [isAddressLoading, isDrugLoading])
 
   const token = Cookies.get("accessToken");
 
@@ -343,20 +345,18 @@ const ShopPage = (): React.ReactElement => {
                     }}
                   >
                     <div
-                      className={`h-[19px] w-[23px] p-[2px] border-[2px] ${
-                        selectedAddressOption &&
+                      className={`h-[19px] w-[23px] p-[2px] border-[2px] ${selectedAddressOption &&
                         selectedAddressOption.id === address.id
-                          ? "border-brightBlue"
-                          : "border-[#7b7c7c]"
-                      } rounded-full`}
+                        ? "border-brightBlue"
+                        : "border-[#7b7c7c]"
+                        } rounded-full`}
                     >
                       <div
-                        className={`h-[11px] w-[11px] ${
-                          selectedAddressOption &&
+                        className={`h-[11px] w-[11px] ${selectedAddressOption &&
                           selectedAddressOption.id === address.id
-                            ? "bg-brightBlue"
-                            : ""
-                        } rounded-full`}
+                          ? "bg-brightBlue"
+                          : ""
+                          } rounded-full`}
                       ></div>
                     </div>
                     <div className="flex flex-col gap-[0.5rem]">

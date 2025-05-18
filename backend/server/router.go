@@ -225,7 +225,7 @@ func newRouter(h routerOpts, u utilOpts, config *config.Config, log *logrus.Logg
 
 	personalAuthMiddleware := middleware.PersonalAuthMiddleware(config)
 
-	corsRouting(router, corsConfig)
+	corsRouting(router, corsConfig, config)
 	router.NoRoute(handler.NotFoundHandler)
 	authenticationRouting(router, h.Authentication)
 	addressRouting(router, h.Address)
@@ -362,8 +362,8 @@ func chatRoomRouting(router *gin.Engine, handler *handler.ChatRoomHandler, authM
 	chatRoomRouter.GET("/:room_id", authMiddleware, handler.GetRoomDetail)
 }
 
-func corsRouting(router *gin.Engine, configCors cors.Config) {
-	configCors.AllowOrigins = []string{"http://localhost:5173", "http://localhost"}
+func corsRouting(router *gin.Engine, configCors cors.Config, config *config.Config) {
+	configCors.AllowOrigins = config.AllowOrigins
 	configCors.AllowMethods = []string{"POST", "GET", "PUT", "PATCH", "DELETE", "OPTIONS"}
 	configCors.AllowHeaders = []string{"Origin", "Authorization", "Content-Type", "Accept", "User-Agent", "Cache-Control", "Host", "X-Real-IP", "X-Forwarded-For", "X-Forwarded-Proto", "Access-Control-Allow-Origin"}
 	configCors.ExposeHeaders = []string{"Content-Length"}
