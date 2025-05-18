@@ -228,6 +228,14 @@ const ProductDetail = (): React.ReactElement => {
       }
     };
 
+    if (!token) {
+      const loc = getLoc()
+
+      fetchProductDetail(loc.lat, loc.long);
+
+      return;
+    }
+
     loadAddress();
   }, []);
 
