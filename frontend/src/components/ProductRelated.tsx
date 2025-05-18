@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import CardProduct from "./CardProduct";
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -11,11 +11,13 @@ import { HandleShowToast } from "../util/ShowToast";
 type productRelatedProps = {
   categoryId: number;
   isTokenValid: boolean;
+  loc: {lat: string, long: string}
 };
 
 const ProductRelated = ({
   categoryId,
   isTokenValid,
+  loc
 }: productRelatedProps): React.ReactElement => {
   const { setToast } = useContext(ToastContext);
 
@@ -38,19 +40,30 @@ const ProductRelated = ({
     }
   }
 
-  useEffect(() => {
-    const url = import.meta.env.VITE_HTTP_BASE_URL +  `/drugs?lat=-6.2266751&long=106.8303862&category=${categoryId}&limit=10&page=${page}`;
+  const fetchDrugList = useCallback(
+    (latitude: string, longitude: string, targetPage: number) => {
+      const url =
+        import.meta.env.VITE_HTTP_BASE_URL +
+        `/drugs?lat=${latitude}&long=${longitude}&category=${categoryId}&limit=10&page=${targetPage}`;
+      HandleGet<IDrugListResponse>(url)
+        .then((responseData) => {
+          setRelatedDrugList(responseData);
+        })
+        .catch((error: Error) => {
+          HandleShowToast(setToast, false, error.message, 5);
+        });
+    },
+    [
+      categoryId,
+      setToast,
+    ]
+  );
 
+  useEffect(() => {
     setRelatedDrugList(undefined);
 
-    HandleGet<IDrugListResponse>(url)
-      .then((responseData) => {
-        setRelatedDrugList(responseData);
-      })
-      .catch((error: Error) => {
-        HandleShowToast(setToast, false, error.message, 5);
-      });
-  }, [setToast, categoryId, page]);
+    fetchDrugList(loc.lat, loc.long, page)
+  }, [page]);
 
   return (
     <div className="flex flex-col gap-3 my-5 p-2 md:p-0 xl:px-[50px]">
