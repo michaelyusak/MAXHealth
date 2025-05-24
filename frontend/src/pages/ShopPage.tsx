@@ -118,20 +118,52 @@ const ShopPage = (): React.ReactElement => {
     ]
   );
 
-  function getLoc(): { lat: string, long: string } {
+  const askLoc = async (): Promise<{ lat: string, lng: string } | undefined> => {
+    if (!("geolocation" in navigator)) {
+      console.warn("Geolocation not supported");
+      return undefined;
+    }
+
+    return new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = String(position.coords.latitude);
+          const lng = String(position.coords.longitude);
+          resolve({ lat, lng });
+        },
+        (error) => {
+          console.error("Geolocation error", error);
+          resolve(undefined);
+        }
+      );
+    });
+  };
+
+  async function getLoc(): Promise<{ lat: string, long: string }> {
     let lat: string | undefined;
     let long: string | undefined;
 
-    if (selectedAddress?.latitude && selectedAddress?.longitude) {
+    if (selectedAddress && selectedAddress.latitude && selectedAddress.longitude) {
       lat = selectedAddress.latitude;
       long = selectedAddress.longitude;
     }
 
-    else if (data) {
-      const parsedData = JSON.parse(data);
-      if (parsedData?.location?.lat && parsedData?.location?.long) {
-        lat = parsedData.location.lat;
-        long = parsedData.location.long;
+    if (!lat || !long) {
+      const navPos = await askLoc()
+
+      if (navPos) {
+        lat = navPos.lat
+        long = navPos.lng
+      }
+    }
+
+    if (!lat || !long) {
+      if (data) {
+        const parsedData = JSON.parse(data);
+        if (parsedData?.location?.lat && parsedData?.location?.long) {
+          lat = parsedData.location.lat;
+          long = parsedData.location.long;
+        }
       }
     }
 
@@ -173,24 +205,21 @@ const ShopPage = (): React.ReactElement => {
       }
     };
 
-    if (!token) {
-      const loc = getLoc()
-
-      fetchDrugList(loc.lat, loc.long);
-
-      return;
-    }
-
     loadAddress();
   }, []);
 
   useEffect(() => {
     if (!isAddrLoaded || (isAddressLoading || isDrugLoading)) return;
 
-    const loc = getLoc()
+    const fetch = async () => {
+      const loc = await getLoc()
 
-    fetchDrugList(loc.lat, loc.long);
-  }, [selectedAddress, data, isAddressLoading]);
+      fetchDrugList(loc.lat, loc.long);
+    }
+
+    fetch();
+
+  }, [selectedAddress, data, isAddrLoaded]);
 
   useEffect(() => {
     setIsLoading(isAddressLoading || isDrugLoading)
